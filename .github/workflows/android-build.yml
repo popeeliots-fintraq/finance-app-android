@@ -30,13 +30,15 @@ jobs:
           rm -rf gradle/wrapper/gradle-wrapper-*.jar
           rm -rf gradle/wrapper/gradle-wrapper-old.jar || true
 
-      # 4️⃣ Download fresh Gradle wrapper (Gradle 8.8)
+      # 4️⃣ Download fresh Gradle wrapper safely
       - name: Download fresh Gradle wrapper
         run: |
           mkdir -p gradle/wrapper
           curl -L https://services.gradle.org/distributions/gradle-8.8-bin.zip -o gradle.zip
-          unzip -j gradle.zip 'gradle-8.8/gradle/wrapper/*' -d gradle/wrapper/
-          rm gradle.zip
+          unzip gradle.zip "gradle-8.8/gradle/wrapper/*" -d gradle/
+          cp gradle/gradle-8.8/gradle/wrapper/gradle-wrapper.jar gradle/wrapper/
+          cp gradle/gradle-8.8/gradle/wrapper/gradle-wrapper.properties gradle/wrapper/
+          rm -rf gradle.zip gradle/gradle-8.8
 
       # 5️⃣ Make gradlew executable
       - name: Make gradlew executable
@@ -58,7 +60,7 @@ jobs:
       - name: Build Debug APK
         run: ./gradlew assembleDebug --stacktrace --info --debug --no-daemon
 
-      # 9️⃣ Upload all debug APKs for all modules
+      # 9️⃣ Upload all debug APKs
       - name: Upload all debug APKs
         uses: actions/upload-artifact@v4
         with:
