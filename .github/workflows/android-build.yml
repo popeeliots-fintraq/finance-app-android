@@ -22,29 +22,13 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      # 3️⃣ Remove old Gradle wrapper files
-      - name: Remove old Gradle wrapper
-        run: |
-          echo "Removing old Gradle wrapper files..."
-          rm -rf gradle/wrapper/gradle-wrapper.jar
-          rm -rf gradle/wrapper/gradle-wrapper-*.jar
-          rm -rf gradle/wrapper/gradle-wrapper-old.jar || true
+      # 3️⃣ Install Gradle 8.8
+      - name: Set up Gradle 8.8
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: 8.8
 
-      # 4️⃣ Download fresh Gradle wrapper safely
-      - name: Download fresh Gradle wrapper
-        run: |
-          mkdir -p gradle/wrapper
-          curl -L https://services.gradle.org/distributions/gradle-8.8-bin.zip -o gradle.zip
-          unzip gradle.zip "gradle-8.8/gradle/wrapper/*" -d gradle/
-          cp gradle/gradle-8.8/gradle/wrapper/gradle-wrapper.jar gradle/wrapper/
-          cp gradle/gradle-8.8/gradle/wrapper/gradle-wrapper.properties gradle/wrapper/
-          rm -rf gradle.zip gradle/gradle-8.8
-
-      # 5️⃣ Make gradlew executable
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
-
-      # 6️⃣ Set up Android SDK
+      # 4️⃣ Set up Android SDK
       - name: Setup Android SDK
         uses: android-actions/setup-android@v2
         with:
@@ -52,15 +36,15 @@ jobs:
           build-tools-version: 33.0.2
           target: android-33
 
-      # 7️⃣ Clean Gradle project
+      # 5️⃣ Clean Gradle project
       - name: Clean Gradle project
-        run: ./gradlew clean
+        run: gradle clean
 
-      # 8️⃣ Build Debug APK(s)
+      # 6️⃣ Build Debug APK(s)
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace --info --debug --no-daemon
+        run: gradle assembleDebug --stacktrace --info --debug --no-daemon
 
-      # 9️⃣ Upload all debug APKs
+      # 7️⃣ Upload all debug APKs
       - name: Upload all debug APKs
         uses: actions/upload-artifact@v4
         with:
