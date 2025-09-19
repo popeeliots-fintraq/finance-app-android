@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repository
+      # 1️⃣ Checkout the repository
       - name: Checkout source
         uses: actions/checkout@v4
 
@@ -26,15 +26,4 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      # 4️⃣ Set up Android SDK
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v2
-        with:
-          api-level: 33
-          build-tools-version: 33.0.2
-          target: android-33
-
-      # 5️⃣ Set Android environment variables
-      - name: Set Android environment variables
-        run: |
-          echo "ANDRO
+      # 4️⃣ Set
