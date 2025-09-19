@@ -1,30 +1,51 @@
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      # Checkout code
-      - uses: actions/checkout@v4
+#!/usr/bin/env sh
 
-      # Set up JDK
-      - uses: actions/setup-java@v3
-        with:
-          distribution: temurin
-          java-version: 17
+##############################################################################
+##
+##  Gradle start up script for UN*X
+##
+##############################################################################
 
-      # Make gradlew executable
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
+# Add default JVM options here if desired
+DEFAULT_JVM_OPTS=""
 
-      # Clean project
-      - name: Clean Gradle project
-        run: ./gradlew clean
+APP_NAME="Gradle"
+APP_BASE_NAME=`basename "$0"`
 
-      # Build debug APK
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace --info --debug --no-daemon
+# Resolve APP_HOME
+APP_HOME=$(cd "$(dirname "$0")" && pwd)
 
-      # Upload APKs
-      - uses: actions/upload-artifact@v4
-        with:
-          name: debug-apks
-          path: '**/build/outputs/apk/debug/*.apk'
+# Use the maximum available, or set MAX_FD != -1 to use that value.
+MAX_FD="maximum"
+
+warn () {
+    echo "$*"
+}
+
+die () {
+    echo
+    echo "$*"
+    echo
+    exit 1
+}
+
+# OS specific support (must be 'true' or 'false').
+cygwin=false
+msys=false
+darwin=false
+case "`uname`" in
+  CYGWIN* )
+    cygwin=true
+    ;;
+  Darwin* )
+    darwin=true
+    ;;
+  MINGW* )
+    msys=true
+    ;;
+esac
+
+# Determine the Java command to use to start the JVM.
+if [ -n "$JAVA_HOME" ] ; then
+    if [ -x "$JAVA_HOME/jre/sh/java" ] ; then
+        # IBM
