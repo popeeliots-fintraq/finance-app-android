@@ -2,16 +2,16 @@ name: Android CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
   pull_request:
+    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout source
         uses: actions/checkout@v3
 
       - name: Set up JDK 17
@@ -20,8 +20,24 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Setup Gradle
+      - name: Install Gradle
         uses: gradle/gradle-build-action@v2
 
+      # ✅ Generate wrapper dynamically
+      - name: Generate Gradle Wrapper
+        run: gradle wrapper --gradle-version 8.0.2
+
+      # ✅ Make gradlew executable
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      # ✅ Build Debug APK
       - name: Build Debug APK
         run: ./gradlew assembleDebug
+
+      # ✅ Upload APK as artifact
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
