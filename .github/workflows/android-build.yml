@@ -23,4 +23,39 @@ jobs:
           java-version: 17
 
       # 3️⃣ Make gradlew executable
-      - name
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      # 4️⃣ Set up Android SDK
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+        with:
+          api-level: 34
+          build-tools-version: 34.0.0
+          target: android-34
+
+      # 5️⃣ Set Android environment variables
+      - name: Set Android environment variables
+        run: |
+          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "PATH=$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH" >> $GITHUB_ENV
+
+      # 6️⃣ Clean the app module
+      - name: Clean app module
+        run: ./gradlew :app:clean
+
+      # 7️⃣ Build Debug APK for the app module
+      - name: Build Debug APK
+        run: ./gradlew :app:assembleDebug --stacktrace --info --debug --no-daemon
+
+      # 8️⃣ List all APKs to verify
+      - name: List APKs after build
+        run: find . -type f -name "*.apk"
+
+      # 9️⃣ Upload all debug APKs as artifact
+      - name: Upload all APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-apks
+          path: '**/build/outputs/**/*.apk'
