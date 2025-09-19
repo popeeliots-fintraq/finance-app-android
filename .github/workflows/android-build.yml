@@ -20,14 +20,7 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Install Gradle
-        uses: gradle/gradle-build-action@v2
-
-      # ✅ Generate wrapper dynamically
-      - name: Generate Gradle Wrapper
-        run: gradle wrapper --gradle-version 8.0.2
-
-      # ✅ Make gradlew executable
+      # ✅ Make sure gradlew is executable
       - name: Make gradlew executable
         run: chmod +x gradlew
 
@@ -35,7 +28,7 @@ jobs:
       - name: Build Debug APK
         run: ./gradlew assembleDebug
 
-      # ✅ Upload APK as artifact (fixed → v4)
+      # ✅ Upload APK as artifact
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
