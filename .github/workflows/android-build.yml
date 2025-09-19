@@ -28,3 +28,39 @@ jobs:
           echo "Removing old Gradle wrapper files..."
           rm -rf gradle/wrapper/gradle-wrapper.jar
           rm -rf gradle/wrapper/gradle-wrapper-*.jar
+          rm -rf gradle/wrapper/gradle-wrapper-old.jar || true
+
+      # 4️⃣ Download fresh Gradle wrapper (Gradle 8.8)
+      - name: Download fresh Gradle wrapper
+        run: |
+          mkdir -p gradle/wrapper
+          curl -L https://services.gradle.org/distributions/gradle-8.8-bin.zip -o gradle.zip
+          unzip -j gradle.zip 'gradle-8.8/gradle/wrapper/*' -d gradle/wrapper/
+          rm gradle.zip
+
+      # 5️⃣ Make gradlew executable
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      # 6️⃣ Set up Android SDK
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+        with:
+          api-level: 33
+          build-tools-version: 33.0.2
+          target: android-33
+
+      # 7️⃣ Clean Gradle project
+      - name: Clean Gradle project
+        run: ./gradlew clean
+
+      # 8️⃣ Build Debug APK(s)
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace --info --debug --no-daemon
+
+      # 9️⃣ Upload all debug APKs for all modules
+      - name: Upload all debug APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-apks
+          path: '**/build/outputs/apk/debug/*.apk'
