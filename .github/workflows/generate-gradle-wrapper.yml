@@ -16,12 +16,19 @@ jobs:
         with:
           persist-credentials: true
 
-      - name: Run Gradle wrapper inside Gradle Docker image
-        uses: addnab/docker-run-action@v3
-        with:
-          image: gradle:8.1.1-jdk17
-          options: -v "${{ github.workspace }}:/home/gradle/project"
-          run: gradle wrapper --gradle-version 8.1.1 --project-dir /home/gradle/project
+     - name: Run Gradle wrapper inside Gradle Docker image
+  uses: addnab/docker-run-action@v3
+  with:
+    image: gradle:7.6.1-jdk17
+    options: -v "${{ github.workspace }}:/home/gradle/project"
+    run: |
+      echo "Current dir:"
+      pwd
+      echo "Listing project files:"
+      ls -la /home/gradle/project
+      echo "Gradle version:"
+      gradle --version
+      gradle wrapper --gradle-version 7.6.1 --project-dir /home/gradle/project
 
       - name: Show created files (for logs)
         run: ls -la gradlew gradlew.bat gradle/wrapper || true
