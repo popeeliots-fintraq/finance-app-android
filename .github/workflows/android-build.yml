@@ -22,37 +22,9 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      # 3️⃣ Download fresh Gradle wrapper JAR
-      - name: Download fresh Gradle wrapper JAR
+      # 3️⃣ Remove old Gradle wrapper files
+      - name: Remove old Gradle wrapper
         run: |
-          mkdir -p gradle/wrapper
-          curl -L https://services.gradle.org/distributions/gradle-8.8-bin.zip -o gradle.zip
-          unzip -p gradle.zip gradle-8.8/gradle/wrapper/gradle-wrapper.jar > gradle/wrapper/gradle-wrapper.jar
-          rm gradle.zip
-
-      # 4️⃣ Make gradlew executable
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
-
-      # 5️⃣ Set up Android SDK
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v2
-        with:
-          api-level: 33
-          build-tools-version: 33.0.2
-          target: android-33
-
-      # 6️⃣ Optional: Clean Gradle project
-      - name: Clean Gradle project
-        run: ./gradlew clean
-
-      # 7️⃣ Build Debug APK
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace --info --debug --no-daemon
-
-      # 8️⃣ Upload APK as artifact
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug
-          path: app/build/outputs/apk/debug/app-debug.apk
+          echo "Removing old Gradle wrapper files..."
+          rm -rf gradle/wrapper/gradle-wrapper.jar
+          rm -rf gradle/wrapper/gradle-wrapper-*.jar
