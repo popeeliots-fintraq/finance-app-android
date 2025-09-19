@@ -22,25 +22,17 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      # 3️⃣ Clean old Gradle wrapper files and set correct JAR
-      - name: Clean and reset Gradle wrapper
+      # 3️⃣ Download fresh Gradle wrapper JAR
+      - name: Download fresh Gradle wrapper JAR
         run: |
-          echo "Removing all existing wrapper JARs..."
-          rm -f gradle/wrapper/gradle-wrapper.jar
-          rm -f gradle/wrapper/gradle-wrapper-*.jar
-          rm -f gradle/wrapper/gradle-wrapper-old.jar
-
-          echo "Checking if new wrapper exists..."
-          if [ -f gradle/wrapper/gradle-wrapper-8.8.jar ]; then
-            echo "Renaming gradle-wrapper-8.8.jar to gradle-wrapper.jar"
-            mv gradle/wrapper/gradle-wrapper-8.8.jar gradle/wrapper/gradle-wrapper.jar
-          else
-            echo "No gradle-wrapper-8.8.jar found, make sure to provide a valid wrapper JAR"
-          fi
+          mkdir -p gradle/wrapper
+          curl -L https://services.gradle.org/distributions/gradle-8.8-bin.zip -o gradle.zip
+          unzip -p gradle.zip gradle-8.8/gradle/wrapper/gradle-wrapper.jar > gradle/wrapper/gradle-wrapper.jar
+          rm gradle.zip
 
       # 4️⃣ Make gradlew executable
       - name: Make gradlew executable
-        run: chmod +x gradlew
+        run: chmod +x ./gradlew
 
       # 5️⃣ Set up Android SDK
       - name: Setup Android SDK
