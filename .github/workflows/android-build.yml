@@ -26,7 +26,7 @@ jobs:
 
       # ✅ Build Debug APK
       - name: Build Debug APK
-        run: ./gradlew assembleDebug
+        run: ./gradlew assembleDebug --stacktrace --info --debug --no-daemon
 
       # ✅ Upload APK as artifact
       - name: Upload APK
