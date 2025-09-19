@@ -1,18 +1,48 @@
-# ✅ Clean Gradle wrapper folder and reset wrapper
-- name: Clean and reset Gradle wrapper
-  run: |
-    echo "Removing all existing wrapper JARs..."
-    rm -f gradle/wrapper/gradle-wrapper.jar
-    rm -f gradle/wrapper/gradle-wrapper-*.jar
-    rm -f gradle/wrapper/gradle-wrapper-old.jar
+name: Android CI
 
-    echo "Checking if new wrapper exists..."
-    if [ -f gradle/wrapper/gradle-wrapper-8.8.jar ]; then
-      echo "Renaming gradle-wrapper-8.8.jar to gradle-wrapper.jar"
-      mv gradle/wrapper/gradle-wrapper-8.8.jar gradle/wrapper/gradle-wrapper.jar
-    else
-      echo "No gradle-wrapper-8.8.jar found, make sure to provide a valid wrapper JAR"
-    fi
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
-- name: Make gradlew executable
-  run: chmod +x gradlew
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # ✅ Clean and fix Gradle wrapper
+      - name: Clean Gradle wrapper folder
+        run: |
+          # Remove duplicate or old JARs
+          rm -f gradle/wrapper/gradle-wrapper-8.8.jar
+          rm -f gradle/wrapper/gradle-wrapper-old.jar  # optional, if any
+          
+          # Rename new wrapper to correct name if it exists
+          if [ -f gradle/wrapper/gradle-wrapper-8.8.jar ]; then
+            mv gradle/wrapper/gradle-wrapper-8.8.jar gradle/wrapper/gradle-wrapper.jar
+          fi
+
+      # ✅ Make gradlew executable
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      # ✅ Build Debug APK
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace --info --debug --no-daemon
+
+      # ✅ Upload APK as artifact
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
