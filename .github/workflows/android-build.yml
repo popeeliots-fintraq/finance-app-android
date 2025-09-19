@@ -23,15 +23,4 @@ jobs:
           java-version: 17
 
       # 3️⃣ Make gradlew executable
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
-
-      # 4️⃣ Set up Android SDK
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v2
-        with:
-          api-level: 33
-          build-tools-version: 33.0.2
-          target: android-33
-
-      # 5️⃣ Set Android envi
+      - name
