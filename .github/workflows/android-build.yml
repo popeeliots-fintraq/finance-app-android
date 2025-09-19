@@ -1,52 +1,30 @@
-name: Android CI
-
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      # 1️⃣ Checkout repository
-      - name: Checkout source
-        uses: actions/checkout@v4
+      # Checkout code
+      - uses: actions/checkout@v4
 
-      # 2️⃣ Set up JDK 17
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
+      # Set up JDK
+      - uses: actions/setup-java@v3
         with:
           distribution: temurin
           java-version: 17
 
-      # 3️⃣ Install Gradle 8.8
-      - name: Set up Gradle 8.8
-        uses: gradle/gradle-build-action@v2
-        with:
-          gradle-version: 8.8
+      # Make gradlew executable
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
 
-      # 4️⃣ Set up Android SDK
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v2
-        with:
-          api-level: 33
-          build-tools-version: 33.0.2
-          target: android-33
-
-      # 5️⃣ Clean Gradle project
+      # Clean project
       - name: Clean Gradle project
-        run: gradle clean
+        run: ./gradlew clean
 
-      # 6️⃣ Build Debug APK(s)
+      # Build debug APK
       - name: Build Debug APK
-        run: gradle assembleDebug --stacktrace --info --debug --no-daemon
+        run: ./gradlew assembleDebug --stacktrace --info --debug --no-daemon
 
-      # 7️⃣ Upload all debug APKs
-      - name: Upload all debug APKs
-        uses: actions/upload-artifact@v4
+      # Upload APKs
+      - uses: actions/upload-artifact@v4
         with:
           name: debug-apks
           path: '**/build/outputs/apk/debug/*.apk'
