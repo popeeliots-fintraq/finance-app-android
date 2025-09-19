@@ -15,9 +15,17 @@ android {
         versionName "1.0"
     }
 
+    signingConfigs {
+        debug {
+            // Uses default debug keystore; no extra config needed
+        }
+    }
+
     buildTypes {
         debug {
-            debuggable true
+            initWith release          // Copy settings from release
+            debuggable true           // Must be debuggable
+            signingConfig signingConfigs.debug
         }
         release {
             minifyEnabled false
