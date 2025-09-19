@@ -1,2 +1,3 @@
-# Finance App Android
-Initial setup for Kotlin Hello World app
+# Hello Fintraq Android
+
+Android skeleton for Fintraq. This repo contains a minimal Kotlin Hello World app.
