@@ -11,51 +11,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout the repository
+      # 1️⃣ Checkout source code
       - name: Checkout source
         uses: actions/checkout@v4
 
-      # 2️⃣ Set up JDK 17
+      # 2️⃣ Set up JDK 17 (required for AGP 8.x)
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           distribution: temurin
           java-version: 17
 
-      # 3️⃣ Make gradlew executable
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
-
-      # 4️⃣ Set up Android SDK
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v2
-        with:
-          api-level: 34
-          build-tools-version: 34.0.0
-          target: android-34
-
-      # 5️⃣ Set Android environment variables
-      - name: Set Android environment variables
+      # 3️⃣ Regenerate a fresh Gradle wrapper
+      - name: Regenerate Gradle wrapper
         run: |
-          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
-          echo "PATH=$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH" >> $GITHUB_ENV
+          rm -rf gradlew gradlew.bat gradle/wrapper
+          gradle wrapper --gradle-version 8.0.2
 
-      # 6️⃣ Clean the app module
-      - name: Clean app module
-        run: ./gradlew :app:clean
+      # 4️⃣ Ensure gradlew is executable
+      - name: Make gradlew executable
+        run: chmod +x gradlew
 
-      # 7️⃣ Build Debug APK for the app module
+      # 5️⃣ Verify Gradle wrapper version
+      - name: Check Gradle wrapper
+        run: ./gradlew --version
+
+      # 6️⃣ Clean project
+      - name: Clean project
+        run: ./gradlew clean
+
+      # 7️⃣ Build Debug APK
       - name: Build Debug APK
-        run: ./gradlew :app:assembleDebug --stacktrace --info --debug --no-daemon
+        run: ./gradlew :app:assembleDebug --stacktrace --info --no-daemon
 
-      # 8️⃣ List all APKs to verify
-      - name: List APKs after build
-        run: find . -type f -name "*.apk"
-
-      # 9️⃣ Upload all debug APKs as artifact
-      - name: Upload all APKs
+      # 8️⃣ Upload APK as artifact
+      - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: debug-apks
-          path: '**/build/outputs/**/*.apk'
+          name: debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
