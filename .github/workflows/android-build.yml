@@ -22,7 +22,7 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      # 3️⃣ Regenerate a fresh Gradle wrapper
+      # 3️⃣ Regenerate a fresh Gradle wrapper with the correct version
       - name: Regenerate Gradle wrapper
         run: |
           rm -rf gradlew gradlew.bat gradle/wrapper
