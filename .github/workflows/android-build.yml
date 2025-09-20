@@ -1,6 +1,10 @@
-name: Android Build
+name: Android CI
 
 on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
@@ -8,46 +12,48 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
+      # 1. Checkout source
+      - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2. Set up JDK
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
+          distribution: temurin
+          java-version: 17
 
-      - name: Remove broken Gradle wrapper
-        run: rm -rf gradlew gradlew.bat gradle/wrapper
-
-      - name: Install Gradle CLI
-        run: sudo apt-get update && sudo apt-get install -y gradle
-
-      - name: Generate Gradle wrapper (8.0.2) from app module
-        working-directory: app
-        run: gradle wrapper --gradle-version 8.0.2 --distribution-type=all
-
-      - name: Move wrapper to project root
+      # 3. Ensure gradlew exists
+      - name: Ensure Gradle wrapper exists
         run: |
-          mv app/gradlew .
-          mv app/gradlew.bat .
-          mkdir -p gradle/wrapper
-          mv app/gradle/wrapper/* gradle/wrapper/
+          if [ ! -f "./gradlew" ]; then
+            echo "Gradle wrapper missing, generating one from app module..."
+            sudo apt-get update && sudo apt-get install -y gradle
+            cd app
+            gradle wrapper --gradle-version 8.0.2 --distribution-type=all
+            cd ..
+            mv app/gradlew .
+            mv app/gradlew.bat .
+            mkdir -p gradle/wrapper
+            mv app/gradle/wrapper/* gradle/wrapper/
+          fi
+          chmod +x ./gradlew
 
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
-
-      - name: Verify Gradle wrapper
+      # 4. Check wrapper version
+      - name: Check Gradle wrapper
         run: ./gradlew --version
 
-      - name: Clean project
-        run: ./gradlew clean
+      # 5. Clean build
+      - name: Clean app module
+        run: ./gradlew :app:clean
 
+      # 6. Build Debug APK
       - name: Build Debug APK
         run: ./gradlew :app:assembleDebug --stacktrace
 
+      # 7. Upload APK as artifact
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: debug-apk
+          name: app-debug
           path: app/build/outputs/apk/debug/app-debug.apk
