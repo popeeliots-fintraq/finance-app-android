@@ -1,44 +1,50 @@
 name: Android CI
-
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ main ]
-
+    branches: [ "main" ]
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
+      # :one: Checkout the repository
+      - name: Checkout source
+        uses: actions/checkout@v4
+      # :two: Set up JDK 17
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      # Generate gradle wrapper in root project folder
-      - name: Generate Gradle wrapper
-        run: |
-          cd $GITHUB_WORKSPACE
-          gradle wrapper --gradle-version 8.0.2
-
+          distribution: temurin
+          java-version: 17
+      # :three: Make gradlew executable
       - name: Make gradlew executable
         run: chmod +x ./gradlew
-
-      - name: Check Gradle wrapper
-        run: ./gradlew --version
-
-      # Build debug APK from app module
+      # :four: Set up Android SDK
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+        with:
+          api-level: 34
+          build-tools-version: 34.0.0
+          target: android-34
+      # :five: Set Android environment variables
+      - name: Set Android environment variables
+        run: |
+          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "PATH=$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH" >> $GITHUB_ENV
+      # :six: Clean the app module
+      - name: Clean app module
+        run: ./gradlew :app:clean
+      # :seven: Build Debug APK for the app module
       - name: Build Debug APK
-        run: ./gradlew :app:assembleDebug
-
-      # Upload APK as an artifact
-      - name: Upload APK
+        run: ./gradlew :app:assembleDebug --stacktrace --info --debug --no-daemon
+      # :eight: List all APKs to verify
+      - name: List APKs after build
+        run: find . -type f -name "*.apk"
+      # :nine: Upload all debug APKs as artifact
+      - name: Upload all APKs
         uses: actions/upload-artifact@v4
         with:
-          name: debug-apk
-          path: app/build/outputs/apk/debug/*.apk
+          name: debug-apks
+          path: '**/build/outputs/**/*.apk'
