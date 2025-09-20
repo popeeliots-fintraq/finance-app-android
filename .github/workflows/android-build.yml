@@ -15,25 +15,25 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      # 2️⃣ Set up JDK 17 (required for AGP 8.x)
+      # 2️⃣ Set up JDK 17 (needed for AGP 8.x)
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           distribution: temurin
           java-version: 17
 
-      # 3️⃣ Regenerate a fresh Gradle wrapper with the correct version
-      - name: Regenerate Gradle wrapper
-        run: |
-          rm -rf gradlew gradlew.bat gradle/wrapper
-          gradle wrapper --gradle-version 8.0.2
+      # 3️⃣ Set up Gradle 8.0.2 explicitly
+      - name: Set up Gradle
+        uses: gradle/gradle-build-action@v3
+        with:
+          gradle-version: 8.0.2
 
-      # 4️⃣ Ensure gradlew is executable
+      # 4️⃣ Make sure gradlew is executable
       - name: Make gradlew executable
         run: chmod +x gradlew
 
-      # 5️⃣ Verify Gradle wrapper version
-      - name: Check Gradle wrapper
+      # 5️⃣ Verify Gradle version
+      - name: Check Gradle version
         run: ./gradlew --version
 
       # 6️⃣ Clean project
@@ -44,7 +44,7 @@ jobs:
       - name: Build Debug APK
         run: ./gradlew :app:assembleDebug --stacktrace --info --no-daemon
 
-      # 8️⃣ Upload APK as artifact
+      # 8️⃣ Upload Debug APK
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
