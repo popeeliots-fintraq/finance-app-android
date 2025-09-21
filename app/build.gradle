@@ -1,17 +1,17 @@
 // app/build.gradle (Module-Level)
 plugins {
     id 'com.android.application'
-    id 'org.jetbrains.kotlin.android' // if using Kotlin
+    id 'org.jetbrains.kotlin.android' // Kotlin plugin for Android
 }
 
 android {
-    namespace 'com.example.financeapp' // Replace with your app's package name
-    compileSdk 33
+    namespace 'com.example.financeapp'  // Replace with your app's package name
+    compileSdk 33  // Replace with the SDK version you're targeting
 
     defaultConfig {
-        applicationId "com.example.financeapp" // Replace with your app's package name
-        minSdk 21
-        targetSdk 33
+        applicationId "com.example.financeapp"  // Replace with your app's package name
+        minSdk 21  // Minimum SDK version
+        targetSdk 33  // Target SDK version
         versionCode 1
         versionName "1.0"
     }
@@ -28,8 +28,8 @@ android {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.0" // Ensure this matches the Kotlin version you're using
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.0"  // Ensure you're using Kotlin version 1.9.0
     implementation 'androidx.core:core-ktx:1.10.1'
     implementation 'androidx.appcompat:appcompat:1.7.0'
-    // Add other dependencies as needed
+    // Add other dependencies as required for your project
 }
