@@ -32,36 +32,13 @@ jobs:
           build-tools-version: 33.0.0  # Set build tools version
           target: android-33  # Set target to Android 33
 
-      # 4. Ensure gradlew is executable
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
-
-      # 5. Set Android environment variables
-      - name: Set Android environment variables
+      # 4. Ensure Gradle wrapper files are present and download them if missing
+      - name: Ensure Gradle wrapper files are present
         run: |
-          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
-          echo "PATH=$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH" >> $GITHUB_ENV
+          if [ ! -f gradlew ] || [ ! -f gradle/wrapper/gradle-wrapper.jar ] || [ ! -f gradle/wrapper/gradle-wrapper.properties ]; then
+            echo "Downloading missing Gradle wrapper files..."
 
-      # 6. Check Gradle version (debugging)
-      - name: Check Gradle version
-        run: ./gradlew --version
+            # Create the wrapper directory if it doesn't exist
+            mkdir -p gradle/wrapper
 
-      # 7. Clean the app module (optional but useful for ensuring clean builds)
-      - name: Clean app module
-        run: ./gradlew clean
-
-      # 8. Build Debug APK
-      - name: Build Debug APK
-        run: ./gradlew :app:assembleDebug --stacktrace --info --no-daemon
-
-      # 9. List generated APKs to verify
-      - name: List APKs after build
-        run: find . -type f -name "*.apk"
-
-      # 10. Upload APKs as artifact for download
-      - name: Upload APKs
-        uses: actions/upload-artifact@v4
-        with:
-          name: debug-apks
-          path: '**/build/outputs/**/*.apk'
+            # Download gradle-wrapper.ja
