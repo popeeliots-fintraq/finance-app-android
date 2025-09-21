@@ -30,37 +30,41 @@ jobs:
           build-tools-version: 34.0.0
           target: android-34
 
-      # 4. Install Gradle and generate wrapper if missing
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v3
-
-      - name: Generate Gradle Wrapper (if missing)
-        run: gradle wrapper --gradle-version 8.0.2
+      # 4. Ensure Gradle Wrapper uses the correct version (8.0.2)
+      - name: Generate Gradle Wrapper (if missing or update version)
+        run: |
+          ./gradlew wrapper --gradle-version 8.0.2
+        # Make sure gradlew script is executable
+        shell: bash
 
       # 5. Make gradlew executable
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      # 6. Set Android environment variables
+      # 6. Check Gradle version to verify if wrapper is set correctly
+      - name: Check Gradle version
+        run: ./gradlew --version
+
+      # 7. Set Android environment variables
       - name: Set Android environment variables
         run: |
           echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
           echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
           echo "PATH=$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH" >> $GITHUB_ENV
 
-      # 7. Clean the app module
+      # 8. Clean the app module
       - name: Clean app module
         run: ./gradlew :app:clean
 
-      # 8. Build Debug APK for the app module
+      # 9. Build Debug APK for the app module
       - name: Build Debug APK
         run: ./gradlew :app:assembleDebug --stacktrace --info --debug --no-daemon
 
-      # 9. List all APKs to verify
+      # 10. List all APKs to verify
       - name: List APKs after build
         run: find . -type f -name "*.apk"
 
-      # 10. Upload all debug APKs as artifact
+      # 11. Upload all debug APKs as artifact
       - name: Upload all APKs
         uses: actions/upload-artifact@v4
         with:
