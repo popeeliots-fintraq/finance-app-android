@@ -11,6 +11,7 @@
 
         <!-- Declare your app's activities here -->
         <activity android:name=".MainActivity">
+                  android:exported="true">  <!-- Specify this attribute -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
