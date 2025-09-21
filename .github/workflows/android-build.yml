@@ -9,8 +9,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # :one: Checkout the repository
-      - name: Checkout source
+      - name: Checkout code
         uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
       # :two: Set up JDK 17
       - name: Set up JDK 17
         uses: actions/setup-java@v3
