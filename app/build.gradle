@@ -1,0 +1,35 @@
+// app/build.gradle (Module-Level)
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android' // if using Kotlin
+}
+
+android {
+    namespace 'com.example.financeapp' // Replace with your app's package name
+    compileSdk 33
+
+    defaultConfig {
+        applicationId "com.example.financeapp" // Replace with your app's package name
+        minSdk 21
+        targetSdk 33
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        debug {
+            debuggable true
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.0" // Ensure this matches the Kotlin version you're using
+    implementation 'androidx.core:core-ktx:1.10.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    // Add other dependencies as needed
+}
