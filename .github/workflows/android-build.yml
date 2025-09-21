@@ -32,41 +32,24 @@ jobs:
           build-tools-version: 33.0.0  # Set build tools version
           target: android-33  # Set target to Android 33
 
-      # 4. Ensure Gradle wrapper files are correct
-      - name: Ensure Gradle wrapper is configured
-        run: |
-          # Check if gradle-wrapper.properties exists
-          if [ ! -f gradle/wrapper/gradle-wrapper.properties ]; then
-            echo "gradle-wrapper.properties is missing. Please add it."
-            exit 1
-          fi
-          
-          # Check if gradle-wrapper.jar exists
-          if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
-            echo "gradle-wrapper.jar is missing. Please add it."
-            exit 1
-          fi
-
-          # Verify gradle-wrapper.properties contains the correct distribution URL
-          grep -q "distributionUrl=https\://services.gradle.org/distributions/gradle-8.0.2-bin.zip" gradle/wrapper/gradle-wrapper.properties || {
-            echo "Error: distributionUrl in gradle-wrapper.properties is incorrect."
-            exit 1
-          }
+      # 4. List gradlew file permissions (for debugging)
+      - name: List gradlew file permissions
+        run: ls -al ./gradlew
 
       # 5. Make gradlew executable
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      # 6. Set Android environment variables
+      # 6. Check Gradle version (debugging)
+      - name: Check Gradle version
+        run: ./gradlew --version
+
+      # 7. Set Android environment variables
       - name: Set Android environment variables
         run: |
           echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
           echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
           echo "PATH=$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH" >> $GITHUB_ENV
-
-      # 7. Check Gradle version (debugging)
-      - name: Check Gradle version
-        run: ./gradlew --version
 
       # 8. Clean the app module (optional but useful for ensuring clean builds)
       - name: Clean app module
