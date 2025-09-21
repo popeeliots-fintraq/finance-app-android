@@ -1,41 +1,40 @@
+// App-level build.gradle (Module-Level)
+
 plugins {
-    id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
+    id 'com.android.application' version '8.0.2'  // Apply AGP with version 8.0.2
+    id 'org.jetbrains.kotlin.android' version '1.9.0'  // Apply Kotlin plugin with version 1.9.0
 }
 
 android {
-    namespace "com.fintraq.helloworld"
-    compileSdk 34
+    namespace 'com.example.myapp'  // Define your app's package name
+    compileSdk 33  // Android compile SDK version
 
     defaultConfig {
-        applicationId "com.fintraq.helloworld"
-        minSdk 24
-        targetSdk 34
-        versionCode 1
-        versionName "1.0"
-    }
-
-    signingConfigs {
-        debug {
-            // Uses default debug keystore; no extra config needed
-        }
+        applicationId "com.example.myapp"  // Your app's application ID
+        minSdk 21  // Minimum SDK version your app supports
+        targetSdk 33  // Target SDK version
+        versionCode 1  // Version code for APK
+        versionName "1.0"  // Version name for APK
     }
 
     buildTypes {
         debug {
-            initWith release          // Copy settings from release
-            debuggable true           // Must be debuggable
-            signingConfig signingConfigs.debug
+            debuggable true  // Enable debugging in debug builds
         }
         release {
-            minifyEnabled false
+            minifyEnabled false  // Disable Proguard minification for release builds
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }
 
 dependencies {
+    // Kotlin Standard Library
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.0"
-    implementation 'androidx.core:core-ktx:1.10.1'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.9.0'
+    
+    // Android Core Libraries
+    implementation 'androidx.core:core-ktx:1.10.1'  // Android KTX library
+    implementation 'androidx.appcompat:appcompat:1.7.0'  // Support for older Android versions
+
+    // Add other dependencies as needed, e.g., for Jetpack libraries or third-party libraries
 }
