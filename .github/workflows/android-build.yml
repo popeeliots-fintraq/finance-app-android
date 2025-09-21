@@ -15,25 +15,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Download Gradle Wrapper files if missing
-      - name: Download Gradle Wrapper
+      # 2. Ensure gradlew is executable
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      # 3. Check if Gradle wrapper files exist
+      - name: Check and Download Gradle Wrapper Files
         run: |
           if [ ! -f "gradle/wrapper/gradle-wrapper.jar" ] || [ ! -f "gradle/wrapper/gradle-wrapper.properties" ]; then
             echo "Gradle wrapper files are missing. Downloading and setting them up..."
+
+            # Download gradle-wrapper files
             mkdir -p gradle/wrapper
-            curl -sSL https://services.gradle.org/distributions/gradle-8.0.2-bin.zip -o gradle-8.0.2.zip
-            unzip -q gradle-8.0.2.zip
-            mv gradle-8.0.2/bin/gradle ./gradlew
-            chmod +x ./gradlew
-            rm -rf gradle-8.0.2 gradle-8.0.2.zip
-            echo "Gradle wrapper setup completed."
+
+            # Download gradle-wrapper.jar
+            curl -L https://raw.githubusercontent.com/gradle/gradle/master/subprojects/wrapper/src/main/resources/gradle-wrapper.jar -o gradle/wrapper/gradle-wrapper.jar
+
+            # Download gradle-wrapper.properties
+            curl -L https://raw.githubusercontent.com/gradle/gradle/master/subprojects/wrapper/src/main/resources/gradle-wrapper.properties -o gradle/wrapper/gradle-wrapper.properties
+
+            echo "Gradle wrapper files set up completed."
           else
             echo "Gradle wrapper files found, skipping download."
           fi
-
-      # 3. Make sure gradlew is executable (for any case where it is not)
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
 
       # 4. Set up JDK 17
       - name: Set up JDK 17
