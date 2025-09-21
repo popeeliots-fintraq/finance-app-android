@@ -31,14 +31,18 @@ jobs:
             echo "Gradle wrapper files found, skipping download."
           fi
 
-      # 3. Set up JDK 17
+      # 3. Make sure gradlew is executable (for any case where it is not)
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      # 4. Set up JDK 17
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      # 4. Set up Android SDK
+      # 5. Set up Android SDK
       - name: Setup Android SDK
         uses: android-actions/setup-android@v2
         with:
@@ -46,30 +50,30 @@ jobs:
           build-tools-version: 34.0.0
           target: android-34
 
-      # 5. Check Gradle version to verify if wrapper is set correctly
+      # 6. Check Gradle version to verify if wrapper is set correctly
       - name: Check Gradle version
         run: ./gradlew --version
 
-      # 6. Set Android environment variables
+      # 7. Set Android environment variables
       - name: Set Android environment variables
         run: |
           echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
           echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
           echo "PATH=$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH" >> $GITHUB_ENV
 
-      # 7. Clean the app module
+      # 8. Clean the app module
       - name: Clean app module
         run: ./gradlew :app:clean
 
-      # 8. Build Debug APK for the app module
+      # 9. Build Debug APK for the app module
       - name: Build Debug APK
         run: ./gradlew :app:assembleDebug --stacktrace --info --debug --no-daemon
 
-      # 9. List all APKs to verify
+      # 10. List all APKs to verify
       - name: List APKs after build
         run: find . -type f -name "*.apk"
 
-      # 10. Upload all debug APKs as artifact
+      # 11. Upload all debug APKs as artifact
       - name: Upload all APKs
         uses: actions/upload-artifact@v4
         with:
