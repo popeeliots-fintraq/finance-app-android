@@ -1,0 +1,67 @@
+name: Android CI
+
+on:
+  push:
+    branches:
+      - "main"  # Trigger on push to the main branch
+  pull_request:
+    branches:
+      - "main"  # Trigger on pull request targeting the main branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # Use the latest Ubuntu environment
+
+    steps:
+      # 1. Checkout the code from the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Set up JDK 17 (required for Android builds)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # 3. Set up Android SDK
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v2
+        with:
+          api-level: 33  # Set the API level (latest stable version)
+          build-tools-version: 33.0.0  # Set build tools version
+          target: android-33  # Set target to Android 33
+
+      # 4. Ensure gradlew is executable
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      # 5. Set Android environment variables
+      - name: Set Android environment variables
+        run: |
+          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "PATH=$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH" >> $GITHUB_ENV
+
+      # 6. Check Gradle version (debugging)
+      - name: Check Gradle version
+        run: ./gradlew --version
+
+      # 7. Clean the app module (optional but useful for ensuring clean builds)
+      - name: Clean app module
+        run: ./gradlew clean
+
+      # 8. Build Debug APK
+      - name: Build Debug APK
+        run: ./gradlew :app:assembleDebug --stacktrace --info --no-daemon
+
+      # 9. List generated APKs to verify
+      - name: List APKs after build
+        run: find . -type f -name "*.apk"
+
+      # 10. Upload APKs as artifact for download
+      - name: Upload APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-apks
+          path: '**/build/outputs/**/*.apk'
