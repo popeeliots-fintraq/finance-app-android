@@ -32,13 +32,59 @@ jobs:
           build-tools-version: 33.0.0  # Set build tools version
           target: android-33  # Set target to Android 33
 
-      # 4. Ensure Gradle wrapper files are present and download them if missing
+      # 4. Download Gradle wrapper files if missing
       - name: Ensure Gradle wrapper files are present
         run: |
           if [ ! -f gradlew ] || [ ! -f gradle/wrapper/gradle-wrapper.jar ] || [ ! -f gradle/wrapper/gradle-wrapper.properties ]; then
             echo "Downloading missing Gradle wrapper files..."
 
-            # Create the wrapper directory if it doesn't exist
+            # Create the gradle/wrapper directory if it doesn't exist
             mkdir -p gradle/wrapper
 
-            # Download gradle-wrapper.ja
+            # Download gradle-wrapper.jar from the official Gradle GitHub
+            curl -L https://raw.githubusercontent.com/gradle/gradle/master/subprojects/wrapper/src/main/resources/gradle-wrapper.jar -o gradle/wrapper/gradle-wrapper.jar
+
+            # Download gradle-wrapper.properties from the official Gradle GitHub
+            curl -L https://raw.githubusercontent.com/gradle/gradle/master/subprojects/wrapper/src/main/resources/gradle-wrapper.properties -o gradle/wrapper/gradle-wrapper.properties
+
+            # Set up gradle-wrapper.properties for Gradle version 8.0.2
+            echo "distributionUrl=https\://services.gradle.org/distributions/gradle-8.0.2-bin.zip" >> gradle/wrapper/gradle-wrapper.properties
+
+            echo "Gradle wrapper files have been downloaded and configured."
+          else
+            echo "Gradle wrapper files found, skipping download."
+          fi
+
+      # 5. Make gradlew executable
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      # 6. Set Android environment variables
+      - name: Set Android environment variables
+        run: |
+          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "PATH=$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH" >> $GITHUB_ENV
+
+      # 7. Check Gradle version (debugging)
+      - name: Check Gradle version
+        run: ./gradlew --version
+
+      # 8. Clean the app module (optional but useful for ensuring clean builds)
+      - name: Clean app module
+        run: ./gradlew clean
+
+      # 9. Build Debug APK
+      - name: Build Debug APK
+        run: ./gradlew :app:assembleDebug --stacktrace --info --no-daemon
+
+      # 10. List generated APKs to verify
+      - name: List APKs after build
+        run: find . -type f -name "*.apk"
+
+      # 11. Upload APKs as artifact for download
+      - name: Upload APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-apks
+          path: '**/build/outputs/**/*.apk'
