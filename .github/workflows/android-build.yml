@@ -15,28 +15,30 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Ensure gradlew is executable
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
-
-      # 3. Check if gradle-wrapper files exist
-      - name: Check for Gradle wrapper files
+      # 2. Download Gradle Wrapper files if missing
+      - name: Download Gradle Wrapper
         run: |
           if [ ! -f "gradle/wrapper/gradle-wrapper.jar" ] || [ ! -f "gradle/wrapper/gradle-wrapper.properties" ]; then
-            echo "Gradle wrapper files are missing, generating them..."
-            gradle wrapper --gradle-version 8.0.2
+            echo "Gradle wrapper files are missing. Downloading and setting them up..."
+            mkdir -p gradle/wrapper
+            curl -sSL https://services.gradle.org/distributions/gradle-8.0.2-bin.zip -o gradle-8.0.2.zip
+            unzip -q gradle-8.0.2.zip
+            mv gradle-8.0.2/bin/gradle ./gradlew
+            chmod +x ./gradlew
+            rm -rf gradle-8.0.2 gradle-8.0.2.zip
+            echo "Gradle wrapper setup completed."
           else
-            echo "Gradle wrapper files found, proceeding with build."
+            echo "Gradle wrapper files found, skipping download."
           fi
 
-      # 4. Set up JDK 17
+      # 3. Set up JDK 17
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      # 5. Set up Android SDK
+      # 4. Set up Android SDK
       - name: Setup Android SDK
         uses: android-actions/setup-android@v2
         with:
@@ -44,30 +46,30 @@ jobs:
           build-tools-version: 34.0.0
           target: android-34
 
-      # 6. Check Gradle version to verify if wrapper is set correctly
+      # 5. Check Gradle version to verify if wrapper is set correctly
       - name: Check Gradle version
         run: ./gradlew --version
 
-      # 7. Set Android environment variables
+      # 6. Set Android environment variables
       - name: Set Android environment variables
         run: |
           echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
           echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
           echo "PATH=$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH" >> $GITHUB_ENV
 
-      # 8. Clean the app module
+      # 7. Clean the app module
       - name: Clean app module
         run: ./gradlew :app:clean
 
-      # 9. Build Debug APK for the app module
+      # 8. Build Debug APK for the app module
       - name: Build Debug APK
         run: ./gradlew :app:assembleDebug --stacktrace --info --debug --no-daemon
 
-      # 10. List all APKs to verify
+      # 9. List all APKs to verify
       - name: List APKs after build
         run: find . -type f -name "*.apk"
 
-      # 11. Upload all debug APKs as artifact
+      # 10. Upload all debug APKs as artifact
       - name: Upload all APKs
         uses: actions/upload-artifact@v4
         with:
