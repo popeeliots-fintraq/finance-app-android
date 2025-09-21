@@ -30,60 +30,34 @@ jobs:
           build-tools-version: 34.0.0
           target: android-34
 
-      # 4. Install Gradle 8.0.2 manually
-      - name: Install Gradle 8.0.2
-        run: |
-          curl -sSL https://services.gradle.org/distributions/gradle-8.0.2-bin.zip -o gradle-8.0.2.zip
-          unzip -q gradle-8.0.2.zip
-          mv gradle-8.0.2 /opt/gradle
-          echo "PATH=/opt/gradle/bin:$PATH" >> $GITHUB_ENV
-
-      # 5. Ensure wrapper files are present, otherwise download them
-      - name: Download Gradle Wrapper files if missing
-        run: |
-          if [ ! -f gradle/wrapper/gradle-wrapper.jar ] || [ ! -f gradle/wrapper/gradle-wrapper.properties ]; then
-            echo "Downloading missing Gradle wrapper files..."
-            mkdir -p gradle/wrapper
-
-            # Download gradle-wrapper.jar from the official Gradle GitHub
-            curl -L https://raw.githubusercontent.com/gradle/gradle/master/subprojects/wrapper/src/main/resources/gradle-wrapper.jar -o gradle/wrapper/gradle-wrapper.jar
-
-            # Download gradle-wrapper.properties from the official Gradle GitHub
-            curl -L https://raw.githubusercontent.com/gradle/gradle/master/subprojects/wrapper/src/main/resources/gradle-wrapper.properties -o gradle/wrapper/gradle-wrapper.properties
-
-            echo "Gradle wrapper files have been downloaded."
-          else
-            echo "Gradle wrapper files found, skipping download."
-          fi
-
-      # 6. Make gradlew executable
+      # 4. Make gradlew executable
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      # 7. Set Android environment variables
+      # 5. Set Android environment variables
       - name: Set Android environment variables
         run: |
           echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
           echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
           echo "PATH=$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH" >> $GITHUB_ENV
 
-      # 8. Check Gradle version (debugging)
+      # 6. Check Gradle version (debugging)
       - name: Check Gradle version
         run: ./gradlew --version
 
-      # 9. Clean the app module
+      # 7. Clean the app module
       - name: Clean app module
         run: ./gradlew :app:clean
 
-      # 10. Build Debug APK for the app module
+      # 8. Build Debug APK for the app module
       - name: Build Debug APK
         run: ./gradlew :app:assembleDebug --stacktrace --info --no-daemon
 
-      # 11. List all APKs to verify
+      # 9. List all APKs to verify
       - name: List APKs after build
         run: find . -type f -name "*.apk"
 
-      # 12. Upload APKs as artifact
+      # 10. Upload APKs as artifact
       - name: Upload APKs
         uses: actions/upload-artifact@v4
         with:
