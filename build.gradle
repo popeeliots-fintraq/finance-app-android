@@ -1,34 +1,7 @@
-plugins {
-    id 'com.android.application'
-    id 'org.jetbrains.kotlin.android' // if using Kotlin
-}
-
-android {
-    namespace 'com.example.myapp' // your package
-    compileSdk 33
-
-    defaultConfig {
-        applicationId "com.example.myapp"
-        minSdk 21
-        targetSdk 33
-        versionCode 1
-        versionName "1.0"
+// Root-level build.gradle (Project-Level)
+allprojects {
+    repositories {
+        google()        // To fetch Android dependencies
+        mavenCentral()  // For other dependencies like Kotlin
     }
-
-    buildTypes {
-        debug {
-            debuggable true
-        }
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
-}
-
-dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.0"
-    implementation 'androidx.core:core-ktx:1.10.1'
-    implementation 'androidx.appcompat:appcompat:1.7.0'
-    // other dependencies...
 }
