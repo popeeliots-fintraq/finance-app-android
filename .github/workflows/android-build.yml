@@ -27,7 +27,7 @@ jobs:
 
       # ✅ Generate Gradle wrapper for 8.0.2 with SHA256
       - name: Generate Gradle Wrapper
-        run: gradle wrapper --gradle-version 8.0.2 --gradle-distribution-sha256-sum ee15889a44dccf963c34a927c62880cb420f9f56cbb18c9af2e180248c1c0dd9
+        run: gradle wrapper --gradle-version 8.0.2 --gradle-distribution-sha256-sum ff7bf6a86f09b9b2c40bb8f48b25fc19cf2b2664fd1d220cd7ab833ec758d0d7
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
