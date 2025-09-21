@@ -30,34 +30,52 @@ jobs:
           build-tools-version: 34.0.0
           target: android-34
 
-      # 4. Make gradlew executable
+      # 4. Ensure Gradle wrapper files are present and download them if missing
+      - name: Download Gradle Wrapper files if missing
+        run: |
+          if [ ! -f gradle/wrapper/gradle-wrapper.jar ] || [ ! -f gradle/wrapper/gradle-wrapper.properties ]; then
+            echo "Downloading missing Gradle wrapper files..."
+            mkdir -p gradle/wrapper
+
+            # Download gradle-wrapper.jar from the official Gradle GitHub
+            curl -L https://raw.githubusercontent.com/gradle/gradle/master/subprojects/wrapper/src/main/resources/gradle-wrapper.jar -o gradle/wrapper/gradle-wrapper.jar
+
+            # Download gradle-wrapper.properties from the official Gradle GitHub
+            curl -L https://raw.githubusercontent.com/gradle/gradle/master/subprojects/wrapper/src/main/resources/gradle-wrapper.properties -o gradle/wrapper/gradle-wrapper.properties
+
+            echo "Gradle wrapper files have been downloaded."
+          else
+            echo "Gradle wrapper files found, skipping download."
+          fi
+
+      # 5. Make gradlew executable
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      # 5. Set Android environment variables
+      # 6. Set Android environment variables
       - name: Set Android environment variables
         run: |
           echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
           echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
           echo "PATH=$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH" >> $GITHUB_ENV
 
-      # 6. Check Gradle version (debugging)
+      # 7. Check Gradle version (debugging)
       - name: Check Gradle version
         run: ./gradlew --version
 
-      # 7. Clean the app module
+      # 8. Clean the app module
       - name: Clean app module
         run: ./gradlew :app:clean
 
-      # 8. Build Debug APK for the app module
+      # 9. Build Debug APK for the app module
       - name: Build Debug APK
         run: ./gradlew :app:assembleDebug --stacktrace --info --no-daemon
 
-      # 9. List all APKs to verify
+      # 10. List all APKs to verify if they are generated
       - name: List APKs after build
         run: find . -type f -name "*.apk"
 
-      # 10. Upload APKs as artifact
+      # 11. Upload APKs as artifact
       - name: Upload APKs
         uses: actions/upload-artifact@v4
         with:
