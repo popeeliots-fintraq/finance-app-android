@@ -5,7 +5,7 @@ buildscript {
     }
     dependencies {
         // Updated to AGP 8.0.0 or higher to support compileSdkVersion 34
-        classpath 'com.android.tools.build:gradle:8.0.0'
+        classpath 'com.android.tools.build:gradle:8.2.2'
 
         // Kotlin plugin (ensure it is compatible with the AGP version you're using)
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0"
