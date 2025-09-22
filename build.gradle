@@ -8,7 +8,7 @@ buildscript {
         classpath 'com.android.tools.build:gradle:8.0.0'
 
         // Kotlin plugin (ensure it is compatible with the AGP version you're using)
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.22"
     }
 }
 
