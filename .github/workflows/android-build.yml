@@ -45,6 +45,18 @@ jobs:
 
       - name: Check Gradle Version
         run: ./gradlew --version
+        
+      # ✅ Generate placeholder icons so Gradle doesn't fail
+      - name: Ensure ic_launcher.png exists
+        run: |
+          sudo apt-get update && sudo apt-get install -y imagemagick
+          for d in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
+            mkdir -p app/src/main/res/mipmap-$d
+            if [ ! -f app/src/main/res/mipmap-$d/ic_launcher.png ]; then
+              echo "Creating placeholder ic_launcher.png for $d"
+              convert -size 48x48 xc:blue app/src/main/res/mipmap-$d/ic_launcher.png
+            fi
+          done
 
       - name: Build Debug APK
         run: ./gradlew assembleDebug
