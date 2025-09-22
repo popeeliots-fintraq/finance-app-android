@@ -63,7 +63,7 @@ jobs:
           mkdir -p app/src/main/res/values
 
           if [ ! -f app/src/main/res/values/strings.xml ]; then
-        cat > app/src/main/res/values/strings.xml <<'EOF'
+cat > app/src/main/res/values/strings.xml <<'EOF'
 <resources>
     <string name="app_name">FinanceApp</string>
 </resources>
@@ -71,7 +71,7 @@ EOF
           fi
 
           if [ ! -f app/src/main/res/values/themes.xml ]; then
-        cat > app/src/main/res/values/themes.xml <<'EOF'
+cat > app/src/main/res/values/themes.xml <<'EOF'
 <resources xmlns:tools="http://schemas.android.com/tools">
     <style name="Theme.FinanceApp" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@android:color/holo_blue_light</item>
