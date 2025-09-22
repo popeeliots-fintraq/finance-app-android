@@ -32,18 +32,14 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
 
-    // Add this block for Kotlin JVM target version
-    kotlinOptions {
-        jvmTarget = "17"
     }
-}
 
 // Add this outside android block for Kotlin JVM toolchain support
 kotlin {
     jvmToolchain(17)
 }
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.8.22"  // Ensure you're using Kotlin version 1.9.0
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.8.22"  // Ensure you're using Kotlin version 1.8.22
     implementation 'androidx.core:core-ktx:1.10.1'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.9.0'
