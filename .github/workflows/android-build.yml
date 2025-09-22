@@ -57,7 +57,28 @@ jobs:
               convert -size 48x48 xc:blue app/src/main/res/mipmap-$d/ic_launcher.png
             fi
           done
-          
+        # ✅ Generate missing resource files so build doesn't fail
+      - name: Ensure basic resources exist
+        run: |
+          mkdir -p app/src/main/res/values
+          if [ ! -f app/src/main/res/values/strings.xml ]; then
+            cat > app/src/main/res/values/strings.xml <<'EOF'
+            <resources>
+                <string name="app_name">FinanceApp</string>
+            </resources>
+            EOF
+                fi
+                if [ ! -f app/src/main/res/values/themes.xml ]; then
+                  cat > app/src/main/res/values/themes.xml <<'EOF'
+            <resources xmlns:tools="http://schemas.android.com/tools">
+                <style name="Theme.FinanceApp" parent="Theme.Material3.DayNight.NoActionBar">
+                    <item name="colorPrimary">@android:color/holo_blue_light</item>
+                    <item name="colorPrimaryDark">@android:color/holo_blue_dark</item>
+                    <item name="colorAccent">@android:color/holo_orange_light</item>
+                </style>
+            </resources>
+            EOF
+                fi
       - name: Build Debug APK
         run: ./gradlew assembleDebug --stacktrace --info --no-daemon
         env:
