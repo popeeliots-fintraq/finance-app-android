@@ -1,17 +1,17 @@
 // app/build.gradle (Module-Level)
 plugins {
     id 'com.android.application'
-    id 'org.jetbrains.kotlin.android' // Kotlin plugin for Android
+    id 'org.jetbrains.kotlin.android'
 }
 
 android {
-    namespace 'com.example.financeapp'  // Replace with your app's package name
-    compileSdk 33  // Replace with the SDK version you're targeting
+    namespace 'com.example.financeapp'
+    compileSdk 34  // Updated to latest stable SDK
 
     defaultConfig {
-        applicationId "com.example.financeapp"  // Replace with your app's package name
-        minSdk 21  // Minimum SDK version
-        targetSdk 33 // Target SDK version
+        applicationId "com.example.financeapp"
+        minSdk 21
+        targetSdk 34
         versionCode 1
         versionName "1.0"
     }
@@ -25,23 +25,24 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    
- // Add this block for Java compile compatibility
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
 
+    kotlinOptions {
+        jvmTarget = "17"
     }
+}
 
-// Add this outside android block for Kotlin JVM toolchain support
 kotlin {
     jvmToolchain(17)
 }
+
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.22"  // Ensure you're using Kotlin version 1.9.22
     implementation 'androidx.core:core-ktx:1.10.1'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.9.0'
-    // Add other dependencies as required for your project
+    // Add other dependencies as required
 }
