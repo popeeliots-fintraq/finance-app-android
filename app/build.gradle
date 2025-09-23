@@ -1,12 +1,16 @@
 // app/build.gradle (Module-Level)
 plugins {
     id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.android' version '1.9.22' apply false
 }
 
 android {
     namespace 'com.example.financeapp'
     compileSdk 34  // Updated to latest stable SDK
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.22"
+}
 
     defaultConfig {
         applicationId "com.example.financeapp"
