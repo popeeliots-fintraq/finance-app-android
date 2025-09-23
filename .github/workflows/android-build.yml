@@ -33,10 +33,7 @@ jobs:
         with:
           gradle-version: 8.3
           
-        # Generate Gradle Wrapper
-      - name: Generate Gradle Wrapper
-        run: gradle wrapper --gradle-version 8.3 --gradle-distribution-sha256-sum ff7bf6a86f09b9b2c40bb8f48b25fc19cf2b2664fd1d220cd7ab833ec758d0d7
-
+        
       # Cache Gradle dependencies
       - name: Cache Gradle dependencies
         uses: actions/cache@v3
