@@ -93,11 +93,16 @@ jobs:
           EOF
             fi
 
-      # Build APK
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace --info --no-daemon
-        env:
-          GRADLE_OPTS: -Xmx2048m
+      - name: Build Debug APK with log capture
+        run: |
+          ./gradlew assembleDebug --stacktrace --debug --no-daemon > gradle-build.log 2>&1 || true
+
+      - name: Upload Gradle logs (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-build-logs
+          path: gradle-build.log
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
