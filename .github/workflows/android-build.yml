@@ -111,6 +111,8 @@ jobs:
           ./gradlew assembleDebug --stacktrace --debug --no-daemon > gradle-build.log 2>&1 || true
       - name: Show Gradle Build Log
         run: cat gradle-build.log
+      - name: List all files under build folder
+        run: ls -R app/build/
       - name: Find APK files
         run: find app/build/outputs/apk/ -type f -name "*.apk"
 
