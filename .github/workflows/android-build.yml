@@ -26,6 +26,9 @@ jobs:
         # 3. Set up Android SDK & NDK
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          sdk: 34
+          ndk: 25.2.9519653 # if needed
         
         # Install Gradle 8.3 on the runner
       - name: Set up Gradle 8.3
