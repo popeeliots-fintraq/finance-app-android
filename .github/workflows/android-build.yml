@@ -19,6 +19,9 @@ jobs:
           distribution: temurin
           java-version: 17
           cache: gradle
+          
+      - name: Clear Android Emulator SDK cache
+        run: rm -rf $ANDROID_SDK_ROOT/emulator
 
         # 3. Set up Android SDK & NDK
       - name: Set up Android SDK
