@@ -1,4 +1,3 @@
-// app/build.gradle (Module-Level)
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
@@ -7,10 +6,6 @@ plugins {
 android {
     namespace 'com.example.financeapp'
     compileSdk 34  // Updated to latest stable SDK
-
-dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.22"
-}
 
     defaultConfig {
         applicationId "com.example.financeapp"
@@ -40,11 +35,14 @@ dependencies {
     }
 }
 
+// If you want to specify the JVM toolchain for Kotlin, you can also add this block,
+// but it’s optional in Groovy DSL and might require Gradle 7+ and Kotlin 1.5+
 kotlin {
     jvmToolchain(17)
 }
 
 dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.22"
     implementation 'androidx.core:core-ktx:1.10.1'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.9.0'
