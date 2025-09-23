@@ -23,6 +23,16 @@ jobs:
         # 3. Set up Android SDK & NDK
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        
+        # Install Gradle 8.3 on the runner
+      - name: Set up Gradle 8.3
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.3
+          
+        # Generate Gradle Wrapper
+      - name: Generate Gradle Wrapper
+        run: gradle wrapper --gradle-version 8.3 --gradle-distribution-sha256-sum ff7bf6a86f09b9b2c40bb8f48b25fc19cf2b2664fd1d220cd7ab833ec758d0d7
 
       # Cache Gradle dependencies
       - name: Cache Gradle dependencies
