@@ -1,10 +1,3 @@
-buildscript {
-    ext.kotlin_version = "1.9.22" // example, match your kotlin plugin version here
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
-}
-
 plugins {
     id 'com.android.application' version '8.0.0' apply false
     id 'com.android.library' version '8.0.0' apply false
