@@ -107,8 +107,7 @@ jobs:
             fi
 
       - name: Build Debug APK with log capture
-        run: |
-          ./gradlew assembleDebug --stacktrace --debug --no-daemon > gradle-build.log 2>&1 || true
+        run: ./gradlew assembleDebug --stacktrace --debug --no-daemon
       - name: Show Gradle Build Log
         run: cat gradle-build.log
       - name: List all files under build folder
