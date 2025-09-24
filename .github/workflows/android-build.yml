@@ -122,6 +122,9 @@ jobs:
         with:
           name: gradle-build-logs
           path: gradle-build.log
+          
+      - name: Debug:List APK files
+        run: ls -R app/build/outputs/apk || echo "No APK files found"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
