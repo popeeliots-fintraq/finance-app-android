@@ -14,7 +14,7 @@ abstract class SmsDatabase : RoomDatabase() {
     companion object {
         @Volatile
         private var INSTANCE: SmsDatabase? = null
-        private val passphrase = SupportFactory("your_secret_passphrase".toByteArray()) 
+        private val passphrase = SupportFactory("xT8!aB@3$cP#5^".toByteArray()) 
 
         fun getDatabase(context: Context): SmsDatabase {
             return INSTANCE ?: synchronized(this) {
