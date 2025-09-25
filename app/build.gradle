@@ -24,8 +24,16 @@ android {
         versionName "1.0"
         
         // ... other properties
-
         buildConfigField "String", "DB_PASSPHRASE", "\"${localProperties.getProperty('db_passphrase')}\""
+
+        // ... other settings
+        buildFeatures {
+        buildConfig true
+    }
+
+    defaultConfig {
+        // ...
+    }
 
     }
 
