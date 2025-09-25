@@ -105,7 +105,10 @@ jobs:
           </resources>
           EOF
             fi
-
+      # This is the new step you need to add
+      - name: Clean Build
+        run: ./gradlew clean
+        
       - name: Build Debug APK with log capture
         run: |
           ./gradlew assembleDebug --stacktrace --debug --no-daemon --info 2>&1 | tee build-log.txt
