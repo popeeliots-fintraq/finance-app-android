@@ -22,6 +22,11 @@ android {
         targetSdk 34
         versionCode 1
         versionName "1.0"
+        
+        // ... other properties
+
+        buildConfigField "String", "DB_PASSPHRASE", "\"${localProperties.getProperty('db_passphrase')}\""
+
     }
 
     buildTypes {
