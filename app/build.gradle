@@ -29,7 +29,7 @@ android {
         versionName "1.0"
 
         // Your BuildConfig field is correctly placed here
-        buildConfigField "String", "DB_PASSPHRASE", "\"${localProperties.getProperty('db_passphrase')}\""
+        buildConfigField "String", "DB_PASSPHRASE", "c4f7a1b9e2d5f8a0-3b6c7e1d"
     }
 
     buildTypes {
