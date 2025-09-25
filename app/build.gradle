@@ -1,7 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'kotlin-kapt' 
+    id 'kotlin-kapt'
 }
 
 def localProperties = new Properties()
@@ -14,7 +14,12 @@ if (localPropertiesFile.exists()) {
 
 android {
     namespace 'com.example.financeapp'
-    compileSdk 34  // Updated to latest stable SDK
+    compileSdk 34
+    
+    // Corrected buildFeatures location
+    buildFeatures {
+        buildConfig true
+    }
 
     defaultConfig {
         applicationId "com.example.financeapp"
@@ -22,19 +27,9 @@ android {
         targetSdk 34
         versionCode 1
         versionName "1.0"
-        
-        // ... other properties
+
+        // Your BuildConfig field is correctly placed here
         buildConfigField "String", "DB_PASSPHRASE", "\"${localProperties.getProperty('db_passphrase')}\""
-
-        // ... other settings
-        buildFeatures {
-        buildConfig true
-    }
-
-    defaultConfig {
-        // ...
-    }
-
     }
 
     buildTypes {
@@ -51,20 +46,10 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-    
-    kotlin {
-    jvmToolchain(17)
-    }
 
     kotlinOptions {
         jvmTarget = "17"
     }
-}
-
-// If you want to specify the JVM toolchain for Kotlin, you can also add this block,
-// but it’s optional in Groovy DSL and might require Gradle 7+ and Kotlin 1.5+
-kotlin {
-    jvmToolchain(17)
 }
 
 dependencies {
@@ -86,5 +71,7 @@ dependencies {
     // SQLCipher for encrypted Room database
     implementation "net.zetetic:android-database-sqlcipher:4.5.4"
     
-    // Add other dependencies as required
+    // Missing Coroutines dependency for async database operations
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1"
 }
