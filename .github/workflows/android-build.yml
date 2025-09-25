@@ -12,6 +12,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: Generate Gradle Wrapper
+        run: gradle wrapper --gradle-version 8.3
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
