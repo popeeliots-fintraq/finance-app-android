@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Generate Gradle Wrapper
-        run: gradle wrapper --gradle-version 8.3
+        run: gradle wrapper --gradle-version 8.3 --gradle-distribution-sha256-sum 591855b517fc635b9e04de1d05d5e76ada3f89f5fc76f87978d1b245b4f69225
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
