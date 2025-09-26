@@ -28,7 +28,7 @@ android {
         versionCode 1
         versionName "1.0"
 
-        // Your BuildConfig field is correctly placed here
+        // Your BuildConfig field is correctly placed below
         buildConfigField "String", "DB_PASSPHRASE", "c4f7a1b9e2d5f8a0-3b6c7e1d"
     }
 
