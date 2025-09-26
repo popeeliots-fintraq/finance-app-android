@@ -45,7 +45,6 @@ jobs:
       - name: Accept Android SDK licenses
         run: yes | sdkmanager --licenses
         
-        
       # Cache Gradle dependencies
       - name: Cache Gradle dependencies
         uses: actions/cache@v3
@@ -59,7 +58,8 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-
+      - name: Create Room schema folder
+        run: mkdir -p app/schemas
       - name: Check Gradle Version
         run: ./gradlew --version
 
@@ -101,7 +101,7 @@ jobs:
       # This is the new step you need to add
       - name: Clean Build
         run: ./gradlew clean
-        
+
       - name: Build Debug APK with log capture
         run: |
           ./gradlew assembleDebug --stacktrace --debug --no-daemon --info 2>&1 | tee build-log.txt
