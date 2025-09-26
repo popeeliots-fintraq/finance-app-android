@@ -60,7 +60,6 @@ android {
 kapt {
     correctErrorTypes true
     useBuildCache = false
-    incremental = false
 }
 
 dependencies {
