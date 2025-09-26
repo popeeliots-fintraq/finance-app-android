@@ -27,6 +27,11 @@ android {
         targetSdk 34
         versionCode 1
         versionName "1.0"
+        sourceSets {
+        main {
+            java.srcDirs += 'src/main/kotlin'
+        }
+    }
 
         // Your BuildConfig field is correctly placed below
         buildConfigField "String", "DB_PASSPHRASE", "c4f7a1b9e2d5f8a0-3b6c7e1d"
@@ -54,6 +59,8 @@ android {
 
 kapt {
     correctErrorTypes true
+    useBuildCache = false
+    incremental = false
 }
 
 dependencies {
@@ -67,7 +74,7 @@ dependencies {
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     
     // Room components
-    def room_version = "2.5.2"
+    def room_version = "2.6.1"
     implementation "androidx.room:room-runtime:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
