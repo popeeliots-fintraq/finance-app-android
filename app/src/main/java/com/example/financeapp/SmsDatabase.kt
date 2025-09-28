@@ -14,10 +14,12 @@ abstract class SmsDatabase : RoomDatabase() {
     companion object {
         @Volatile
         private var INSTANCE: SmsDatabase? = null
-        private val passphrase = SupportFactory(BuildConfig.DB_PASSPHRASE.toByteArray())
 
         fun getDatabase(context: Context): SmsDatabase {
             return INSTANCE ?: synchronized(this) {
+                // Move passphrase creation inside the method
+                val passphrase = SupportFactory(BuildConfig.DB_PASSPHRASE.toByteArray())
+
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     SmsDatabase::class.java,
@@ -26,6 +28,7 @@ abstract class SmsDatabase : RoomDatabase() {
                     .fallbackToDestructiveMigration()
                     .openHelperFactory(passphrase)
                     .build()
+
                 INSTANCE = instance
                 instance
             }
