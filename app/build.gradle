@@ -74,12 +74,11 @@ dependencies {
     // Room components
     def room_version = "2.6.1"
     implementation "androidx.room:room-runtime:$room_version"
-    kapt "androidx.room:room-compiler:$room_version" // Commented Out until the android build is succesful.
+    kapt "androidx.room:room-compiler:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
     
     // SQLCipher for encrypted Room database
-    implementation "net.zetetic:android-database-sqlcipher:4.5.4" // Commented Out until the android build is succesful.
-    
+    implementation "net.zetetic:android-database-sqlcipher:4.5.4"
     // Missing Coroutines dependency for async database operations
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1"
