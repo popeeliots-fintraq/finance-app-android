@@ -4,15 +4,6 @@ plugins {
     id 'org.jetbrains.kotlin.android' version '1.9.23' apply false
 }
 
-// Add this block
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-        maven { url 'https://repo.commonsware.com' }
-    }
-}
-
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
