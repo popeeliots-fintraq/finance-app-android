@@ -54,19 +54,7 @@ jobs:
           yes | sdkmanager --licenses
 
       - name: Accept Android SDK licenses
-        run: yes | sdkmanager --licenses
-        
-      # Cache Gradle dependencies
-      - name: Cache Gradle dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-v2-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-v2-
-            ${{ runner.os }}-gradle
+        run: yes | sdkmanager --licenses   
      
       - name: Create Room schema folder
         run: mkdir -p app/schemas
