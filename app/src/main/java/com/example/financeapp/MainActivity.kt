@@ -17,7 +17,7 @@ data class Message(val message: String)
 interface ApiService {
     @GET("/") // Specifies the endpoint for the GET request
     fun getMessage(): Call<Message>
-
+}
 class MainActivity : AppCompatActivity() {
 
     private val TAG = "MainActivity"
