@@ -12,12 +12,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Generate Gradle Wrapper
-        run: gradle wrapper --gradle-version 8.6 --gradle-distribution-sha256-sum 9631d53cf3e74bfa726893aee1f8994fee4e060c401335946dba2156f440f24c
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-          
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -30,94 +27,16 @@ jobs:
         with:
           gradle-version: 8.6
 
-      - name: Set JAVA_HOME
-        run: echo "JAVA_HOME=$(dirname $(dirname $(readlink -f $(which javac))))" >> $GITHUB_ENV
-    
-      - name: Clear Android Emulator SDK cache
-        run: rm -rf $ANDROID_SDK_ROOT/emulator
-
-        # 3. Set up Android SDK & NDK
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          sdk: 34
-          ndk: 25.2.9519653 # if needed
-
-      - name: Set up Android SDK command-line tools
-        uses: android-actions/setup-android@v3
-        with:
-          cmdline-tools-version: 'latest'  # or specify a version like '12.0'
-
-      - name: Install required SDK packages
-        run: |
-          sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools" "ndk;25.2.9519653"
-          yes | sdkmanager --licenses
-
-      - name: Accept Android SDK licenses
-        run: yes | sdkmanager --licenses   
-     
-      - name: Create Room schema folder
-        run: mkdir -p app/schemas
-        
-      - name: Check Gradle Version
-        run: ./gradlew --version
-
-      # Generate placeholder ic_launcher icons
-      - name: Ensure ic_launcher.png exists
-        run: |
-          sudo apt-get update && sudo apt-get install -y imagemagick
-          for d in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
-            mkdir -p app/src/main/res/mipmap-$d
-            if [ ! -f app/src/main/res/mipmap-$d/ic_launcher.png ]; then
-              convert -size 48x48 xc:blue app/src/main/res/mipmap-$d/ic_launcher.png
-            fi
-          done
-
-      # Generate missing strings.xml and themes.xml
-      - name: Ensure basic resources exist
-        run: |
-          mkdir -p app/src/main/res/values
-
-          if [ ! -f app/src/main/res/values/strings.xml ]; then
-          cat > app/src/main/res/values/strings.xml <<'EOF'
-          <resources>
-          <string name="app_name">FinanceApp</string>
-          </resources>
-          EOF
-            fi
-
-          if [ ! -f app/src/main/res/values/themes.xml ]; then
-          cat > app/src/main/res/values/themes.xml <<'EOF'
-          <resources xmlns:tools="http://schemas.android.com/tools">
-          <style name="Theme.FinanceApp" parent="Theme.Material3.DayNight.NoActionBar">
-          <item name="colorPrimary">@android:color/holo_blue_light</item>
-          <item name="colorPrimaryDark">@android:color/holo_blue_dark</item>
-          <item name="colorAccent">@android:color/holo_orange_light</item>
-          </style>
-          </resources>
-          EOF
-            fi
-
-      - name: Increase Gradle heap
-        run: echo "GRADLE_OPTS=-Xmx2048m" >> $GITHUB_ENV
-        
-      # This is the new step you need to add
       - name: Clean Build
         run: ./gradlew clean --stacktrace --no-daemon
 
       - name: Build Debug APK with log capture
-        run: |
-          ./gradlew assembleDebug --stacktrace --debug --no-daemon --info > build-log.txt 2>&1
+        run: ./gradlew assembleDebug --stacktrace --debug --no-daemon --info > build-log.txt 2>&1
+
       - name: Find and Upload APK
-        if: success() # Only run this step if the previous one succeeded
+        if: success()
         run: |
           find app/build/outputs/apk/ -type f -name "*.apk"
-          # ... (your upload artifact step here)
-
-      - name: List all files under build folder
-        run: ls -R app/build/
-      - name: Find APK files
-        run: find app/build/outputs/apk/ -type f -name "*.apk"
 
       - name: Upload Gradle logs (on failure)
         if: failure()
@@ -126,9 +45,9 @@ jobs:
           name: gradle-build-logs
           path: build-log.txt
           
-      - name: Debug:List APK files
+      - name: Debug: List APK files
         run: ls -R app/build/outputs/apk || echo "No APK files found"
-
+        
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
