@@ -54,11 +54,11 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
-}
-kapt {
-    correctErrorTypes true
-    }
 
+kapt {
+    // correctErrorTypes true // Commented out until the build is successful
+    }
+}
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.23"
