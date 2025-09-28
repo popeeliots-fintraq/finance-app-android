@@ -16,10 +16,6 @@ android {
     namespace 'com.example.financeapp'
     compileSdk 34
 
-    buildFeatures {
-        buildConfig true
-    }
-
     defaultConfig {
         applicationId "com.example.financeapp"
         minSdk 21
@@ -40,6 +36,11 @@ android {
         }
     }
 
+    // This is the correct location for the buildFeatures block
+    buildFeatures {
+        buildConfig true
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
@@ -48,13 +49,16 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+    
+    kapt {
+        correctErrorTypes true
+    }
 }
 
 dependencies {
     // Correct way to manage Kotlin versions across the project.
-    // This imports the Bill of Materials (BOM) for Kotlin 1.9.23.
     implementation(platform('org.jetbrains.kotlin:kotlin-bom:1.9.23'))
-    implementation "org.jetbrains.kotlin:kotlin-stdlib" // No version needed here now
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
 
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
@@ -67,7 +71,7 @@ dependencies {
     // Room components
     def room_version = "2.6.1"
     implementation "androidx.room:room-runtime:$room_version"
-    implementation "androidx.room:room-ktx:$room_version" // Changed from kapt to implementation
+    implementation "androidx.room:room-ktx:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
     
     // SQLCipher for encrypted Room database
