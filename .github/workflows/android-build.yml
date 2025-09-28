@@ -13,18 +13,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-# Download Gradle 8.4 wrapper directly, skip old gradle command
-      - name: Download Gradle Wrapper 8.4
-        run: |
-          mkdir -p gradle/wrapper
-          curl -sL https://services.gradle.org/distributions/gradle-8.4-bin.zip -o gradle-8.4-bin.zip
-          unzip -q gradle-8.4-bin.zip -d gradle/wrapper/
-          echo "distributionBase=GRADLE_USER_HOME" > gradle/wrapper/gradle-wrapper.properties
-          echo "distributionPath=wrapper/dists" >> gradle/wrapper/gradle-wrapper.properties
-          echo "zipStoreBase=GRADLE_USER_HOME" >> gradle/wrapper/gradle-wrapper.properties
-          echo "zipStorePath=wrapper/dists" >> gradle/wrapper/gradle-wrapper.properties
-          echo "distributionUrl=https\\://services.gradle.org/distributions/gradle-8.4-bin.zip" >> gradle/wrapper/gradle-wrapper.properties
-
+          gradle wrapper --gradle-version 8.4
+          git add gradle/wrapper/gradle-wrapper.jar gradle/wrapper/gradle-wrapper.properties gradlew gradlew.bat
+          git commit -m "Upgrade Gradle wrapper to 8.4"
+          git push
+          
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
