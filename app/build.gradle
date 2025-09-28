@@ -56,7 +56,7 @@ android {
     }
 
 kapt {
-    // correctErrorTypes true // Commented out until the build is successful
+    correctErrorTypes true
     }
 }
 
