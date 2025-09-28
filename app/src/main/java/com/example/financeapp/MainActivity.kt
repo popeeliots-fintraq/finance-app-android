@@ -12,20 +12,28 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 
+data class Message(val message: String)
+
+interface ApiService {
+    @GET("/") // Specifies the endpoint for the GET request
+    fun getMessage(): Call<Message>
+
 class MainActivity : AppCompatActivity() {
 
+    private val TAG = "MainActivity"
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        
         val textView: TextView = findViewById(R.id.textView)
-        textView.text = "Welcome to Finance App!"
+        textView.text = "Eliots Pope's CoinSave App - Expense Tracking at your finger tips"
 
         fetchMessage(textView)
     }
 
     private fun fetchMessage(textView: TextView) {
-        Log.d("API_CALL", "Attempting to make API call...")
+        Log.d(TAG, "Attempting to make API call...")
 
         val gson = GsonBuilder().setLenient().create()
         val retrofit = Retrofit.Builder()
@@ -39,10 +47,10 @@ class MainActivity : AppCompatActivity() {
             override fun onResponse(call: Call<Message>, response: Response<Message>) {
                 if (response.isSuccessful) {
                     val message = response.body()?.message
-                    Log.d("API_CALL_SUCCESS", "API Response: $message")
+                    Log.d(TAG, "API Response: $message")
                     textView.text = message
                 } else {
-                    Log.e("API_CALL_ERROR", "Response not successful: ${response.code()}")
+                    Log.e(TAG, "Response not successful: ${response.code()}")
                 }
             }
 
