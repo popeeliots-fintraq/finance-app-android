@@ -14,7 +14,7 @@ abstract class SmsDatabase : RoomDatabase() {
     companion object {
         @Volatile
         private var INSTANCE: SmsDatabase? = null
-        // private val passphrase = SupportFactory(BuildConfig.DB_PASSPHRASE.toByteArray()) // Commented out for android build.
+        private val passphrase = SupportFactory(BuildConfig.DB_PASSPHRASE.toByteArray())
 
         fun getDatabase(context: Context): SmsDatabase {
             return INSTANCE ?: synchronized(this) {
