@@ -12,7 +12,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-
+      
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        
       - name: Upgrade Gradle Wrapper to 8.4
         run: |
           ./gradlew wrapper --gradle-version 8.4
@@ -60,10 +63,7 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-        
+     
       - name: Create Room schema folder
         run: mkdir -p app/schemas
         
