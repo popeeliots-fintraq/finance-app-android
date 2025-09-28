@@ -113,7 +113,7 @@ jobs:
 
       - name: Build Debug APK with log capture
         run: |
-          ./gradlew assembleDebug --stacktrace --debug --no-daemon --info 2>&1 | tee build-log.txt
+          ./gradlew assembleDebug --stacktrace --debug --no-daemon --info > build-log.txt 2>&1
       - name: Find and Upload APK
         if: success() # Only run this step if the previous one succeeded
         run: |
