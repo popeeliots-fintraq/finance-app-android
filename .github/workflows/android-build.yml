@@ -24,7 +24,10 @@ jobs:
           distribution: temurin
           java-version: 17
           cache: gradle
-          
+
+      - name: Set JAVA_HOME
+        run: echo "JAVA_HOME=$(dirname $(dirname $(readlink -f $(which javac))))" >> $GITHUB_ENV
+    
       - name: Clear Android Emulator SDK cache
         run: rm -rf $ANDROID_SDK_ROOT/emulator
 
@@ -100,9 +103,17 @@ jobs:
           </resources>
           EOF
             fi
+
+      - name: Increase Gradle heap
+        run: echo "GRADLE_OPTS=-Xmx2048m" >> $GITHUB_ENV
+        
       # This is the new step you need to add
       - name: Clean Build
-        run: ./gradlew clean
+        run: ./gradlew clean --stacktrace --no-daemon
+
+      - name: Build Debug APK with KAPT
+        run: ./gradlew clean assembleDebug kaptKotlin --stacktrace --no-daemon --info
+  
 
       - name: Build Debug APK with log capture
         run: |
