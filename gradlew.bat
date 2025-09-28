@@ -39,7 +39,7 @@ exit /b
 
 :runGradle
 :: Path to Gradle wrapper JAR
-set CLASSPATH=%APP_HOME%gradle\wrapper\gradle-wrapper-8.3.jar
+set CLASSPATH=%APP_HOME%gradle\wrapper\gradle-wrapper-8.4.jar
 
 :: Run Gradle
 "%JAVACMD%" %DEFAULT_JVM_OPTS% -cp "%CLASSPATH%" org.gradle.wrapper.GradleWrapperMain %*
