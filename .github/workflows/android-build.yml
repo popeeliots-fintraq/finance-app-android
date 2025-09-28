@@ -111,7 +111,7 @@ jobs:
       - name: Clean Build
         run: ./gradlew clean --stacktrace --no-daemon
 
-      - name: Build Debug APK with KAPT
+      - name: Build Debug APK
         run: ./gradlew clean assembleDebug kaptKotlin --stacktrace --no-daemon --info
   
 
