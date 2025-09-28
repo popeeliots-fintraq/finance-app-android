@@ -117,10 +117,6 @@ jobs:
       - name: Clean Build
         run: ./gradlew clean --stacktrace --no-daemon
 
-      - name: List directory contents
-        run: ls -la app/src/main/kotlin/com/example/financeapp/
-
-
       - name: Build Debug APK with log capture
         run: |
           ./gradlew assembleDebug --stacktrace --debug --no-daemon --info > build-log.txt 2>&1
