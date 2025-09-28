@@ -2,7 +2,7 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-kapt'
-  }
+}
 
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file("local.properties")
@@ -15,8 +15,7 @@ if (localPropertiesFile.exists()) {
 android {
     namespace 'com.example.financeapp'
     compileSdk 34
-    
-    // Corrected buildFeatures location
+
     buildFeatures {
         buildConfig true
     }
@@ -27,13 +26,7 @@ android {
         targetSdk 34
         versionCode 1
         versionName "1.0"
-        sourceSets {
-        main {
-            java.srcDirs += 'src/main/kotlin'
-        }
-    }
-
-        // Your BuildConfig field is correctly placed below
+        
         buildConfigField "String", "DB_PASSPHRASE", "\"c4f7a1b9e2d5f8a0-3b6c7e1d\""
     }
 
@@ -55,13 +48,14 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
-kapt {
-    correctErrorTypes true
-    }
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.23"
+    // Correct way to manage Kotlin versions across the project.
+    // This imports the Bill of Materials (BOM) for Kotlin 1.9.23.
+    implementation(platform('org.jetbrains.kotlin:kotlin-bom:1.9.23'))
+    implementation "org.jetbrains.kotlin:kotlin-stdlib" // No version needed here now
+
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.11.0'
@@ -73,14 +67,13 @@ dependencies {
     // Room components
     def room_version = "2.6.1"
     implementation "androidx.room:room-runtime:$room_version"
+    implementation "androidx.room:room-ktx:$room_version" // Changed from kapt to implementation
     kapt "androidx.room:room-compiler:$room_version"
-    implementation "androidx.room:room-ktx:$room_version"
     
     // SQLCipher for encrypted Room database
     implementation "net.zetetic:android-database-sqlcipher:4.5.4"
-    // Missing Coroutines dependency for async database operations
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1"
-
-    //Gemini is asking me to do this
+    
+    // Coroutines
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3"
 }
