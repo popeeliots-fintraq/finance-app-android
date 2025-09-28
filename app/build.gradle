@@ -4,14 +4,6 @@ plugins {
     id 'kotlin-kapt'
 }
 
-def localProperties = new Properties()
-def localPropertiesFile = rootProject.file("local.properties")
-if (localPropertiesFile.exists()) {
-    localPropertiesFile.withReader('UTF-8') { reader ->
-        localProperties.load(reader)
-    }
-}
-
 android {
     namespace 'com.example.financeapp'
     compileSdk 34
@@ -22,10 +14,14 @@ android {
         targetSdk 34
         versionCode 1
         versionName "1.0"
-        
+
         buildConfigField "String", "DB_PASSPHRASE", "\"c4f7a1b9e2d5f8a0-3b6c7e1d\""
     }
 
+    buildFeatures {
+        buildConfig true
+    }
+    
     buildTypes {
         debug {
             debuggable true
@@ -36,11 +32,6 @@ android {
         }
     }
 
-    // This is the correct location for the buildFeatures block
-    buildFeatures {
-        buildConfig true
-    }
-
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
@@ -49,7 +40,7 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
-    
+
     kapt {
         correctErrorTypes true
     }
@@ -78,8 +69,6 @@ dependencies {
     implementation "net.zetetic:android-database-sqlcipher:4.5.4"
     
     // Coroutines
-    def coroutines_version = "1.7.3"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
-    kapt "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3"
 }
