@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Generate Gradle Wrapper
-        run: gradle wrapper --gradle-version 8.4 --gradle-distribution-sha256-sum 3e1af3ae886920c3ac87f7a91f816c0c7c436f276a6eefdb3da152100fef72ae
+        run: gradle wrapper --gradle-version 8.6 --gradle-distribution-sha256-sum 340403a112f8ad314540efb6d6e72d2d5abf2d6a586cd04618e7d1a3f25e38e3
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
