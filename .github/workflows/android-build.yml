@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Generate Gradle Wrapper
-        run: gradle wrapper --gradle-version 8.6 --gradle-distribution-sha256-sum 340403a112f8ad314540efb6d6e72d2d5abf2d6a586cd04618e7d1a3f25e38e3
+        run: gradle wrapper --gradle-version 8.6 --gradle-distribution-sha256-sum 9631d53cf3e74bfa726893aee1f8994fee4e060c401335946dba2156f440f24c
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
@@ -28,7 +28,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-version: 8.4
+          gradle-version: 8.6
 
       - name: Set JAVA_HOME
         run: echo "JAVA_HOME=$(dirname $(dirname $(readlink -f $(which javac))))" >> $GITHUB_ENV
