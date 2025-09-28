@@ -75,7 +75,7 @@ if [ "$cygwin" = "false" -a "$darwin" = "false" ] ; then
 fi
 
 # Path to Gradle wrapper JAR
-CLASSPATH="$APP_HOME/gradle/wrapper/gradle-wrapper.jar"
+CLASSPATH="$APP_HOME/gradle/wrapper/gradle-wrapper-8.4.jar"
 
 # Run Gradle
 exec "$JAVACMD" $DEFAULT_JVM_OPTS -cp "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"
