@@ -12,12 +12,6 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 
-data class Message(val message: String)
-
-interface ApiService {
-    @GET("/") // Specifies the endpoint for the GET request
-    fun getMessage(): Call<Message>
-}
 class MainActivity : AppCompatActivity() {
 
     private val TAG = "MainActivity"
