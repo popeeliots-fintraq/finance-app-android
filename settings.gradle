@@ -16,7 +16,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url 'https://repo.commonsware.com' }
+        maven {  url "https://www.zetetic.net/maven" }
     }
 }
 
