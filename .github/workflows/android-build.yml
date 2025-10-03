@@ -92,6 +92,11 @@ jobs:
         
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
+      - name: Setup Firebase Service Account
+        run: |
+          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > ${{ github.workspace }}/service-account.json
+          export GOOGLE_APPLICATION_CREDENTIALS="${{ github.workspace }}/service-account.json"
+
         
       # Optional: Add a test step here if you create unit tests in the 'functions' folder
       # - name: Run Backend Unit Tests
