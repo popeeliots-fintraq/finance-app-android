@@ -7,8 +7,9 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  build-android: # New, Corrected key job
     runs-on: ubuntu-latest
+    name: Build Android APK
 
     steps:
       - uses: actions/checkout@v3
@@ -59,3 +60,45 @@ jobs:
         with:
           name: app-debug
           path: app/build/outputs/**/*.apk
+
+ # ----------------------------------------------------
+  # JOB 2: DEPLOY FIREBASE FUNCTIONS (Continuous Deployment)
+  # ----------------------------------------------------
+  
+  deploy-backend:
+    name: Deploy Categorization Backend
+    # Only run this job if the Android build succeeds
+    needs: build-android 
+    runs-on: ubuntu-latest
+    
+    # Crucial: Only deploy the live backend when merging/pushing directly to 'main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' 
+    
+    # Set the working directory to the 'functions' folder
+    defaults:
+      run:
+        working-directory: ./functions
+        
+    steps:
+      - uses: actions/checkout@v3 
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18' # Recommended Node.js version for Firebase Functions
+          
+      - name: Install Function Dependencies
+        run: npm install
+        
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+        
+      # Optional: Add a test step here if you create unit tests in the 'functions' folder
+      # - name: Run Backend Unit Tests
+      #   run: npm test
+
+      - name: Deploy Categorization Function to Firebase
+        # This command uses the secrets for authentication and specifies the project ID
+        run: firebase deploy --only functions -P ${{ secrets.FIREBASE_PROJECT_ID }}
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }} 
