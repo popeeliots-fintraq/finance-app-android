@@ -76,7 +76,10 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' 
            
     steps:
-      - uses: actions/checkout@v3 
+      - uses: actions/checkout@v3
+      
+      - name: Debug: List Repository Root Contents
+        run: ls -al 
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -85,26 +88,26 @@ jobs:
           
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
-      - name: Setup Firebase Service Account
-        run: |
-          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > ${{ github.workspace }}/service-account.json
-          echo "GOOGLE_APPLICATION_CREDENTIALS=${{ github.workspace }}/service-account.json" >> $GITHUB_ENV
+      # - name: Setup Firebase Service Account
+        # run: |
+          # echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > ${{ github.workspace }}/service-account.json
+          # echo "GOOGLE_APPLICATION_CREDENTIALS=${{ github.workspace }}/service-account.json" >> $GITHUB_ENV
 
-      - name: Install Function Dependencies
-        run: |
-          cd finance-app-android/functions
-          npm install
-      - name: Deploy Functions
-        run: |
-          cd finance-app-android/functions
-          firebase deploy --only functions -P ${{ secrets.FIREBASE_PROJECT_ID }}
+      # - name: Install Function Dependencies
+        # run: |
+          # cd functions
+          # npm install
+      # - name: Deploy Functions
+        # run: |
+          # cd functions
+          # firebase deploy --only functions -P ${{ secrets.FIREBASE_PROJECT_ID }}
           
       # Optional: Add a test step here if you create unit tests in the 'functions' folder
       # - name: Run Backend Unit Tests
       #   run: npm test
 
-      - name: Deploy Categorization Function to Firebase
+      # - name: Deploy Categorization Function to Firebase
         # This command uses the secrets for authentication and specifies the project ID
-        run: firebase deploy --only functions -P ${{ secrets.FIREBASE_PROJECT_ID }}
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }} 
+        # run: firebase deploy --only functions -P ${{ secrets.FIREBASE_PROJECT_ID }}
+        # env:
+          # FIREBASE_TOKEN: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }} 
