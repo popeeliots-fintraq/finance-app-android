@@ -74,12 +74,7 @@ jobs:
     
     # Crucial: Only deploy the live backend when merging/pushing directly to 'main'
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' 
-    
-    # Set the working directory to the 'functions' folder
-    defaults:
-      run:
-        working-directory: ./functions
-        
+           
     steps:
       - uses: actions/checkout@v3 
 
