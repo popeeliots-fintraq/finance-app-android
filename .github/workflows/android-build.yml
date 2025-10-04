@@ -97,11 +97,11 @@ jobs:
 
       - name: Install Function Dependencies
         run: |
-          cd functions
+          cd finance-app-android/functions
           npm install
       - name: Deploy Functions
         run: |
-          cd functions
+          cd finance-app-android/functions
           firebase deploy --only functions -P ${{ secrets.FIREBASE_PROJECT_ID }}
           
       # Optional: Add a test step here if you create unit tests in the 'functions' folder
