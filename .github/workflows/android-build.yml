@@ -91,8 +91,8 @@ jobs:
         
       - name: Write Firebase Service Account
         run: |
-          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > $GOOGLE_APPLICATION_CREDENTIALS
-          chmod 600 $GOOGLE_APPLICATION_CREDENTIALS
+          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > ${{ github.workspace }}/service-account.json
+          chmod 600 ${{ github.workspace }}/service-account.json
           
       - name: Create Service Account JSON
         run: |
@@ -121,7 +121,9 @@ jobs:
       - name: Deploy Functions
         run: |
           cd functions
-          firebase deploy --only functions -P ${{ secrets.FIREBASE_PROJECT_ID }}
+          firebase deploy --only functions -P $FIREBASE_PROJECT_ID
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/service-account.json
 
       - name: Run Backend Unit Tests
         run: |
