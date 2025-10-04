@@ -101,8 +101,8 @@ jobs:
 
       - name: Verify JSON file
         run: |
-          ls -l functions/service-account.json
-          head -n 5 functions/service-account.json
+          head -n 5 ${{ github.workspace }}/service-account.json
+          jq .type ${{ github.workspace }}/service-account.json
 
       - name: Install Function Dependencies
         run: |
