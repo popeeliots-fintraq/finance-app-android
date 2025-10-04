@@ -86,12 +86,6 @@ jobs:
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
-      - name: Debug Firebase Authentication
-        run: |
-          echo "Using JSON path: $GOOGLE_APPLICATION_CREDENTIALS"
-          cat $GOOGLE_APPLICATION_CREDENTIALS
-          firebase projects:list
-
       - name: Setup Firebase Service Account
         run: |
           echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > ${{ github.workspace }}/service-account.json
@@ -101,6 +95,12 @@ jobs:
         run: |
           ls -l ${{ github.workspace }}/service-account.json
           cat ${{ github.workspace }}/service-account.json | head -n 5
+
+      - name: Debug Firebase Authentication
+        run: |
+          echo "Using JSON path: $GOOGLE_APPLICATION_CREDENTIALS"
+          cat $GOOGLE_APPLICATION_CREDENTIALS
+          firebase projects:list
 
       - name: Install Function Dependencies
         run: |
