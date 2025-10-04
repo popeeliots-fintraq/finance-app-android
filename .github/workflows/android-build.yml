@@ -88,7 +88,12 @@ jobs:
           
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
-
+        
+      - name: Write Firebase Service Account
+        run: |
+          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > $GOOGLE_APPLICATION_CREDENTIALS
+          chmod 600 $GOOGLE_APPLICATION_CREDENTIALS
+          
       - name: Create Service Account JSON
         run: |
           mkdir -p functions
