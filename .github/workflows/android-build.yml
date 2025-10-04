@@ -74,7 +74,10 @@ jobs:
     
     # Crucial: Only deploy the live backend when merging/pushing directly to 'main'
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' 
-           
+    env:
+      FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+      FIREBASE_PROJECT_ID: ${{ secrets.Firebase_Project_ID }}
+      
     steps:
       - uses: actions/checkout@v3
 
@@ -95,12 +98,6 @@ jobs:
         run: |
           ls -l ${{ github.workspace }}/service-account.json
           cat ${{ github.workspace }}/service-account.json | head -n 5
-
-      - name: Debug Firebase Authentication
-        run: |
-          echo "Using JSON path: $GOOGLE_APPLICATION_CREDENTIALS"
-          cat $GOOGLE_APPLICATION_CREDENTIALS
-          firebase projects:list
 
       - name: Install Function Dependencies
         run: |
