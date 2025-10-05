@@ -17,8 +17,8 @@ abstract class SmsDatabase : RoomDatabase() {
 
         fun getDatabase(context: Context): SmsDatabase {
             return INSTANCE ?: synchronized(this) {
-                // Move passphrase creation inside the method
-                val passphrase = SupportFactory(BuildConfig.DB_PASSPHRASE.toByteArray())
+                val passphrase: ByteArray = SQLiteDatabase.getBytes(BuildConfig.DB_PASSPHRASE.toCharArray())
+                val factory = SupportFactory(passphrase)
 
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
