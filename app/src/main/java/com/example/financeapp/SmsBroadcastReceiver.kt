@@ -27,9 +27,35 @@ class SmsBroadcastReceiver : BroadcastReceiver() {
                     CoroutineScope(Dispatchers.IO).launch {
                         db.smsDao().insert(smsData)
                         Log.d("DB_SAVE", "Saved SMS to encrypted database.")
+
+                        // 2️⃣ Send SMS to backend for categorization
+                        try {
+                            // TODO: Replace with your logged-in user ID
+                            val userId = "USER_ID_HERE"
+
+                            // Parse today's date
+                            val today = java.time.LocalDate.now().toString()
+
+                            // Call the backend API
+                            handleIncomingSms(
+                                smsText = messageBody,
+                                amount = parseAmountFromSms(messageBody),
+                                userId = userId
+                            )
+
+                            Log.d("API_CALL", "Sent SMS to backend successfully.")
+                        } catch (e: Exception) {
+                            Log.e("API_CALL", "Failed to send SMS to backend: ${e.localizedMessage}")
                     }
                 }
             }
         }
+    }
+}
+// Simple amount parser for common SMS patterns
+    private fun parseAmountFromSms(message: String): Double {
+        val regex = """(?i)(?:rs|inr)\s*([\d,]+\.?\d*)""".toRegex()
+        val match = regex.find(message)
+        return match?.groups?.get(1)?.value?.replace(",", "")?.toDoubleOrNull() ?: 0.0
     }
 }
