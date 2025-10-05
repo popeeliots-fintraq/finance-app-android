@@ -94,11 +94,6 @@ jobs:
           echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}" | base64 -d > ${{ github.workspace }}/service-account.json
           echo "GOOGLE_APPLICATION_CREDENTIALS=${{ github.workspace }}/service-account.json" >> $GITHUB_ENV
           
-      - name: Create Service Account JSON
-        run: |
-          mkdir -p functions
-          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > functions/service-account.json
-
       - name: Verify JSON file
         run: |
           head -n 5 ${{ github.workspace }}/service-account.json
