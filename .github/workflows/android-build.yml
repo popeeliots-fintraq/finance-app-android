@@ -119,7 +119,7 @@ jobs:
       - name: Deploy Functions
         run: |
           cd functions
-          firebase deploy --only functions -P $FIREBASE_PROJECT_ID
+          npx firebase deploy --only functions -P $FIREBASE_PROJECT_ID
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/functions/service-account.json
 
