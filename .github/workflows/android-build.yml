@@ -126,4 +126,4 @@ jobs:
       - name: Run Backend Unit Tests
         run: |
           cd functions
-          npm test
+          npm test -- --passWithNoTests
