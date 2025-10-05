@@ -1,5 +1,5 @@
 const admin = require('firebase-admin');
-
+const merchantMap = require('./merchant-map.json');
 /**
  * Applies smart rules to a transaction and saves the result to Firestore.
  * @param {object} transactionData - The structured data sent from your Kotlin app.
@@ -12,7 +12,9 @@ async function smartCategorizeAndSave(transactionData, userId) {
 
     const rawDescription = transactionData.description.toUpperCase();
     let category = "Uncategorized";
-
+    const rawDescription = transactionData.description || "";
+    const lowerText = rawDescription.toLowerCase();
+    
     // 1. Rule Set: User-Defined Overrides (Future: check Firestore for user-specific rules)
     const userRulesRef = db.collection('users').doc(userId).collection('customRules');
     // For now, skipping the custom rules query for simplicity
