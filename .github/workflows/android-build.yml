@@ -105,11 +105,7 @@ jobs:
       - name: Install Function Dependencies
         run: |
           cd functions
-          npm ci
           npm install dotenv firebase-functions@latest firebase-admin@latest
-          git add package-lock.json package.json
-          git commit -m "Add package-lock.json and install dotenv"
-          git push
 
       - name: Initialize Firebase Admin (CI)
         run: |
