@@ -10,7 +10,6 @@ async function smartCategorizeAndSave(transactionData, userId) {
     // Get Firestore instance (after initializeApp has run)
     const db = admin.firestore();
 
-    const rawDescription = transactionData.description.toUpperCase();
     let category = "Uncategorized";
     const rawDescription = transactionData.description || "";
     const lowerText = rawDescription.toLowerCase();
