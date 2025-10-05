@@ -13,6 +13,13 @@ async function smartCategorizeAndSave(transactionData, userId) {
     let category = "Uncategorized";
     const rawDescription = transactionData.description || "";
     const lowerText = rawDescription.toLowerCase();
+
+    for (const merchant in merchantMap) {
+        if (lowerText.includes(merchant)) {
+            category = merchantMap[merchant];
+            break;
+        }
+    }
     
     // 1. Rule Set: User-Defined Overrides (Future: check Firestore for user-specific rules)
     const userRulesRef = db.collection('users').doc(userId).collection('customRules');
