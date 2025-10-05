@@ -18,11 +18,11 @@ async function smartCategorizeAndSave(transactionData, userId) {
     // For now, skipping the custom rules query for simplicity
 
     // 2. Rule Set: Global Keyword/Heuristic Rules
-    if (rawDescription.includes("UBER") || rawDescription.includes("LYFT")) {
+    if (rawDescription.includes("UBER") || rawDescription.includes("OLA") || rawDescription.includes("Rapido")) {
         category = "Transportation";
     } else if (rawDescription.includes("ZOMATO") || rawDescription.includes("SWIGGY") || rawDescription.includes("STARBUCKS")) {
         category = "Food & Dining";
-    } else if (rawDescription.includes("AMAZON") || rawDescription.includes("FLIPKART")) {
+    } else if (rawDescription.includes("AMAZON") || rawDescription.includes("FLIPKART") || rawDescription.includes("Meesho")) {
         category = "Shopping - Online";
     }
     // Add more keyword rules as needed...
