@@ -87,7 +87,10 @@ jobs:
           node-version: '20' # Recommended Node.js version for Firebase Functions 
           
       - name: Install Firebase CLI
-        run: npm install -g firebase-tools
+        run: |
+          npm install firebase-tools@13.6.1
+          npx firebase --version # ✅ Use npx to avoid global pollution
+
         
       - name: Write Firebase Service Account
         run: |
@@ -102,7 +105,8 @@ jobs:
       - name: Install Function Dependencies
         run: |
           cd functions
-          npm install
+          npm ci
+          npm install firebase-functions@latest firebase-admin@latest
 
       - name: Initialize Firebase Admin (CI)
         run: |
