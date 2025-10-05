@@ -96,8 +96,8 @@ jobs:
           
       - name: Verify JSON file
         run: |
-          head -n 5 ${{ github.workspace }}/service-account.json
-          jq .type ${{ github.workspace }}/service-account.json
+          head -n 5 ${{ github.workspace }}/functions/service-account.json
+          jq .type ${{ github.workspace }}/functions/service-account.json
 
       - name: Install Function Dependencies
         run: |
@@ -118,7 +118,7 @@ jobs:
           cd functions
           firebase deploy --only functions -P $FIREBASE_PROJECT_ID
         env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/service-account.json
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/functions/service-account.json
 
       - name: Run Backend Unit Tests
         run: |
