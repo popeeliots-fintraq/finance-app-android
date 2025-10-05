@@ -73,4 +73,11 @@ class SmsBroadcastReceiver : BroadcastReceiver() {
 
         return 0.0 // fallback if no pattern matches
     }
+    
+    // stubbed function to satisfy compiler
+    private fun handleIncomingSms(smsText: String, amount: Double, userId: String) {
+        // TODO: implement actual API call with Retrofit/OkHttp
+        Log.d("HANDLE_SMS", "Handling SMS for $userId, amount: $amount, text: $smsText")
+    }
 }
+
