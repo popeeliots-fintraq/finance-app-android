@@ -1,6 +1,5 @@
 // Load environment variables (safe fallback for CI environments)
 try {
-  require('dotenv').config();
 } catch (err) {
   console.warn('⚠️ dotenv not loaded (probably running in CI/CD)');
 }
