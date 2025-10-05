@@ -4,15 +4,6 @@ plugins {
     id 'org.jetbrains.kotlin.android' version '1.9.23' apply false
 }
 
-allprojects {
-    repositories {
-        google()          // Must come first for Android/Google artifacts
-        mavenCentral()    // Needed for most third-party libraries (Retrofit, Dagger, etc.)
-        maven { url "https://jitpack.io" } // Optional, only if you use JitPack-based libs
-    }
-}
-
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
-
