@@ -95,7 +95,7 @@ jobs:
       - name: Write Firebase Service Account
         run: |
           echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}" | base64 -d > ${{ github.workspace }}/functions/service-account.json
-          echo "GOOGLE_APPLICATION_CREDENTIALS=${{ github.workspace }}/service-account.json" >> $GITHUB_ENV
+          echo "GOOGLE_APPLICATION_CREDENTIALS=${{ github.workspace }}/functions/service-account.json" >> $GITHUB_ENV
           
       - name: Verify JSON file
         run: |
@@ -106,7 +106,10 @@ jobs:
         run: |
           cd functions
           npm ci
-          npm install firebase-functions@latest firebase-admin@latest
+          npm install dotenv firebase-functions@latest firebase-admin@latest
+          git add package-lock.json package.json
+          git commit -m "Add package-lock.json and install dotenv"
+          git push
 
       - name: Initialize Firebase Admin (CI)
         run: |
