@@ -52,10 +52,25 @@ class SmsBroadcastReceiver : BroadcastReceiver() {
         }
     }
 }
-// Simple amount parser for common SMS patterns
+// Improved amount parser for Indian bank/UPI/wallet SMS formats
     private fun parseAmountFromSms(message: String): Double {
-        val regex = """(?i)(?:rs|inr)\s*([\d,]+\.?\d*)""".toRegex()
-        val match = regex.find(message)
-        return match?.groups?.get(1)?.value?.replace(",", "")?.toDoubleOrNull() ?: 0.0
+        val patterns = listOf(
+            """(?i)(?:rs|inr)[\s.:]*([\d,]+\.?\d*)""".toRegex(),
+            """(?i)(?:debited|credited|spent|received)[\s:]*([\d,]+\.?\d*)""".toRegex(),
+            """(?i)upi\s*(?:payment|txn|transfer)[\s:]*([\d,]+\.?\d*)""".toRegex(),
+            """(?i)a/c\s*x\d+[:\s]+(?:rs|inr)[\s]*([\d,]+\.?\d*)""".toRegex()
+        )
+
+        for (pattern in patterns) {
+            val match = pattern.find(message)
+            if (match != null) {
+                val amountStr = match.groups[1]?.value?.replace(",", "")
+                if (amountStr != null) {
+                    return amountStr.toDoubleOrNull() ?: 0.0
+                }
+            }
+        }
+
+        return 0.0 // fallback if no pattern matches
     }
 }
