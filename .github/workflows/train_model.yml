@@ -1,0 +1,51 @@
+# .github/workflows/train_model.yml
+name: Generate and Commit ML Model
+
+on:
+  # Run this workflow manually via the Actions tab
+  workflow_dispatch:
+  # Or run whenever train_model.py or transactions.csv is updated
+  push:
+    paths:
+      - 'categorizer/train_model.py'
+      - 'categorizer/transactions.csv'
+      
+jobs:
+  train_and_commit:
+    runs-on: ubuntu-latest
+    
+    # Grant necessary permissions to the GITHUB_TOKEN for committing files
+    permissions:
+      contents: write 
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x' 
+
+      - name: Install dependencies (pandas, scikit-learn)
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas scikit-learn
+
+      - name: 🧠 Run Model Training Script
+        run: |
+          # This command executes your script and creates model.pkl
+          python categorizer/train_model.py
+          
+      - name: Check for generated model.pkl
+        run: |
+          ls -lh categorizer/
+          
+      - name: 💾 Commit and Push model.pkl to Repo
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          # Only commit the new/updated model.pkl file
+          file_pattern: 'categorizer/model.pkl'
+          commit_message: 'CI: Generated and committed model.pkl after training script run'
+          # Use the default GITHUB_TOKEN for authentication
+          token: ${{ secrets.GITHUB_TOKEN }}
