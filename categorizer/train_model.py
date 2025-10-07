@@ -8,9 +8,10 @@ import os # NEW: Import os for path manipulation
 # This ensures Python knows the files are next to the script, not in the repo root.
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 CSV_PATH = os.path.join(SCRIPT_DIR, 'transactions.csv')
+MODEL_PATH = os.path.join(SCRIPT_DIR, 'model.pkl')
 
 # --- 1. Load Data ---
-df = pd.read_csv('transactions.csv')
+df = pd.read_csv(CSV_PATH)
 
 # --- 2. Preprocessing and Feature Engineering (Phase 1 Complete) ---
 # Clean the text (simple cleaning for now)
@@ -30,7 +31,7 @@ model.fit(X_vectorized, y)
 
 # --- 4. Serialization (Creating model.pkl) ---
 # Save both the vectorizer and the trained model as a single object
-with open('model.pkl', 'wb') as file:
+with open(MODEL_PATH, 'wb') as file:
     pickle.dump({
         'model': model,
         'vectorizer': vectorizer
