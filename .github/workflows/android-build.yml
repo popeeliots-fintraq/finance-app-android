@@ -147,7 +147,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          path: finance-app-backend
 
+      - uses: actions/checkout@v3
+        with:
+          repository: your-org/finance-app-android   # <-- replace your-org with your GitHub org or username
+          path: finance-app-android
+          
       # 1. Authenticate with Google Cloud
       - name: Authenticate with Google Cloud
         uses: google-github-actions/auth@v2
