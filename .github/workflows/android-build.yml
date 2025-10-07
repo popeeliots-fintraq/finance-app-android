@@ -182,10 +182,9 @@ jobs:
         with:
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.SERVICE_REGION }}
-          image: ${{ env.IMAGE_TAG }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/gcf-artifacts/${{ env.SERVICE_NAME }}:${{ github.sha }}
-          no_allow_unauthenticated: true # Secure your API
-          memory: 512Mi 
-
+          image: ${{ env.IMAGE_TAG }}
+          
+          
       # 5. Export the Service URL for subsequent jobs
       - name: Get Cloud Run URL
         id: get_url
