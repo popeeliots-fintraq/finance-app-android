@@ -8,7 +8,7 @@ from flask import Flask, request, jsonify
 # that contains your trained Scikit-learn model and necessary TfidfVectorizer.
 # You will need to generate and commit this file later.
 try:
-    with open('model.pkl', 'rb') as f:
+    with open(MODEL_PATH, 'rb') as f:
         # Load both the model and the vectorizer (needed for text transformation)
         MODEL_AND_VECTORIZER = pickle.load(f)
     MODEL = MODEL_AND_VECTORIZER['model']
@@ -16,7 +16,7 @@ try:
     print("Model and Vectorizer loaded successfully.")
 except Exception as e:
     # This will raise an error if model.pkl is missing, which is expected for now.
-    print(f"WARNING: Failed to load model.pkl: {e}. API will return default category.")
+    print(f"WARNING: Failed to load model.pkl from {MODEL_PATH}: {e}. API will return default category.")
 
 app = Flask(__name__)
 
