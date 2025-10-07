@@ -2,6 +2,12 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 import pickle
+import os # NEW: Import os for path manipulation
+
+# NEW: Determine the directory where this script is located
+# This ensures Python knows the files are next to the script, not in the repo root.
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+CSV_PATH = os.path.join(SCRIPT_DIR, 'transactions.csv')
 
 # --- 1. Load Data ---
 df = pd.read_csv('transactions.csv')
