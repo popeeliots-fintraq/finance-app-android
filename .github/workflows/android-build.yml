@@ -141,7 +141,7 @@ jobs:
 
     # --- DEFINE ENVIRONMENT VARIABLES ---
     env:
-      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }} # <<< Ensure this secret exists
+      GCP_PROJECT_ID: ${{ secrets.Firebase_Project_ID }} # <<< Ensure this secret exists
       SERVICE_NAME: transaction-categorizer
       SERVICE_REGION: us-central1        # Must match your Firebase Functions region
 
