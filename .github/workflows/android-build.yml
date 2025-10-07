@@ -155,6 +155,13 @@ jobs:
           repository: popeeliots-fintraq/finance-app-android
           token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           path: finance-app-android
+
+    # Now build docker image, pointing to the correct path
+      - name: Build and push docker image
+        run: |
+          IMAGE_TAG=us-central1-docker.pkg.dev/${{ secrets.Firebase_Project_ID }}/cloud-run-repo/transaction-categorizer:${{ github.sha }}
+          docker build -t $IMAGE_TAG ./finance-app-android/categorizer
+          docker push $IMAGE_TAG
           
       # 1. Authenticate with Google Cloud
       - name: Authenticate with Google Cloud
