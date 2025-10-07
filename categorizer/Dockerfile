@@ -5,16 +5,16 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Copy the requirements file and install dependencies
-COPY categorizer/requirements.txt requirements.txt
+COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the application code and the pre-trained model file
 # **IMPORTANT:** You must ensure 'model.pkl' exists in your repo!
-COPY categorizer/categorizer_api.py .
-COPY categorizer/model.pkl .
+COPY categorizer_api.py .
+COPY model.pkl .
 
 # Expose the port (Cloud Run automatically injects $PORT)
-ENV PORT 8080
+ENV PORT=8080
 
 # Run the app using gunicorn to ensure high performance
 # The entry point is the Gunicorn process, which hosts the Flask app
