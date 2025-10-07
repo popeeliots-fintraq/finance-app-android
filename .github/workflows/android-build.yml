@@ -144,25 +144,16 @@ jobs:
       GCP_PROJECT_ID: ${{ secrets.Firebase_Project_ID }} # <<< Ensure this secret exists
       SERVICE_NAME: transaction-categorizer
       SERVICE_REGION: us-central1        # Must match your Firebase Functions region
+      IMAGE_TAG: us-central1-docker.pkg.dev/${{ secrets.Firebase_Project_ID }}/cloud-run-repo/transaction-categorizer:${{ github.sha }}
 
     steps:
-      - uses: actions/checkout@v3
-        with:
-          path: finance-app-backend
-
       - uses: actions/checkout@v3
         with:
           repository: popeeliots-fintraq/finance-app-android
           token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           path: finance-app-android
 
-    # Now build docker image, pointing to the correct path
-      - name: Build and push docker image
-        run: |
-          IMAGE_TAG=us-central1-docker.pkg.dev/${{ secrets.Firebase_Project_ID }}/cloud-run-repo/transaction-categorizer:${{ github.sha }}
-          docker build -t $IMAGE_TAG ./finance-app-android/categorizer
-          docker push $IMAGE_TAG
-          
+         
       # 1. Authenticate with Google Cloud
       - name: Authenticate with Google Cloud
         uses: google-github-actions/auth@v2
@@ -179,21 +170,19 @@ jobs:
       - name: Authorize Docker
         run: gcloud auth configure-docker ${{ env.SERVICE_REGION }}-docker.pkg.dev
 
-      # 3. Build, Tag, and Push the Docker Image
-      - name: Build and Push Docker Image
+      # 3. Now build docker image, pointing to the correct path
+      - name: Build and push docker image
         run: |
-          IMAGE_TAG=${{ env.SERVICE_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/cloud-run-repo/${{ env.SERVICE_NAME }}:${{ github.sha }}
-          # Build the image using the Dockerfile in the 'categorizer' directory
-          docker build -t $IMAGE_TAG ./categorizer
+          docker build -t $IMAGE_TAG ./finance-app-android/categorizer
           docker push $IMAGE_TAG
-        
+      
       # 4. Deploy the Image to Cloud Run
       - name: Deploy to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2
         with:
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.SERVICE_REGION }}
-          image: ${{ env.SERVICE_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/cloud-run-repo/${{ env.SERVICE_NAME }}:${{ github.sha }}
+          image: ${{ env.IMAGE_TAG }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/cloud-run-repo/${{ env.SERVICE_NAME }}:${{ github.sha }}
           no_allow_unauthenticated: true # Secure your API
           memory: 512Mi 
 
