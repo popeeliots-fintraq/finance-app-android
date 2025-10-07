@@ -144,7 +144,7 @@ jobs:
       GCP_PROJECT_ID: ${{ secrets.Firebase_Project_ID }} # <<< Ensure this secret exists
       SERVICE_NAME: transaction-categorizer
       SERVICE_REGION: us-central1        # Must match your Firebase Functions region
-      IMAGE_TAG: us-central1-docker.pkg.dev/${{ secrets.Firebase_Project_ID }}/cloud-run-repo/transaction-categorizer:${{ github.sha }}
+      IMAGE_TAG: us-central1-docker.pkg.dev/${{ secrets.Firebase_Project_ID }}/gcf-artifacts/transaction-categorizer:${{ github.sha }}
 
     steps:
       - uses: actions/checkout@v3
@@ -182,7 +182,7 @@ jobs:
         with:
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.SERVICE_REGION }}
-          image: ${{ env.IMAGE_TAG }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/cloud-run-repo/${{ env.SERVICE_NAME }}:${{ github.sha }}
+          image: ${{ env.IMAGE_TAG }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/gcf-artifacts/${{ env.SERVICE_NAME }}:${{ github.sha }}
           no_allow_unauthenticated: true # Secure your API
           memory: 512Mi 
 
