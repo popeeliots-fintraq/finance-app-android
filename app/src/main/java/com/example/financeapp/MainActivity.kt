@@ -1,20 +1,17 @@
-package com.example.financeapp // Use your actual package name
+package com.example.financeapp 
 
 import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.google.gson.GsonBuilder
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.GET
+import com.example.financeapp.ui.viewmodel.CategorizationViewModel // Import your new ViewModel
 
 class MainActivity : AppCompatActivity() {
 
     private val TAG = "MainActivity"
+    
+    // Instantiate your new ViewModel
+    private val categorizationViewModel = CategorizationViewModel()
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,35 +19,18 @@ class MainActivity : AppCompatActivity() {
         
         val textView: TextView = findViewById(R.id.textView)
         textView.text = "Eliots Pope's CoinSave App - Expense Tracking at your finger tips"
-
-        fetchMessage(textView)
-    }
-
-    private fun fetchMessage(textView: TextView) {
-        Log.d(TAG, "Attempting to make API call...")
-
-        val gson = GsonBuilder().setLenient().create()
-        val retrofit = Retrofit.Builder()
-            .baseUrl("https://finance-app-backend-0qo0.onrender.com/") // Your Render URL
-            .addConverterFactory(GsonConverterFactory.create(gson))
-            .build()
-
-        val apiService = retrofit.create(ApiService::class.java)
-
-        apiService.getMessage().enqueue(object : Callback<Message> {
-            override fun onResponse(call: Call<Message>, response: Response<Message>) {
-                if (response.isSuccessful) {
-                    val message = response.body()?.message
-                    Log.d(TAG, "API Response: $message")
-                    textView.text = message
-                } else {
-                    Log.e(TAG, "Response not successful: ${response.code()}")
-                }
-            }
-
-            override fun onFailure(call: Call<Message>, t: Throwable) {
-                Log.e("API_CALL_FAILURE", "API Call Failed: ${t.message}")
-            }
-        })
+        
+        // ** NEW INTEGRATION BLOCK: Test the Cloud Run API call **
+        
+        Log.d(TAG, "Launching Categorization API Test...")
+        
+        // This launches the coroutine inside the ViewModel to hit your Cloud Run service.
+        // Results will print to Logcat via the ViewModel's print statements.
+        categorizationViewModel.testApiCall()
+        
+        // Update the TextView to show the test has been initiated.
+        textView.text = "API Categorization Test Initiated. Check Logcat for SUCCESS/FAILURE."
+        
+        // The old 'fetchMessage' function has been removed.
     }
 }
