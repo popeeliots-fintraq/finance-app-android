@@ -1,4 +1,4 @@
-package your.package.financeapp.data.model
+package com.example.financeapp.data.model
 
 data class CategorizationResponse(
     val suggested_category: String,
