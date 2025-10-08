@@ -18,7 +18,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         
         val textView: TextView = findViewById(R.id.textView)
-        textView.text = "Eliots Pope's CoinSave App - Expense Tracking at your finger tips"
+        textView.text = "fin-traq The Income Optimizer"
         
         // ** NEW INTEGRATION BLOCK: Test the Cloud Run API call **
         
