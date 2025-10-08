@@ -7,7 +7,7 @@ object RetrofitClient {
     // !! IMPORTANT !!
     // REPLACE this with your actual live Cloud Run service URL
     // e.g., "https://frictionless-finance-service-hash-uc.a.run.app/"
-    private const val BASE_URL = "YOUR_CLOUD_RUN_SERVICE_URL_HERE/"
+    private const val BASE_URL = "https://transaction-categorizer-801862457352.us-central1.run.app/"
 
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
