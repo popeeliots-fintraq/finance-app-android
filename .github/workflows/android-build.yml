@@ -160,7 +160,7 @@ jobs:
       uses: google-github-actions/auth@v2
       with:
         # This replaces the entire WIF block and uses the key file secret
-        credentials_json: ${{ secrets.GCP_SA_KEY }} 
+        credentials_json: ${{ secrets.GCP_CLOUD_RUN_KEY }} 
         
     # 2. Set up Cloud SDK and Docker Auth
     - name: Set up Cloud SDK and Docker Auth
