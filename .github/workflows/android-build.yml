@@ -199,4 +199,4 @@ jobs:
           --region ${{ env.SERVICE_REGION }} \
           --project ${{ env.GCP_PROJECT_ID }} \
           --format 'value(status.url)')
-        echo "CLOUD_RUN_URL=$SERVICE_URL" >> $GITHUB_OUTPUTVICE_URL" >> $GITHUB_OUTPUT
+        echo "CLOUD_RUN_URL=$SERVICE_URL" >> $GITHUB_OUTPUT
