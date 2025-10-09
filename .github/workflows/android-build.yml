@@ -129,77 +129,74 @@ jobs:
           npm test -- --passWithNoTests
 
 # ----------------------------------------------------
-  # JOB 3: DEPLOY PYTHON ML SERVICE TO CLOUD RUN
-  # ----------------------------------------------------
+# JOB 3: DEPLOY PYTHON ML SERVICE TO CLOUD RUN
+# ----------------------------------------------------
   deploy-categorizer-service:
+
     name: Deploy Python Categorizer to Cloud Run
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    
-    # Needs the Android build to succeed, though it's not strictly dependent
-    needs: build-android 
-    # 🔑 IMPORTANT: Declare job output for subsequent E2E tests
+  
+    needs: build-android
     outputs:
       CLOUD_RUN_URL: ${{ steps.get_url.outputs.CLOUD_RUN_URL }}
-    permissions:
-      id-token: write # This grants permission to fetch the OIDC token
-      contents: read  # Recommended for checking out the code
+    
+  # ❌ REMOVE THE WIF PERMISSIONS BLOCK (No longer needed with key file)
+  # permissions:
+  #   id-token: write
+  #   contents: read
 
-    # --- DEFINE ENVIRONMENT VARIABLES ---
+  # --- DEFINE ENVIRONMENT VARIABLES ---
     env:
-      GCP_PROJECT_ID: ${{ secrets.Firebase_Project_ID }} # <<< Ensure this secret exists
+      GCP_PROJECT_ID: ${{ secrets.Firebase_Project_ID }}
       SERVICE_NAME: transaction-categorizer
-      SERVICE_REGION: us-central1        # Must match your Firebase Functions region
+      SERVICE_REGION: us-central1
       IMAGE_TAG: us-central1-docker.pkg.dev/${{ secrets.Firebase_Project_ID }}/gcf-artifacts/transaction-categorizer:${{ github.sha }}
 
     steps:
-      - uses: actions/checkout@v3
-        with:
-          repository: popeeliots-fintraq/finance-app-android
-          token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-          path: finance-app-android
+    - uses: actions/checkout@v3
+      with:
+        repository: popeeliots-fintraq/finance-app-android
+        token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+        path: finance-app-android
 
-         
-      # 1. Authenticate with Google Cloud
-      - name: Authenticate with Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          # This is the full resource name for your Workload Identity Provider
-          workload_identity_provider: 'projects/801862457352/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider' 
-          # This is the Service Account email address
-          service_account: '801862457352-compute@developer.gserviceaccount.com'
-          
-      # 2. Set up Google Cloud CLI and Docker Auth
-      - name: Set up Cloud SDK and Docker Auth
-        uses: google-github-actions/setup-gcloud@v2
-        with:
-          version: 'latest'
-          project_id: ${{ env.GCP_PROJECT_ID }}
+    # 1. ✅ CORRECTED: AUTHENTICATE USING SERVICE ACCOUNT KEY
+    - name: Authenticate with Service Account Key
+      uses: google-github-actions/auth@v2
+      with:
+        # This replaces the entire WIF block and uses the key file secret
+        credentials_json: ${{ secrets.GCP_SA_KEY }} 
+        
+    # 2. Set up Cloud SDK and Docker Auth
+    - name: Set up Cloud SDK and Docker Auth
+      uses: google-github-actions/setup-gcloud@v2
+      with:
+        version: 'latest'
+        project_id: ${{ env.GCP_PROJECT_ID }} # This is now correctly configured via the key
 
-      - name: Authorize Docker
-        run: gcloud auth configure-docker ${{ env.SERVICE_REGION }}-docker.pkg.dev
+    - name: Authorize Docker
+      run: gcloud auth configure-docker ${{ env.SERVICE_REGION }}-docker.pkg.dev
 
-      # 3. Now build docker image, pointing to the correct path
-      - name: Build and push docker image
-        run: |
-          docker build -t $IMAGE_TAG ./finance-app-android/categorizer
-          docker push $IMAGE_TAG
-      
-      # 4. Deploy the Image to Cloud Run
-      - name: Deploy to Cloud Run
-        uses: google-github-actions/deploy-cloudrun@v2
-        with:
-          service: ${{ env.SERVICE_NAME }}
-          region: ${{ env.SERVICE_REGION }}
-          image: ${{ env.IMAGE_TAG }}
-          
-          
-      # 5. Export the Service URL for subsequent jobs
-      - name: Get Cloud Run URL
-        id: get_url
-        run: |
-          SERVICE_URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} \
-            --region ${{ env.SERVICE_REGION }} \
-            --project ${{ env.GCP_PROJECT_ID }} \
-            --format 'value(status.url)')
-          echo "CLOUD_RUN_URL=$SERVICE_URL" >> $GITHUB_OUTPUT
+    # 3. Now build docker image, pointing to the correct path
+    - name: Build and push docker image
+      run: |
+        docker build -t $IMAGE_TAG ./finance-app-android/categorizer
+        docker push $IMAGE_TAG
+    
+    # 4. Deploy the Image to Cloud Run
+    - name: Deploy to Cloud Run
+      uses: google-github-actions/deploy-cloudrun@v2
+      with:
+        service: ${{ env.SERVICE_NAME }}
+        region: ${{ env.SERVICE_REGION }}
+        image: ${{ env.IMAGE_TAG }}
+        
+    # 5. Export the Service URL for subsequent jobs
+    - name: Get Cloud Run URL
+      id: get_url
+      run: |
+        SERVICE_URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} \
+          --region ${{ env.SERVICE_REGION }} \
+          --project ${{ env.GCP_PROJECT_ID }} \
+          --format 'value(status.url)')
+        echo "CLOUD_RUN_URL=$SERVICE_URL" >> $GITHUB_OUTPUTVICE_URL" >> $GITHUB_OUTPUT
