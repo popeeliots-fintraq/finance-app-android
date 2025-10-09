@@ -20,6 +20,10 @@ except Exception as e:
 
 app = Flask(__name__)
 
+@app.route('/')
+def health_check():
+    return "Backend is running!", 200
+
 @app.route('/categorize', methods=['POST'])
 def categorize():
     try:
