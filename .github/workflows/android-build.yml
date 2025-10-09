@@ -154,7 +154,16 @@ jobs:
         repository: popeeliots-fintraq/finance-app-android
         token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
         path: finance-app-android
-
+        
+    - name: Debug secret presence
+      run: |
+        if [ -z "${{ secrets.GCP_CLOUD_RUN_KEY }}" ]; then
+          echo "❌ Secret GCP_CLOUD_RUN_KEY is empty or not found."
+          exit 1
+        else
+          echo "✅ Secret GCP_CLOUD_RUN_KEY is available."
+        fi
+        
     # 1. ✅ CORRECTED: AUTHENTICATE USING SERVICE ACCOUNT KEY
     - name: Authenticate with Service Account Key
       uses: google-github-actions/auth@v2
