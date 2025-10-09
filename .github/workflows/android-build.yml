@@ -138,13 +138,12 @@ jobs:
     
     # Needs the Android build to succeed, though it's not strictly dependent
     needs: build-android 
+    # 🔑 IMPORTANT: Declare job output for subsequent E2E tests
+    outputs:
+      CLOUD_RUN_URL: ${{ steps.get_url.outputs.CLOUD_RUN_URL }}
     permissions:
       id-token: write # This grants permission to fetch the OIDC token
       contents: read  # Recommended for checking out the code
-
-  # --- DEFINE ENVIRONMENT VARIABLES ---
-  env:
-# ... (rest of your job configuration)
 
     # --- DEFINE ENVIRONMENT VARIABLES ---
     env:
