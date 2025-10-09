@@ -140,13 +140,8 @@ jobs:
     needs: build-android
     outputs:
       CLOUD_RUN_URL: ${{ steps.get_url.outputs.CLOUD_RUN_URL }}
-    
-  # ❌ REMOVE THE WIF PERMISSIONS BLOCK (No longer needed with key file)
-  # permissions:
-  #   id-token: write
-  #   contents: read
-
-  # --- DEFINE ENVIRONMENT VARIABLES ---
+   
+ # --- DEFINE ENVIRONMENT VARIABLES ---
     env:
       GCP_PROJECT_ID: ${{ secrets.Firebase_Project_ID }}
       SERVICE_NAME: transaction-categorizer
