@@ -138,6 +138,13 @@ jobs:
     
     # Needs the Android build to succeed, though it's not strictly dependent
     needs: build-android 
+    permissions:
+      id-token: write # This grants permission to fetch the OIDC token
+      contents: read  # Recommended for checking out the code
+
+  # --- DEFINE ENVIRONMENT VARIABLES ---
+  env:
+# ... (rest of your job configuration)
 
     # --- DEFINE ENVIRONMENT VARIABLES ---
     env:
