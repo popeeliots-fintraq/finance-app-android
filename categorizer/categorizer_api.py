@@ -25,8 +25,9 @@ try:
     MODEL = MODEL_AND_VECTORIZER['model']
     VECTORIZER = MODEL_AND_VECTORIZER['vectorizer']
     print("Model and Vectorizer loaded successfully from GCS.")  # ✅ CHANGED
+    print("✅ Model Classes:", MODEL.classes_)
 except Exception as e:
-    print(f"WARNING: Failed to load model from GCS: {e}. API will return default category.")  # ✅ CHANGED
+    print(f"⚠️ WARNING: Failed to load model from GCS: {e}. API will return default category.")  # ✅ CHANGED
     MODEL = None
     VECTORIZER = None
 
