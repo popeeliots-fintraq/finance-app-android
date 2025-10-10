@@ -6,3 +6,6 @@ numpy==1.25.0
 # Web server
 Flask==2.3.3
 gunicorn==21.2.0
+
+# Google Cloud Storage client
+google-cloud-storage>=2.10.0
