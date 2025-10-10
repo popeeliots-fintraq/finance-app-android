@@ -180,14 +180,20 @@ jobs:
 
     - name: Authorize Docker
       run: gcloud auth configure-docker ${{ env.SERVICE_REGION }}-docker.pkg.dev
+    
+    # 3. Upload model.pkl to GCS ---
+    - name: Upload model.pkl to GCS
+      run: |
+        echo "Uploading model.pkl to GCS..."
+        gsutil cp ./finance-app-android/categorizer/model.pkl gs://fintraq-models/model.pkl
 
-    # 3. Now build docker image, pointing to the correct path
+    # 4. Now build docker image, pointing to the correct path
     - name: Build and push docker image
       run: |
         docker build -t $IMAGE_TAG ./finance-app-android/categorizer
         docker push $IMAGE_TAG
     
-    # 4. Deploy the Image to Cloud Run
+    # 5. Deploy the Image to Cloud Run
     - name: Deploy to Cloud Run
       uses: google-github-actions/deploy-cloudrun@v2
       with:
@@ -195,7 +201,7 @@ jobs:
         region: ${{ env.SERVICE_REGION }}
         image: ${{ env.IMAGE_TAG }}
         command: gunicorn -w 1 -b :$PORT categorizer_api:app
-    # 5. Export the Service URL for subsequent jobs
+    # 6. Export the Service URL for subsequent jobs
     - name: Get Cloud Run URL
       id: get_url
       run: |
