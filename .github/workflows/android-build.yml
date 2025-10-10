@@ -148,6 +148,10 @@ jobs:
       SERVICE_REGION: us-central1
       IMAGE_TAG: us-central1-docker.pkg.dev/${{ secrets.Firebase_Project_ID }}/gcf-artifacts/transaction-categorizer:${{ github.sha }}
 
+      # GCS model variables
+      MODEL_BUCKET: fintraq-models
+      MODEL_OBJECT: model.pkl
+
     steps:
     - uses: actions/checkout@v3
       with:
