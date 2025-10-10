@@ -73,7 +73,7 @@ jobs:
 
     
     # Crucial: Only deploy the live backend when merging/pushing directly to 'main'
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' 
+    # if: github.event_name == 'push' && github.ref == 'refs/heads/main' 
     env:
       FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
       FIREBASE_PROJECT_ID: ${{ secrets.Firebase_Project_ID }}
@@ -147,12 +147,6 @@ jobs:
       SERVICE_NAME: transaction-categorizer
       SERVICE_REGION: us-central1
       IMAGE_TAG: us-central1-docker.pkg.dev/${{ secrets.Firebase_Project_ID }}/gcf-artifacts/transaction-categorizer:${{ github.sha }}
-
-      # GCS model variables
-      MODEL_BUCKET: fintraq-models
-      MODEL_OBJECT: model.pkl
-
-      # GCS model variables
       MODEL_BUCKET: fintraq-models
       MODEL_OBJECT: model.pkl
 
@@ -189,19 +183,13 @@ jobs:
     - name: Authorize Docker
       run: gcloud auth configure-docker ${{ env.SERVICE_REGION }}-docker.pkg.dev
     
-    # 3. Upload model.pkl to GCS ---
-    - name: Upload model.pkl to GCS
-      run: |
-        echo "Uploading model.pkl to GCS..."
-        gsutil cp ./finance-app-android/categorizer/model.pkl gs://fintraq-models/model.pkl
-
-    # 4. Now build docker image, pointing to the correct path
+    # 3. Now build docker image, pointing to the correct path
     - name: Build and push docker image
       run: |
         docker build -t $IMAGE_TAG ./finance-app-android/categorizer
         docker push $IMAGE_TAG
     
-    # 5. Deploy the Image to Cloud Run
+    # 4. Deploy the Image to Cloud Run
     - name: Deploy to Cloud Run
       uses: google-github-actions/deploy-cloudrun@v2
       with:
@@ -209,7 +197,7 @@ jobs:
         region: ${{ env.SERVICE_REGION }}
         image: ${{ env.IMAGE_TAG }}
         command: gunicorn -w 1 -b :$PORT categorizer_api:app
-    # 6. Export the Service URL for subsequent jobs
+    # 5. Export the Service URL for subsequent jobs
     - name: Get Cloud Run URL
       id: get_url
       run: |
