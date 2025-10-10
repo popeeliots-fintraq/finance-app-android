@@ -28,18 +28,30 @@ def health_check():
 @app.route('/categorize', methods=['POST'])
 def categorize():
     try:
-        data = request.get_json()
+        # Use silent=True to avoid crashing on invalid JSON
+        data = request.get_json(silent=True) 
+        
+        # Check for invalid JSON first
+        if not data:
+             return jsonify({'error': 'Invalid JSON or empty request body'}), 400
+             
         sms_body = data.get('sms_body', '')
 
         if not sms_body:
             return jsonify({'error': 'Missing sms_body field'}), 400
 
         if MODEL and VECTORIZER:
+            # 1. Vectorize the input SMS text
             sms_vectorized = VECTORIZER.transform([sms_body])
+            
+            # 2. Predict the category
             predicted_category = MODEL.predict(sms_vectorized)[0]
+            
+            # 3. Calculate confidence
             probabilities = MODEL.predict_proba(sms_vectorized)[0]
             confidence_score = float(max(probabilities))
         else:
+            # Fallback when the model failed to load
             predicted_category = "Uncategorized"
             confidence_score = 0.0
 
@@ -49,7 +61,10 @@ def categorize():
         })
 
     except Exception as e:
+        # Catch any unexpected errors during processing
         return jsonify({'error': f'Internal Server Error: {e}'}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+    # Removed 'debug=True' for better production readiness 
+    # (Though Gunicorn, which Cloud Run uses, ignores this parameter anyway)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
