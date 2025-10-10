@@ -1,19 +1,32 @@
 import os
 import pickle
+import io  # ✅ ADDED: required for in-memory bytes
 from flask import Flask, request, jsonify
+from google.cloud import storage  # ✅ ADDED: required for GCS access
 
-# Define the path to your model file
-MODEL_PATH = "model.pkl"
+# ✅ REPLACED local model loading with GCS loader
+MODEL_BUCKET = os.environ.get("MODEL_BUCKET", "fintraq-models")  # ✅ ADDED
+MODEL_OBJECT = os.environ.get("MODEL_OBJECT", "model.pkl")       # ✅ ADDED
 
-# Try to load the model and vectorizer
+def load_model_from_gcs(bucket_name=MODEL_BUCKET, object_name=MODEL_OBJECT):
+    """
+    Load the model and vectorizer from GCS into memory
+    """
+    client = storage.Client()
+    bucket = client.bucket(bucket_name)
+    blob = bucket.blob(object_name)
+    data = blob.download_as_bytes()  # ✅ ADDED: download model in memory
+    model_and_vectorizer = pickle.load(io.BytesIO(data))  # ✅ ADDED
+    return model_and_vectorizer
+
+# Load model & vectorizer
 try:
-    with open(MODEL_PATH, 'rb') as f:
-        MODEL_AND_VECTORIZER = pickle.load(f)
+    MODEL_AND_VECTORIZER = load_model_from_gcs()  # ✅ CHANGED: use GCS loader
     MODEL = MODEL_AND_VECTORIZER['model']
     VECTORIZER = MODEL_AND_VECTORIZER['vectorizer']
-    print("Model and Vectorizer loaded successfully.")
+    print("Model and Vectorizer loaded successfully from GCS.")  # ✅ CHANGED
 except Exception as e:
-    print(f"WARNING: Failed to load model.pkl from {MODEL_PATH}: {e}. API will return default category.")
+    print(f"WARNING: Failed to load model from GCS: {e}. API will return default category.")  # ✅ CHANGED
     MODEL = None
     VECTORIZER = None
 
@@ -40,7 +53,7 @@ def categorize():
         if not sms_body:
             return jsonify({'error': 'Missing sms_body field'}), 400
 
-        model, vectorizer = get_model_and_vectorizer()
+        # ✅ REMOVED: get_model_and_vectorizer() call
 
         if MODEL and VECTORIZER:
             # 1. Vectorize the input SMS text
@@ -68,5 +81,4 @@ def categorize():
 
 if __name__ == '__main__':
     # Removed 'debug=True' for better production readiness 
-    # (Though Gunicorn, which Cloud Run uses, ignores this parameter anyway)
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
