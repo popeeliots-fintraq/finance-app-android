@@ -152,6 +152,10 @@ jobs:
       MODEL_BUCKET: fintraq-models
       MODEL_OBJECT: model.pkl
 
+      # GCS model variables
+      MODEL_BUCKET: fintraq-models
+      MODEL_OBJECT: model.pkl
+
     steps:
     - uses: actions/checkout@v3
       with:
