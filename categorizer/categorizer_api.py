@@ -40,6 +40,8 @@ def categorize():
         if not sms_body:
             return jsonify({'error': 'Missing sms_body field'}), 400
 
+        model, vectorizer = get_model_and_vectorizer()
+
         if MODEL and VECTORIZER:
             # 1. Vectorize the input SMS text
             sms_vectorized = VECTORIZER.transform([sms_body])
