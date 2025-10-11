@@ -31,4 +31,65 @@ try:
         VECTORIZER = None  # Treat as a pipeline or single object
 
     print("✅ Model loaded from GCS")
-    print("✅ Model
+    print("✅ Model type:", type(MODEL))
+    if VECTORIZER:
+        print("✅ Vectorizer type:", type(VECTORIZER))
+
+except Exception as e:
+    print(f"⚠️ WARNING: Failed to load model from GCS: {e}. Defaulting to fallback mode.")
+    MODEL = None
+    VECTORIZER = None
+
+app = Flask(__name__)
+
+# ----------------------------------------------------------------------
+# --- API ENDPOINTS ---
+# ----------------------------------------------------------------------
+
+@app.route('/')
+def health_check():
+    return "Backend is running!", 200
+
+@app.route('/categorize', methods=['POST'])
+def categorize():
+    try:
+        data = request.get_json(force=True, silent=True)
+        print(f"Received request data: {data}")
+
+        if not data:
+            return jsonify({'error': 'Invalid JSON or empty request body'}), 400
+
+        # Changed key to 'message' to match test input
+        sms_body = data.get('message', '')
+        if not sms_body:
+            return jsonify({'error': 'Missing message field'}), 400
+
+        if MODEL:
+            if VECTORIZER:
+                sms_vectorized = VECTORIZER.transform([sms_body])
+                input_for_model = sms_vectorized
+            else:
+                input_for_model = [sms_body]
+
+            predicted_category = MODEL.predict(input_for_model)[0]
+
+            if hasattr(MODEL, "predict_proba"):
+                probabilities = MODEL.predict_proba(input_for_model)[0]
+                confidence_score = float(max(probabilities))
+            else:
+                confidence_score = 1.0
+        else:
+            predicted_category = "Uncategorized"
+            confidence_score = 0.0
+
+        return jsonify({
+            'suggested_category': predicted_category,
+            'confidence_score': round(confidence_score, 4)
+        })
+
+    except Exception as e:
+        print(f"ERROR during categorization: {e}")
+        return jsonify({'error': 'Internal Server Error during request processing'}), 500
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
