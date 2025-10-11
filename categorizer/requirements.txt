@@ -1,11 +1,11 @@
-# ML libraries (Updated for NumPy 2.x compatibility)
-scikit-learn==1.5.0  # Or the latest stable release
-pandas==2.2.2        # Or the latest stable release
+# ML libraries (NumPy 2.x compatible)
 numpy==2.3.3
+pandas==2.2.2
+scikit-learn==1.5.0
 
 # Web server
 Flask==2.3.3
 gunicorn==21.2.0
 
-# Google Cloud Storage client
-google-cloud-storage>=2.10.0
+# GCS client
+google-cloud-storage==2.10.0
