@@ -58,7 +58,7 @@ def categorize():
         if not data:
             return jsonify({'error': 'Invalid or empty JSON request body'}), 400
 
-        sms_body = data.get('message')  # Expecting key to be "message"
+        sms_body = data.get('message') or data.get('sms_body')  # Expecting key to be "message"
         if not sms_body:
             return jsonify({'error': 'Missing "message" field in request'}), 400
 
