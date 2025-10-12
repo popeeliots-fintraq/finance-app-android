@@ -1,14 +1,45 @@
 import os
 import pickle
 import io
+import json
+import re # New import for better text cleaning
 from flask import Flask, request, jsonify
-from google.cloud import storage
 
-# --- CONFIGURATION ---
+# Cloud Service Imports
+from google.cloud import storage
+import firebase_admin 
+from firebase_admin import firestore, credentials 
+
+# --- 1. CONFIGURATION & INITIALIZATION ---
+
+# GCS Config
 MODEL_BUCKET = os.environ.get("MODEL_BUCKET", "fintraq-models")
 MODEL_OBJECT = os.environ.get("MODEL_OBJECT", "model.pkl")
 
-# --- MODEL LOADING FUNCTION ---
+# Firestore Config
+try:
+    firebase_admin.initialize_app()
+    db = firestore.client()
+    print("✅ Firestore client initialized.")
+except Exception as e:
+    print(f"⚠️ WARNING: Failed to initialize Firebase/Firestore: {e}")
+    db = None
+
+# --- 2. CATEGORY MAP LOADING (From separate file) ---
+CATEGORY_MAP = {}
+try:
+    # Loads the extensive mapping from a local file for maintainability
+    with open("category_map.json", "r") as f:
+        CATEGORY_MAP = json.load(f)
+    print(f"✅ Loaded {len(CATEGORY_MAP)} entries from category_map.json.")
+except FileNotFoundError:
+    print("⚠️ WARNING: category_map.json not found. Rule-based mapping will be limited.")
+except Exception as e:
+    print(f"⚠️ WARNING: Failed to load category_map.json: {e}")
+
+
+# --- 3. ML MODEL LOADING ---
+# ... (load_model_from_gcs function and MODEL loading try/except block remain the same) ...
 def load_model_from_gcs(bucket_name=MODEL_BUCKET, object_name=MODEL_OBJECT):
     """Downloads and unpickles the model and vectorizer from GCS."""
     client = storage.Client()
@@ -17,7 +48,6 @@ def load_model_from_gcs(bucket_name=MODEL_BUCKET, object_name=MODEL_OBJECT):
     data = blob.download_as_bytes()
     return pickle.load(io.BytesIO(data))
 
-# --- UNIVERSAL MODEL LOADER ---
 try:
     MODEL_AND_VECTORIZER = load_model_from_gcs()
 
@@ -28,19 +58,42 @@ try:
         MODEL, VECTORIZER = MODEL_AND_VECTORIZER
     else:
         MODEL = MODEL_AND_VECTORIZER
-        VECTORIZER = None  # Possibly a pipeline
+        VECTORIZER = None
 
     print("✅ Model loaded from GCS")
-    print("✅ Model type:", type(MODEL))
-    if VECTORIZER:
-        print("✅ Vectorizer type:", type(VECTORIZER))
 
 except Exception as e:
-    print(f"⚠️ WARNING: Failed to load model from GCS: {e}")
+    print(f"⚠️ WARNING: Failed to load model from GCS: {e}. Falling back to rule-only.")
     MODEL = None
     VECTORIZER = None
 
-# --- FLASK APP ---
+
+# --- 4. CATEGORIZATION LOGIC ---
+
+def rule_based_categorize(text_lower, full_map):
+    """
+    Checks the cleaned text against simple high-confidence rules and the full category map.
+    Returns (category, confidence) or (None, None) if no rule matches.
+    """
+    # 1. Simple, High-Confidence Rules (Income/ATM)
+    if any(x in text_lower for x in ["salary", "credited to your", "has been credited"]):
+        return "Income - Salary", 0.99
+        
+    if "atm" in text_lower:
+        return "Cash Withdrawal", 0.90
+        
+    # 2. Extensive Map Search (The core hybrid logic)
+    for merchant, category in full_map.items():
+        if merchant in text_lower:
+            return category, 0.95 
+
+    # 3. Default UPI/Generic Payments (Safety net)
+    if any(x in text_lower for x in ["upi", "gpay", "paytm", "phonepe", "transfer"]):
+        return "UPI/Transfer", 0.70
+
+    return None, None 
+
+# --- 5. FLASK APP & ROUTING ---
 app = Flask(__name__)
 
 @app.route('/')
@@ -50,38 +103,25 @@ def health_check():
 @app.route('/categorize', methods=['POST'])
 def categorize():
     try:
-        print("🧪 categorize endpoint hit")
-
         data = request.get_json(force=True, silent=True)
-        print(f"📨 Received request data: {data}")
+        
+        sms_body = data.get('raw_text') or data.get('message') or data.get('sms_body')
+        user_id = data.get('user_id', 'unknown_user') # Capture User ID
 
-        if not data:
-            return jsonify({'error': 'Invalid or empty JSON request body'}), 400
-
-        sms_body = data.get('message') or data.get('sms_body')
         if not sms_body:
-            return jsonify({'error': 'Missing \"message\" or \"sms_body\" field in request'}), 400
+            return jsonify({'error': 'Missing transaction text field'}), 400
 
-        # --- RULE-BASED OVERRIDES ---
-        text_lower = sms_body.lower()
-
-        # ⬅️ NEW: SALARY / INCOME DETECTION
-        if any(x in text_lower for x in ["salary", "credited to your", "has been credited"]):
-            predicted_category = "Income - Salary"
-            confidence_score = 0.99
-        # ⬅️ NEW: Shopping
-        if any(x in text_lower for x in ["flipkart", "amazon", "myntra", "ajio", "snapdeal"]):
-            predicted_category = "Shopping"
-            confidence_score = 0.95
-        elif any(x in text_lower for x in ["swiggy", "zomato", "dominos", "pizza", "eat", "restaurant"]):
-            predicted_category = "Food & Dining"
-            confidence_score = 0.95
-        elif any(x in text_lower for x in ["upi", "gpay", "paytm", "phonepe"]):
-            predicted_category = "UPI Payment"
-            confidence_score = 0.80
-        elif "atm" in text_lower:
-            predicted_category = "Cash Withdrawal"
-            confidence_score = 0.90
+        # --- PRE-PROCESSING ---
+        # Strip all punctuation and make lowercase for robust rule matching
+        text_lower = re.sub(r'[^\w\s]', '', sms_body).lower() 
+        
+        # --- HYBRID RULE EXECUTION ---
+        predicted_category, confidence_score = rule_based_categorize(text_lower, CATEGORY_MAP)
+        
+        if predicted_category:
+            final_category = predicted_category
+            final_confidence = confidence_score
+            is_ml_prediction = False
         else:
             # --- FALLBACK TO ML ---
             if MODEL:
@@ -90,20 +130,37 @@ def categorize():
                 else:
                     input_for_model = [sms_body]
 
-                predicted_category = MODEL.predict(input_for_model)[0]
-
+                final_category = MODEL.predict(input_for_model)[0]
+                
                 if hasattr(MODEL, "predict_proba"):
                     probabilities = MODEL.predict_proba(input_for_model)[0]
-                    confidence_score = float(max(probabilities))
+                    final_confidence = float(max(probabilities))
                 else:
-                    confidence_score = 1.0
+                    final_confidence = 1.0
+                
+                is_ml_prediction = True
+
             else:
-                predicted_category = "Uncategorized"
-                confidence_score = 0.0
+                final_category = "Uncategorized"
+                final_confidence = 0.0
+                is_ml_prediction = False
+
+        # --- 6. DATA LOGGING (For future ML training) ---
+        if db:
+            transaction_log = {
+                'user_id': user_id,
+                'raw_text': sms_body,
+                'predicted_category': final_category,
+                'confidence': final_confidence,
+                'is_ml_prediction': is_ml_prediction,
+                'timestamp': firestore.SERVER_TIMESTAMP,
+                'confirmed_category': final_category 
+            }
+            db.collection('user_transactions').add(transaction_log)
 
         return jsonify({
-            'suggested_category': predicted_category,
-            'confidence_score': round(confidence_score, 4)
+            'suggested_category': final_category,
+            'confidence_score': round(final_confidence, 4)
         })
 
     except Exception as e:
