@@ -58,26 +58,43 @@ def categorize():
         if not data:
             return jsonify({'error': 'Invalid or empty JSON request body'}), 400
 
-        sms_body = data.get('message') or data.get('sms_body')  # Expecting key to be "message"
+        sms_body = data.get('message') or data.get('sms_body')
         if not sms_body:
-            return jsonify({'error': 'Missing "message" field in request'}), 400
+            return jsonify({'error': 'Missing \"message\" or \"sms_body\" field in request'}), 400
 
-        if MODEL:
-            if VECTORIZER:
-                input_for_model = VECTORIZER.transform([sms_body])
-            else:
-                input_for_model = [sms_body]
+        # --- RULE-BASED OVERRIDES ---
+        text_lower = sms_body.lower()
 
-            predicted_category = MODEL.predict(input_for_model)[0]
-
-            if hasattr(MODEL, "predict_proba"):
-                probabilities = MODEL.predict_proba(input_for_model)[0]
-                confidence_score = float(max(probabilities))
-            else:
-                confidence_score = 1.0
+        if any(x in text_lower for x in ["flipkart", "amazon", "myntra", "ajio", "snapdeal"]):
+            predicted_category = "Shopping"
+            confidence_score = 0.95
+        elif any(x in text_lower for x in ["swiggy", "zomato", "dominos", "pizza", "eat", "restaurant"]):
+            predicted_category = "Food & Dining"
+            confidence_score = 0.95
+        elif any(x in text_lower for x in ["upi", "gpay", "paytm", "phonepe"]):
+            predicted_category = "UPI Payment"
+            confidence_score = 0.80
+        elif "atm" in text_lower:
+            predicted_category = "Cash Withdrawal"
+            confidence_score = 0.90
         else:
-            predicted_category = "Uncategorized"
-            confidence_score = 0.0
+            # --- FALLBACK TO ML ---
+            if MODEL:
+                if VECTORIZER:
+                    input_for_model = VECTORIZER.transform([sms_body])
+                else:
+                    input_for_model = [sms_body]
+
+                predicted_category = MODEL.predict(input_for_model)[0]
+
+                if hasattr(MODEL, "predict_proba"):
+                    probabilities = MODEL.predict_proba(input_for_model)[0]
+                    confidence_score = float(max(probabilities))
+                else:
+                    confidence_score = 1.0
+            else:
+                predicted_category = "Uncategorized"
+                confidence_score = 0.0
 
         return jsonify({
             'suggested_category': predicted_category,
