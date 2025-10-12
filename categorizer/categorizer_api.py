@@ -65,6 +65,11 @@ def categorize():
         # --- RULE-BASED OVERRIDES ---
         text_lower = sms_body.lower()
 
+        # ⬅️ NEW: SALARY / INCOME DETECTION
+        if any(x in text_lower for x in ["salary", "credited to your", "has been credited"]):
+            predicted_category = "Income - Salary"
+            confidence_score = 0.99
+        # ⬅️ NEW: Shopping
         if any(x in text_lower for x in ["flipkart", "amazon", "myntra", "ajio", "snapdeal"]):
             predicted_category = "Shopping"
             confidence_score = 0.95
