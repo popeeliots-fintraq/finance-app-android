@@ -2,7 +2,7 @@ import os
 import pickle
 import io
 import json
-import re # New import for better text cleaning
+import re 
 from flask import Flask, request, jsonify
 
 # Cloud Service Imports
@@ -18,6 +18,7 @@ MODEL_OBJECT = os.environ.get("MODEL_OBJECT", "model.pkl")
 
 # Firestore Config
 try:
+    # Use the application default credentials provided by Cloud Run
     firebase_admin.initialize_app()
     db = firestore.client()
     print("✅ Firestore client initialized.")
@@ -25,21 +26,21 @@ except Exception as e:
     print(f"⚠️ WARNING: Failed to initialize Firebase/Firestore: {e}")
     db = None
 
-# --- 2. CATEGORY MAP LOADING (From separate file) ---
+# --- 2. CATEGORY MAP LOADING (From external file) ---
+# NOTE: The path is updated to match your directory structure.
+CATEGORY_MAP_FILE = "functions/merchant-map.json" 
 CATEGORY_MAP = {}
 try:
-    # Loads the extensive mapping from a local file for maintainability
-    with open("category_map.json", "r") as f:
+    with open(CATEGORY_MAP_FILE, "r") as f:
         CATEGORY_MAP = json.load(f)
-    print(f"✅ Loaded {len(CATEGORY_MAP)} entries from category_map.json.")
+    print(f"✅ Loaded {len(CATEGORY_MAP)} entries from {CATEGORY_MAP_FILE}.")
 except FileNotFoundError:
-    print("⚠️ WARNING: category_map.json not found. Rule-based mapping will be limited.")
+    print(f"⚠️ WARNING: {CATEGORY_MAP_FILE} not found. Rule-based mapping will be severely limited.")
 except Exception as e:
-    print(f"⚠️ WARNING: Failed to load category_map.json: {e}")
+    print(f"⚠️ WARNING: Failed to load {CATEGORY_MAP_FILE}: {e}")
 
 
 # --- 3. ML MODEL LOADING ---
-# ... (load_model_from_gcs function and MODEL loading try/except block remain the same) ...
 def load_model_from_gcs(bucket_name=MODEL_BUCKET, object_name=MODEL_OBJECT):
     """Downloads and unpickles the model and vectorizer from GCS."""
     client = storage.Client()
@@ -106,13 +107,13 @@ def categorize():
         data = request.get_json(force=True, silent=True)
         
         sms_body = data.get('raw_text') or data.get('message') or data.get('sms_body')
-        user_id = data.get('user_id', 'unknown_user') # Capture User ID
+        user_id = data.get('user_id', 'unknown_user') 
 
         if not sms_body:
             return jsonify({'error': 'Missing transaction text field'}), 400
 
         # --- PRE-PROCESSING ---
-        # Strip all punctuation and make lowercase for robust rule matching
+        # Strip punctuation, make lowercase for robust rule matching
         text_lower = re.sub(r'[^\w\s]', '', sms_body).lower() 
         
         # --- HYBRID RULE EXECUTION ---
@@ -154,6 +155,7 @@ def categorize():
                 'confidence': final_confidence,
                 'is_ml_prediction': is_ml_prediction,
                 'timestamp': firestore.SERVER_TIMESTAMP,
+                # Key field: initial prediction, which the client can later update
                 'confirmed_category': final_category 
             }
             db.collection('user_transactions').add(transaction_log)
