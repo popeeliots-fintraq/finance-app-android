@@ -8,41 +8,34 @@ from flask import Flask, request, jsonify
 # Cloud Service Imports
 from google.cloud import storage
 import firebase_admin 
-from firebase_admin import firestore, credentials 
+from firebase_admin import firestore, credentials, auth # CRITICAL: Added 'auth'
+from firebase_admin.exceptions import FirebaseError # CRITICAL: For explicit error handling
 
 # --- 1. CONFIGURATION & INITIALIZATION ---
-
-# GCS Config
 MODEL_BUCKET = os.environ.get("MODEL_BUCKET", "fintraq-models")
 MODEL_OBJECT = os.environ.get("MODEL_OBJECT", "model.pkl")
 
 # Firestore Config
 try:
-    # Use the application default credentials provided by Cloud Run
     firebase_admin.initialize_app()
     db = firestore.client()
-    print("✅ Firestore client initialized.")
+    print("✅ Firebase client initialized.")
 except Exception as e:
     print(f"⚠️ WARNING: Failed to initialize Firebase/Firestore: {e}")
     db = None
 
-# --- 2. CATEGORY MAP LOADING (From external file) ---
-# NOTE: The path is updated to match your directory structure.
+# --- 2. CATEGORY MAP LOADING ---
 CATEGORY_MAP_FILE = "functions/merchant-map.json" 
 CATEGORY_MAP = {}
 try:
     with open(CATEGORY_MAP_FILE, "r") as f:
         CATEGORY_MAP = json.load(f)
     print(f"✅ Loaded {len(CATEGORY_MAP)} entries from {CATEGORY_MAP_FILE}.")
-except FileNotFoundError:
-    print(f"⚠️ WARNING: {CATEGORY_MAP_FILE} not found. Rule-based mapping will be severely limited.")
 except Exception as e:
     print(f"⚠️ WARNING: Failed to load {CATEGORY_MAP_FILE}: {e}")
 
-
 # --- 3. ML MODEL LOADING ---
 def load_model_from_gcs(bucket_name=MODEL_BUCKET, object_name=MODEL_OBJECT):
-    """Downloads and unpickles the model and vectorizer from GCS."""
     client = storage.Client()
     bucket = client.bucket(bucket_name)
     blob = bucket.blob(object_name)
@@ -51,7 +44,6 @@ def load_model_from_gcs(bucket_name=MODEL_BUCKET, object_name=MODEL_OBJECT):
 
 try:
     MODEL_AND_VECTORIZER = load_model_from_gcs()
-
     if isinstance(MODEL_AND_VECTORIZER, dict):
         MODEL = MODEL_AND_VECTORIZER.get('model')
         VECTORIZER = MODEL_AND_VECTORIZER.get('vectorizer')
@@ -60,9 +52,7 @@ try:
     else:
         MODEL = MODEL_AND_VECTORIZER
         VECTORIZER = None
-
     print("✅ Model loaded from GCS")
-
 except Exception as e:
     print(f"⚠️ WARNING: Failed to load model from GCS: {e}. Falling back to rule-only.")
     MODEL = None
@@ -70,28 +60,16 @@ except Exception as e:
 
 
 # --- 4. CATEGORIZATION LOGIC ---
-
 def rule_based_categorize(text_lower, full_map):
-    """
-    Checks the cleaned text against simple high-confidence rules and the full category map.
-    Returns (category, confidence) or (None, None) if no rule matches.
-    """
-    # 1. Simple, High-Confidence Rules (Income/ATM)
     if any(x in text_lower for x in ["salary", "credited to your", "has been credited"]):
         return "Income - Salary", 0.99
-        
     if "atm" in text_lower:
         return "Cash Withdrawal", 0.90
-        
-    # 2. Extensive Map Search (The core hybrid logic)
     for merchant, category in full_map.items():
         if merchant in text_lower:
             return category, 0.95 
-
-    # 3. Default UPI/Generic Payments (Safety net)
     if any(x in text_lower for x in ["upi", "gpay", "paytm", "phonepe", "transfer"]):
         return "UPI/Transfer", 0.70
-
     return None, None 
 
 # --- 5. FLASK APP & ROUTING ---
@@ -104,58 +82,66 @@ def health_check():
 @app.route('/categorize', methods=['POST'])
 def categorize():
     try:
-        data = request.get_json(force=True, silent=True)
+        # --- SECURITY CRITICAL: TOKEN VERIFICATION (ADDED LOGIC) ---
+        auth_header = request.headers.get('Authorization')
         
+        # Check for presence and format
+        if not auth_header or not auth_header.startswith('Bearer '):
+            return jsonify({'error': 'Unauthorized: Missing or invalid Authorization header'}), 401
+        
+        id_token = auth_header.split('Bearer ')[1]
+        secure_user_id = None
+        
+        try:
+            # Verify the token against Firebase servers
+            verified_token = auth.verify_id_token(id_token)
+            secure_user_id = verified_token.get('uid') 
+            print(f"Authenticated user: {secure_user_id}")
+            
+        except FirebaseError as e:
+            # Token failed verification (expired, invalid signature, etc.)
+            return jsonify({'error': f'Unauthorized: Invalid token: {e}'}), 401
+        
+        # --- INPUT EXTRACTION (Now safe to proceed) ---
+        data = request.get_json(force=True, silent=True)
         sms_body = data.get('raw_text') or data.get('message') or data.get('sms_body')
-        user_id = data.get('user_id', 'unknown_user') 
 
         if not sms_body:
             return jsonify({'error': 'Missing transaction text field'}), 400
 
-        # --- PRE-PROCESSING ---
-        # Strip punctuation, make lowercase for robust rule matching
+        # --- VALIDATION ---
+        if not isinstance(sms_body, str) or len(sms_body) > 1024: 
+            return jsonify({'error': 'Invalid or oversized input text'}), 400
+
+        # --- CATEGORIZATION LOGIC (Same) ---
         text_lower = re.sub(r'[^\w\s]', '', sms_body).lower() 
-        
-        # --- HYBRID RULE EXECUTION ---
         predicted_category, confidence_score = rule_based_categorize(text_lower, CATEGORY_MAP)
         
+        # ... (ML Fallback logic) ...
         if predicted_category:
             final_category = predicted_category
             final_confidence = confidence_score
             is_ml_prediction = False
         else:
-            # --- FALLBACK TO ML ---
             if MODEL:
-                if VECTORIZER:
-                    input_for_model = VECTORIZER.transform([sms_body])
-                else:
-                    input_for_model = [sms_body]
-
+                input_for_model = VECTORIZER.transform([sms_body]) if VECTORIZER else [sms_body]
                 final_category = MODEL.predict(input_for_model)[0]
-                
-                if hasattr(MODEL, "predict_proba"):
-                    probabilities = MODEL.predict_proba(input_for_model)[0]
-                    final_confidence = float(max(probabilities))
-                else:
-                    final_confidence = 1.0
-                
+                final_confidence = float(max(MODEL.predict_proba(input_for_model)[0])) if hasattr(MODEL, "predict_proba") else 1.0
                 is_ml_prediction = True
-
             else:
                 final_category = "Uncategorized"
                 final_confidence = 0.0
                 is_ml_prediction = False
 
-        # --- 6. DATA LOGGING (For future ML training) ---
-        if db:
+        # --- DATA LOGGING (Using secure_user_id) ---
+        if db and secure_user_id: # Check that we have a valid db connection AND a verified user ID
             transaction_log = {
-                'user_id': user_id,
+                'user_id': secure_user_id, # CRITICAL FIX: Using verified ID from the token
                 'raw_text': sms_body,
                 'predicted_category': final_category,
                 'confidence': final_confidence,
                 'is_ml_prediction': is_ml_prediction,
                 'timestamp': firestore.SERVER_TIMESTAMP,
-                # Key field: initial prediction, which the client can later update
                 'confirmed_category': final_category 
             }
             db.collection('user_transactions').add(transaction_log)
