@@ -9,3 +9,6 @@ gunicorn==21.2.0
 
 # GCS client
 google-cloud-storage==2.10.0
+
+# Firestore/Firebase Admin SDK (REQUIRED for data logging)
+firebase-admin
