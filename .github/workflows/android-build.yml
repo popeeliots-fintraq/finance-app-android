@@ -170,10 +170,9 @@ jobs:
       run: |
         BUILD_IMAGE_TAG=gcr.io/${{ env.GCP_PROJECT_ID }}/categorizer:${{ github.sha }}
         
-        # ✅ FINAL, UNAMBIGUOUS BUILD COMMAND:
-        # -f points to the Dockerfile path (relative to the root)
-        # The context (last argument) is set to the 'categorizer' folder
-        docker build -t $BUILD_IMAGE_TAG -f categorizer/Dockerfile categorizer 
+        # ✅ FINAL, RELIABLE BUILD COMMAND:
+        # Context is set to the project root ('.')
+        docker build -t $BUILD_IMAGE_TAG -f categorizer/Dockerfile . 
         
         docker push $BUILD_IMAGE_TAG
         echo "IMAGE_TAG=$BUILD_IMAGE_TAG" >> $GITHUB_ENV
