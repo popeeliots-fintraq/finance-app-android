@@ -1,14 +1,7 @@
-# -------------------------------------------------
-# Corrected Dockerfile for Cloud Run Categorizer
-# -------------------------------------------------
-
-# Use official Python 3.11 slim image
 FROM python:3.11-slim
 
-# Set the working directory in the container
 WORKDIR /app
 
-# Install system dependencies required for numpy/scikit-learn
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     gfortran \
@@ -16,19 +9,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     liblapack-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements file and install Python dependencies
-COPY requirements.txt .
+# Copy Python dependencies
+COPY categorizer/requirements.txt .
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-# ✅ Copy the actual API file
-COPY categorize_api.py .
+# Copy API and functions
+COPY categorizer/categorize_api.py .
+COPY functions ./functions
 
-# ✅ Copy merchant map from /functions/ folder into container
-COPY ../functions /app/functions
-
-# Expose port (Cloud Run injects $PORT automatically)
+# Expose port
 ENV PORT=8080
 
-# ✅ Run the Flask app via Gunicorn (Correct entrypoint reference)
-CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 categorize_api:app
+# Run app
+CMD ["uvicorn", "categorize_api:app", "--host", "0.0.0.0", "--port", "8080"]
