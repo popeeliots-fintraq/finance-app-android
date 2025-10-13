@@ -21,11 +21,14 @@ COPY requirements.txt .
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy only the application code (model.pkl is NOT copied locally)
-COPY categorizer_api.py .
+# ✅ Copy the actual API file
+COPY categorize_api.py .
+
+# ✅ Copy merchant map from /functions/ folder into container
+COPY ../functions /app/functions
 
 # Expose port (Cloud Run injects $PORT automatically)
 ENV PORT=8080
 
-# Run the Flask app via Gunicorn
-CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 categorizer_api:app
+# ✅ Run the Flask app via Gunicorn (Correct entrypoint reference)
+CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 categorize_api:app
