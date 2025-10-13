@@ -178,7 +178,7 @@ jobs:
     # 3. Now build docker image, pointing to the correct path
     - name: Build and push docker image
       run: |
-        docker build -t $IMAGE_TAG ./finance-app-android/categorizer
+        docker build -t $IMAGE_TAG -f finance-app-android/categorizer/Dockerfile finance-app-android
         docker push $IMAGE_TAG
     
     # 4. Deploy the Image to Cloud Run
