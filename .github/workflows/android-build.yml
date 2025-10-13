@@ -136,48 +136,54 @@ jobs:
       GCP_PROJECT_ID: ${{ secrets.Firebase_Project_ID }}
       SERVICE_NAME: transaction-categorizer
       SERVICE_REGION: us-central1
-      # IMAGE_TAG is defined here but will be overridden below for the deploy step
       MODEL_BUCKET: fintraq-models
       MODEL_OBJECT: model.pkl
 
     steps:
-    # 1. ✅ CRITICAL FIX: Checkout to the root of the workspace ('.')
-    # This ensures both 'categorizer/' and 'functions/' are available to the build context.
-    - uses: actions/checkout@v3
+    
+    # 1. Checkout the deployment configuration (where the .yml and Dockerfile live)
+    - name: Checkout Workflow Repository
+      uses: actions/checkout@v4 # Using v4 for better support
+      # Checks out the current repository (where the .yml and Dockerfile are) to the root
+      
+    # 2. Checkout the external repository code into a separate subfolder
+    - name: Checkout Source Code Repository
+      uses: actions/checkout@v4
       with:
         repository: popeeliots-fintraq/finance-app-android
         token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-        path: finance-app-android is removed
+        path: finance-app-android # <-- Target code lives here
 
-    # 2. AUTHENTICATE USING SERVICE ACCOUNT KEY
+    # 3. AUTHENTICATE... (etc. - all the steps below are unchanged)
     - name: Authenticate with Service Account Key
       uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ secrets.GCP_CLOUD_RUN_KEY }}  
           
-    # 3. Set up Cloud SDK and Docker Auth
+    # 4. Set up Cloud SDK and Docker Auth
     - name: Set up Cloud SDK and Docker Auth
       uses: google-github-actions/setup-gcloud@v2
       with:
         version: 'latest'
-        project_id: ${{ env.GCP_PROJECT_ID }}
+        project_id: ${{ env.GCP_PROJECT_ID }} 
 
     - name: Authorize Docker
-      run: gcloud auth configure-docker gcr.io # Use gcr.io for standard GCR push
+      run: gcloud auth configure-docker gcr.io
       
-    # 4. Build and push docker image
+    # 5. Build and push docker image
     - name: Build and push docker image
       run: |
         BUILD_IMAGE_TAG=gcr.io/${{ env.GCP_PROJECT_ID }}/categorizer:${{ github.sha }}
         
-        # ✅ FINAL, RELIABLE BUILD COMMAND:
-        # Context is set to the project root ('.')
-        docker build --no-cache -t $BUILD_IMAGE_TAG -f categorizer/Dockerfile . 
+        # FINAL BUILD COMMAND: 
+        # -f points to the Dockerfile in the *current* repo (e.g., categorizer/Dockerfile)
+        # Context (last argument) points to the *source code* repo folder.
+        docker build --no-cache -t $BUILD_IMAGE_TAG -f categorizer/Dockerfile finance-app-android 
         
         docker push $BUILD_IMAGE_TAG
         echo "IMAGE_TAG=$BUILD_IMAGE_TAG" >> $GITHUB_ENV
         
-    # 5. Deploy the Image to Cloud Run
+    # 6. Deploy the Image to Cloud Run
     - name: Deploy to Cloud Run
       uses: google-github-actions/deploy-cloudrun@v2
       with:
@@ -186,7 +192,7 @@ jobs:
         image: ${{ env.IMAGE_TAG }}
         command: gunicorn -w 1 -b :$PORT categorize_api:app
         
-    # 6. Export the Service URL for subsequent jobs
+    # 7. Export the Service URL for subsequent jobs
     - name: Get Cloud Run URL
       id: get_url
       run: |
