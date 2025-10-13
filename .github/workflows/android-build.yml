@@ -178,7 +178,7 @@ jobs:
     # 3. Now build docker image, pointing to the correct path
     - name: Build and push docker image
       run: |
-        IMAGE_TAG=gcr.io/${{ secrets.GCP_PROJECT_ID }}/categorizer:latest
+        IMAGE_TAG=gcr.io/${{ secrets.FIREBASE_PROJECT_ID }}/categorizer:latest
         docker build -t $IMAGE_TAG -f finance-app-android/categorizer/Dockerfile .  # ⬅️ build context is repo root
         docker push $IMAGE_TAG
     
