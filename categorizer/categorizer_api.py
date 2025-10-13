@@ -27,7 +27,7 @@ except Exception as e:
 # --- 2. CATEGORY MAP LOADING ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, ".."))
-CATEGORY_MAP_FILE = os.path.join(BASE_DIR, "functions/merchant-map.json")
+CATEGORY_MAP_FILE = os.path.join(PROJECT_ROOT, "functions", "merchant-map.json")
  
 CATEGORY_MAP = {}
 try:
