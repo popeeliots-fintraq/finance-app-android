@@ -14,8 +14,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     liblapack-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy Python dependencies from the 'categorizer' folder (relative to project root)
-COPY categorizer/requirements.txt .
+# Copy Python dependencies. Context is 'categorizer/', so the file is local.
+# CRITICAL FIX 1: Removed 'categorizer/' prefix.
+COPY requirements.txt .
 RUN pip install --upgrade pip
 # Install packages into wheels for a clean transfer to the next stage
 RUN pip wheel --no-cache-dir --wheel-dir=/wheels -r requirements.txt
@@ -35,11 +36,13 @@ RUN pip install --no-cache /wheels/*
 # Clean up wheels to save space
 RUN rm -rf /wheels
 
-# Copy application code from the 'categorizer' folder (relative to project root)
-COPY categorizer/categorize_api.py .
+# Copy application code. Context is 'categorizer/', so the file is local.
+# CRITICAL FIX 2: Removed 'categorizer/' prefix.
+COPY categorize_api.py .
 
-# Copy the 'functions' folder from the project root
-COPY functions/ ./functions
+# Copy the 'functions' folder. It is located one level UP from the context ('categorizer/').
+# CRITICAL FIX 3: Added '../' to reach the functions folder at the repository root.
+COPY ../functions/ ./functions
 
 # Set environment variable and port
 ENV PORT=8080
