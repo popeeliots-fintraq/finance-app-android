@@ -25,7 +25,9 @@ except Exception as e:
     db = None
 
 # --- 2. CATEGORY MAP LOADING ---
-CATEGORY_MAP_FILE = "functions/merchant-map.json" 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CATEGORY_MAP_FILE = os.path.join(BASE_DIR, "functions/merchant-map.json")
+ 
 CATEGORY_MAP = {}
 try:
     with open(CATEGORY_MAP_FILE, "r") as f:
