@@ -179,7 +179,7 @@ jobs:
     - name: Build and push docker image
       run: |
         IMAGE_TAG=gcr.io/${{ secrets.GCP_PROJECT_ID }}/categorizer:lates
-        docker build -t $IMAGE_TAG -f finance-app-android/categorizer/Dockerfile finance-app-android
+        docker build -t $IMAGE_TAG -f finance-app-android/categorizer/Dockerfile .  # ⬅️ build context is repo root
         docker push $IMAGE_TAG
     
     # 4. Deploy the Image to Cloud Run
