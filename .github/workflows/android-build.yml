@@ -176,16 +176,19 @@ jobs:
     - name: Authorize Docker
       run: gcloud auth configure-docker ${{ env.SERVICE_REGION }}-docker.pkg.dev
     
-    # 3. Now build docker image, pointing to the correct path
+    # 3. Now build docker image (using the multi-stage Dockerfile)
     - name: Build and push docker image
       run: |
-        IMAGE_TAG=gcr.io/${{ secrets.FIREBASE_PROJECT_ID }}/categorizer:latest
-        # ✅ CORRECTED LINE: The context '.' (the current runner workspace) now contains
-        # the 'finance-app-android' directory, so all paths must include it.
-        # However, the Dockerfile copy paths must ALSO be correct.
-        # Let's adjust the Dockerfile path to include the checkout folder:
-        docker build -t $IMAGE_TAG -f finance-app-android/categorizer/Dockerfile finance-app-android # ⬅️ Build context is the checked-out folder
-        docker push $IMAGE_TAG
+        # Use gcr.io as a common registry for GCR/Artifact Registry when pushing
+        BUILD_IMAGE_TAG=gcr.io/${{ env.GCP_PROJECT_ID }}/categorizer:latest
+        
+        # ✅ FINAL CORRECTED BUILD COMMAND:
+        # -f points to the Dockerfile (relative to workspace root)
+        # The trailing argument 'finance-app-android' sets the context to the checked-out code folder.
+        docker build -t $BUILD_IMAGE_TAG -f finance-app-android/categorizer/Dockerfile finance-app-android 
+        docker push $BUILD_IMAGE_TAG
+        # Set the final image tag for the deployment step (using the gcr.io tag for simplicity)
+        echo "IMAGE_TAG=$BUILD_IMAGE_TAG" >> $GITHUB_ENV
     
     # 4. Deploy the Image to Cloud Run
     - name: Deploy to Cloud Run
