@@ -165,18 +165,17 @@ jobs:
     - name: Authorize Docker
       run: gcloud auth configure-docker gcr.io # Use gcr.io for standard GCR push
       
-    # 4. Build and push docker image (using the multi-stage Dockerfile)
+    # 4. Build and push docker image
     - name: Build and push docker image
       run: |
-        # Use gcr.io for deployment image tag
         BUILD_IMAGE_TAG=gcr.io/${{ env.GCP_PROJECT_ID }}/categorizer:${{ github.sha }}
         
-        # ✅ FINAL BUILD COMMAND:
-        # -f points to the Dockerfile relative to the root context (.)
-        # Context is set to the root ('.') where both 'categorizer' and 'functions' reside
-        docker build -t $BUILD_IMAGE_TAG -f categorizer/Dockerfile . 
+        # ✅ FINAL, UNAMBIGUOUS BUILD COMMAND:
+        # -f points to the Dockerfile path (relative to the root)
+        # The context (last argument) is set to the 'categorizer' folder
+        docker build -t $BUILD_IMAGE_TAG -f categorizer/Dockerfile categorizer 
+        
         docker push $BUILD_IMAGE_TAG
-        # Set the final image tag for the deployment step
         echo "IMAGE_TAG=$BUILD_IMAGE_TAG" >> $GITHUB_ENV
         
     # 5. Deploy the Image to Cloud Run
