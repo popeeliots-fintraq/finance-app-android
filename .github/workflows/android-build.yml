@@ -172,7 +172,7 @@ jobs:
         
         # ✅ FINAL, RELIABLE BUILD COMMAND:
         # Context is set to the project root ('.')
-        docker build -t $BUILD_IMAGE_TAG -f categorizer/Dockerfile . 
+        docker build --no-cache -t $BUILD_IMAGE_TAG -f categorizer/Dockerfile . 
         
         docker push $BUILD_IMAGE_TAG
         echo "IMAGE_TAG=$BUILD_IMAGE_TAG" >> $GITHUB_ENV
