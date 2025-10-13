@@ -147,7 +147,7 @@ jobs:
       with:
         repository: popeeliots-fintraq/finance-app-android
         token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-        # path: finance-app-android is removed
+        path: finance-app-android is removed
 
     # 2. AUTHENTICATE USING SERVICE ACCOUNT KEY
     - name: Authenticate with Service Account Key
