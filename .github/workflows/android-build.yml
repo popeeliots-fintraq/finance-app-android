@@ -132,18 +132,15 @@ jobs:
 # JOB 3: DEPLOY PYTHON ML SERVICE TO CLOUD RUN
 # ----------------------------------------------------
   deploy-categorizer-service:
-    # ... (other code for job 3)
-
-    steps:
-    - uses: actions/checkout@v3
-      with:
-        repository: popeeliots-fintraq/finance-app-android
-        token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-        path: finance-app-android
-  
-    needs: build-android
+    name: Deploy Python Categorizer to Cloud Run
+    runs-on: ubuntu-latest
+    # ✅ CORRECTED: needs is a top-level job key
+    needs: build-android 
+    # ✅ CORRECTED: outputs is a top-level job key
     outputs:
       CLOUD_RUN_URL: ${{ steps.get_url.outputs.CLOUD_RUN_URL }}
+    
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
    
  # --- DEFINE ENVIRONMENT VARIABLES ---
     env:
