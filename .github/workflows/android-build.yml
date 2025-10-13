@@ -132,10 +132,14 @@ jobs:
 # JOB 3: DEPLOY PYTHON ML SERVICE TO CLOUD RUN
 # ----------------------------------------------------
   deploy-categorizer-service:
+    # ... (other code for job 3)
 
-    name: Deploy Python Categorizer to Cloud Run
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        repository: popeeliots-fintraq/finance-app-android
+        token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+        path: finance-app-android
   
     needs: build-android
     outputs:
@@ -179,7 +183,11 @@ jobs:
     - name: Build and push docker image
       run: |
         IMAGE_TAG=gcr.io/${{ secrets.FIREBASE_PROJECT_ID }}/categorizer:latest
-        docker build -t $IMAGE_TAG -f finance-app-android/categorizer/Dockerfile .  # ⬅️ build context is repo root
+        # ✅ CORRECTED LINE: The context '.' (the current runner workspace) now contains
+        # the 'finance-app-android' directory, so all paths must include it.
+        # However, the Dockerfile copy paths must ALSO be correct.
+        # Let's adjust the Dockerfile path to include the checkout folder:
+        docker build -t $IMAGE_TAG -f finance-app-android/categorizer/Dockerfile finance-app-android # ⬅️ Build context is the checked-out folder
         docker push $IMAGE_TAG
     
     # 4. Deploy the Image to Cloud Run
