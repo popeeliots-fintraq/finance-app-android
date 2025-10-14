@@ -170,19 +170,16 @@ jobs:
     - name: Authorize Docker
       run: gcloud auth configure-docker gcr.io
       
-    - name: Debug:List Files for Docker Context
+    - name: 🔍 Debug:Show Full Directory Tree
       run: |
-        echo "Listing root directory files:"
+        echo "===== ROOT (ls -F) ====="
         ls -F
-        echo "Listing categorizer directory:"
-        ls -F categorizer/
-        echo "Functions Directory:"
-        ls -F functions/
-        
-    - name: Debug:List Files for Docker Context
-      run: |
-        echo "Root Directory:"
+        echo ""
+        echo "===== ROOT (ls -R .) ====="
         ls -R .
+        echo ""
+        echo "===== USING tree (if installed) ====="
+        if command -v tree; then tree; else echo "tree not installed"; fi
         
     - name: Build Docker Image
       run: |
