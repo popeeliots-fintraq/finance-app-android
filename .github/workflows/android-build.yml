@@ -147,7 +147,7 @@ jobs:
       with:
         repository: popeeliots-fintraq/finance-app-android
         token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-        path: . # <--- The repo contents are at ./
+
 
     # 2. AUTHENTICATE... (etc. - all the steps below are unchanged)
     - name: Authenticate with Service Account Key
