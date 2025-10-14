@@ -42,4 +42,4 @@ COPY functions/ ./functions
 ENV PORT=8080
 EXPOSE 8080
 
-CMD ["gunicorn", "-w", "1", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8080", "categorize_api:app"]
+CMD ["gunicorn", "-w", "1", "-k", "uvicorn.workers.UvicornWorker", "categorize_api:app", "--bind", "0.0.0.0:8080"]
