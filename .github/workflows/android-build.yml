@@ -200,7 +200,7 @@ jobs:
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.SERVICE_REGION }}
           image: ${{ env.IMAGE_TAG }}
-          command: gunicorn -w 1 -b :$PORT categorizer_api:app
+          
     # 5. Export the Service URL for subsequent jobs
       - name: Get Cloud Run URL
         id: get_url
