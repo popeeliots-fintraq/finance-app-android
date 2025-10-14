@@ -181,7 +181,7 @@ jobs:
         
     - name: Debug:List Files for Docker Context
       run: |
-        echo "Listing root directory files:"
+        echo "Root Directory:"
         ls -R .
         
     - name: Build Docker Image
