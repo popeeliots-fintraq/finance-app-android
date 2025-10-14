@@ -83,9 +83,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: popeeliots-fintraq/finance-app-android
-          token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-          path: finance-app-android
+          path: .
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -155,10 +153,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: popeeliots-fintraq/finance-app-android
-          token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-          path: finance-app-android
-        
+          path: .        
           
     # 1. ✅ CORRECTED: AUTHENTICATE USING SERVICE ACCOUNT KEY
       - name: Authenticate with Service Account Key
@@ -189,7 +184,7 @@ jobs:
     
       - name: Build Docker Image
         run: |
-          docker build -t "$IMAGE_TAG" -f finance-app-android/categorizer/Dockerfile ./finance-app-android
+          docker build -t "$IMAGE_TAG" -f categorizer/Dockerfile .
           docker push "$IMAGE_TAG"
 
       - name: Echo Docker Build Command
