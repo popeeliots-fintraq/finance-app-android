@@ -171,8 +171,8 @@ jobs:
     
     - name: Build Docker Image
       run: |
-        docker build -t $BUILD_IMAGE_TAG -f categorizer/Dockerfile .
-        docker push $BUILD_IMAGE_TAG
+        docker build -t "$IMAGE_TAG" -f categorizer/Dockerfile .
+        docker push "$IMAGE_TAG"
         
     # 4. Deploy the Image to Cloud Run
     - name: Deploy to Cloud Run
