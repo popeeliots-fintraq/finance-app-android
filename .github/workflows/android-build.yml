@@ -171,8 +171,8 @@ jobs:
     
     - name: Build Docker Image
       run: |
-        # FIX: The context is now the 'categorizer' directory, and the Dockerfile is inside it.
-        docker build -t $BUILD_IMAGE_TAG -f categorizer/Dockerfile categorizer 
+        # FIX: Revert to root context to include 'functions/' and keep the 'Dockerfile' path
+        docker build -t $BUILD_IMAGE_TAG -f categorizer/Dockerfile .
         docker push $BUILD_IMAGE_TAG
         
     # 4. Deploy the Image to Cloud Run
