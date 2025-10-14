@@ -150,7 +150,7 @@ jobs:
     - name: Checkout Source Code Repository
       uses: actions/checkout@v4
       with:
-        repository: finance-app-android
+        repository: popeeliots-fintraq/finance-app-android
         token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
         path: . #
 
@@ -174,7 +174,7 @@ jobs:
       run: |
         echo "Listing root directory files:"
         ls -F
-        echo "Listing categorizer files:"
+        echo "Listing categorizer directory:"
         ls -F categorizer/
         echo "Functions Directory:"
         ls -F functions/
