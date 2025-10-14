@@ -174,10 +174,15 @@ jobs:
     - name: Authorize Docker
       run: gcloud auth configure-docker ${{ env.SERVICE_REGION }}-docker.pkg.dev
 
-    - name: List workspace contents
+    - name: Print all env variables relevant to Docker
+      run: printenv | grep IMAGE_TAG
+
+    - name: List workspace root
       run: ls -l
-    - name: List categorizer contents
-      run: ls -l categorizer || echo "categorizer directory missing"
+
+    - name: List categorizer folder
+      run: ls -l categorizer
+
     
     - name: Build Docker Image
       run: |
