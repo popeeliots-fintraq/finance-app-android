@@ -33,7 +33,7 @@ RUN pip install --no-cache /wheels/*
 RUN rm -rf /wheels
 
 # CRITICAL FIX 2: Paths relative to the project root
-COPY categorize_api.py .
+COPY categorizer/categorize_api.py .
 
 # CRITICAL FIX 3: Paths relative to the project root
 COPY functions/ ./functions
