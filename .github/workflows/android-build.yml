@@ -187,7 +187,7 @@ jobs:
     
       - name: Build Docker Image
         run: |
-          docker build -t "$IMAGE_TAG" -f categorizer/Dockerfile
+          docker build -t "$IMAGE_TAG" -f categorizer/Dockerfile .
           docker push "$IMAGE_TAG"
 
       - name: Echo Docker Build Command
