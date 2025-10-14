@@ -154,66 +154,66 @@ jobs:
       MODEL_OBJECT: model.pkl
 
     steps:
-    - uses: actions/checkout@v3
-      with:
-        repository: popeeliots-fintraq/finance-app-android
-        token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-        path: finance-app-android
+      - uses: actions/checkout@v3
+        with:
+          repository: popeeliots-fintraq/finance-app-android
+          token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          path: finance-app-android
         
           
     # 1. ✅ CORRECTED: AUTHENTICATE USING SERVICE ACCOUNT KEY
-    - name: Authenticate with Service Account Key
-      uses: google-github-actions/auth@v2
-      with:
+      - name: Authenticate with Service Account Key
+        uses: google-github-actions/auth@v2
+        with:
         # This replaces the entire WIF block and uses the key file secret
-        credentials_json: ${{ secrets.GCP_CLOUD_RUN_KEY }} 
+          credentials_json: ${{ secrets.GCP_CLOUD_RUN_KEY }} 
         
     # 2. Set up Cloud SDK and Docker Auth
-    - name: Set up Cloud SDK and Docker Auth
-      uses: google-github-actions/setup-gcloud@v2
-      with:
-        version: 'latest'
-        project_id: ${{ env.GCP_PROJECT_ID }} # This is now correctly configured via the key
+      - name: Set up Cloud SDK and Docker Auth
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          version: 'latest'
+          project_id: ${{ env.GCP_PROJECT_ID }} # This is now correctly configured via the key
 
-    - name: Authorize Docker
-      run: gcloud auth configure-docker ${{ env.SERVICE_REGION }}-docker.pkg.dev
+      - name: Authorize Docker
+        run: gcloud auth configure-docker ${{ env.SERVICE_REGION }}-docker.pkg.dev
 
-    - name: Print all env variables relevant to Docker
-      run: printenv | grep IMAGE_TAG
+      - name: Print all env variables relevant to Docker
+        run: printenv | grep IMAGE_TAG
 
-    - name: List workspace root
-      run: ls -l
+      - name: List workspace root
+        run: ls -l
 
-    - name: List categorizer folder
-      run: ls -l categorizer
+      - name: List categorizer folder
+        run: ls -l categorizer
 
     
-    - name: Build Docker Image
-      run: |
-        docker build -t "$IMAGE_TAG" -f finance-app-android/categorizer/Dockerfile ./finance-app-android
-        docker push "$IMAGE_TAG"
+      - name: Build Docker Image
+        run: |
+          docker build -t "$IMAGE_TAG" -f finance-app-android/categorizer/Dockerfile ./finance-app-android
+          docker push "$IMAGE_TAG"
 
-    - name: Echo Docker Build Command
-      run: echo docker build -t "$IMAGE_TAG" -f categorizer/Dockerfile .
+      - name: Echo Docker Build Command
+        run: echo docker build -t "$IMAGE_TAG" -f categorizer/Dockerfile .
 
         
     # 4. Deploy the Image to Cloud Run
-    - name: Deploy to Cloud Run
-      uses: google-github-actions/deploy-cloudrun@v2
-      with:
-        service: ${{ env.SERVICE_NAME }}
-        region: ${{ env.SERVICE_REGION }}
-        image: ${{ env.IMAGE_TAG }}
-        command: gunicorn -w 1 -b :$PORT categorizer_api:app
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.SERVICE_NAME }}
+          region: ${{ env.SERVICE_REGION }}
+          image: ${{ env.IMAGE_TAG }}
+          command: gunicorn -w 1 -b :$PORT categorizer_api:app
     # 5. Export the Service URL for subsequent jobs
-    - name: Get Cloud Run URL
-      id: get_url
-      run: |
-        SERVICE_URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} \
+      - name: Get Cloud Run URL
+        id: get_url
+        run: |
+          SERVICE_URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} \
           --region ${{ env.SERVICE_REGION }} \
           --project ${{ env.GCP_PROJECT_ID }} \
           --format 'value(status.url)')
-        echo "CLOUD_RUN_URL=$SERVICE_URL" >> $GITHUB_OUTPUT
+          echo "CLOUD_RUN_URL=$SERVICE_URL" >> $GITHUB_OUTPUT
 # ----------------------------------------------------
 # JOB 4: VERIFY BACKEND API RESPONSE
 # ----------------------------------------------------
