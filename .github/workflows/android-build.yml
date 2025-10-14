@@ -169,16 +169,11 @@ jobs:
     - name: Authorize Docker
       run: gcloud auth configure-docker ${{ env.SERVICE_REGION }}-docker.pkg.dev
     
+    # 3. Now build docker image, pointing to the correct path
     - name: Build and push docker image
       run: |
-        echo "Current directory:"
-        pwd
-        echo "Listing files:"
-        ls -R .
-        echo "Trying to build now..."
-        docker build -t $BUILD_IMAGE_TAG -f categorizer/Dockerfile . || { echo "❌ Docker build failed"; exit 1; }
-        echo "Trying to push..."
-        docker push $BUILD_IMAGE_TAG || { echo "❌ Docker push failed"; exit 1;
+        docker build -t $IMAGE_TAG -f categorizer/Dockerfile finance-app-android/categorizer
+        docker push $IMAGE_TAG
         
     # 4. Deploy the Image to Cloud Run
     - name: Deploy to Cloud Run
