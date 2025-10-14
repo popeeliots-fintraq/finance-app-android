@@ -191,7 +191,7 @@ jobs:
           docker push "$IMAGE_TAG"
 
       - name: Echo Docker Build Command
-        run: echo docker build -t "$IMAGE_TAG" -f categorizer/Dockerfile .
+        run: echo docker build -t "$IMAGE_TAG" -f categorizer/Dockerfile
 
         
     # 4. Deploy the Image to Cloud Run
