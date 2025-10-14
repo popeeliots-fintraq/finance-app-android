@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # CRITICAL FIX 1: Paths relative to the project root
-COPY categorizer/requirements.txt .
+COPY requirements.txt .
 RUN pip install --upgrade pip
 RUN pip wheel --no-cache-dir --wheel-dir=/wheels -r requirements.txt
 
@@ -33,7 +33,7 @@ RUN pip install --no-cache /wheels/*
 RUN rm -rf /wheels
 
 # CRITICAL FIX 2: Paths relative to the project root
-COPY categorizer/categorize_api.py .
+COPY categorize_api.py .
 
 # CRITICAL FIX 3: Paths relative to the project root
 COPY functions/ ./functions
