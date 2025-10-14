@@ -178,8 +178,8 @@ jobs:
         echo "Trying to build now..."
         docker build -t $BUILD_IMAGE_TAG -f categorizer/Dockerfile . || { echo "❌ Docker build failed"; exit 1; }
         echo "Trying to push..."
-        docker push $BUILD_IMAGE_TAG || { echo "❌ Docker push failed"; exit 1; }
-    
+        docker push $BUILD_IMAGE_TAG || { echo "❌ Docker push failed"; exit 1;
+        
     # 4. Deploy the Image to Cloud Run
     - name: Deploy to Cloud Run
       uses: google-github-actions/deploy-cloudrun@v2
