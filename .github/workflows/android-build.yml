@@ -171,14 +171,16 @@ jobs:
         echo "===== BEGIN FILE DUMP ====="
         ls -R .
         echo "===== END FILE DUMP ====="
-    
+        
+    - name: Fix File Permissions
+      run: chmod -R a+rX .
+      
     # 5. Build Docker Image
     - name: Build Docker Image
       run: |
         # CORRECTED COMMAND: Context is '.', Dockerfile path is relative to the context.
         docker build -t $BUILD_IMAGE_TAG -f categorizer/Dockerfile .
         docker push $BUILD_IMAGE_TAG
-
       
     # 6. Deploy the Image to Cloud Run
     - name: Deploy to Cloud Run
