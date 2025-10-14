@@ -175,9 +175,9 @@ jobs:
         echo "Listing root directory files:"
         ls -F
         echo "Listing categorizer files:"
-        ls -F finance-app-android/categorizer/
+        ls -F categorizer/
         echo "Functions Directory:"
-        ls -F finance-app-android/functions/
+        ls -F functions/
 
     - name: Build Docker Image
       run: |
