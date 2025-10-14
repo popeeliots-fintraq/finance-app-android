@@ -152,7 +152,7 @@ jobs:
       with:
         repository: popeeliots-fintraq/finance-app-android
         token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-        path: finance-app-android # <-- Target code lives here
+        path: . #
 
     # 3. AUTHENTICATE... (etc. - all the steps below are unchanged)
     - name: Authenticate with Service Account Key
@@ -181,8 +181,9 @@ jobs:
 
     - name: Build Docker Image
       run: |
-        docker build -t $BUILD_IMAGE_TAG -f finance-app-android/categorizer/Dockerfile finance-app-android
-        docker push $BUILD_IMAGE_TAG # <-- FIX: Pushes the image to GCR
+        # FIX: The Dockerfile is now at 'categorizer/Dockerfile' and the context is '.'
+        docker build -t $BUILD_IMAGE_TAG -f categorizer/Dockerfile . 
+        docker push $BUILD_IMAGE_TAG
       
     # 6. Deploy the Image to Cloud Run
     - name: Deploy to Cloud Run
