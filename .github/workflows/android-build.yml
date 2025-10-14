@@ -7,16 +7,14 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-android:
+  build-android: # New, Corrected key job for building android
     runs-on: ubuntu-latest
     name: Build Android APK
 
     steps:
       - uses: actions/checkout@v3
-
       - name: Generate Gradle Wrapper
         run: gradle wrapper --gradle-version 8.6 --gradle-distribution-sha256-sum 9631d53cf3e74bfa726893aee1f8994fee4e060c401335946dba2156f440f24c
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
@@ -31,109 +29,172 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: 8.6
-
+      
+      # The gradle/actions/setup-gradle action handles caching automatically,
+      # so we've removed the redundant caching step.
+      
+      # Now, we will force a clean build to resolve any lingering issues
       - name: Clean Build
         run: ./gradlew clean --stacktrace --no-daemon
 
       - name: Build Debug APK with log capture
         run: ./gradlew assembleDebug --stacktrace --debug --no-daemon --info > build-log.txt 2>&1
-
-      - name: List APK
+        
+      - name: Find and Upload APK
+        if: success()
+        run: |
+          find app/build/outputs/apk/ -type f -name "*.apk"
+      - name: Upload Gradle logs (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-build-logs
+          path: build-log.txt
+          
+      - name: Debug:List APK files
         run: ls -R app/build/outputs/apk || echo "No APK files found"
-
+        
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
           path: app/build/outputs/**/*.apk
 
+ # ----------------------------------------------------
+  # JOB 2: DEPLOY FIREBASE FUNCTIONS (Continuous Deployment)
+  # ----------------------------------------------------
+  
   deploy-backend:
     name: Deploy Categorization Backend
-    needs: build-android
+    # Only run this job if the Android build succeeds
+    needs: build-android 
     runs-on: ubuntu-latest
 
+    
+    # Crucial: Only deploy the live backend when merging/pushing directly to 'main'
+    # if: github.event_name == 'push' && github.ref == 'refs/heads/main' 
     env:
       FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
       FIREBASE_PROJECT_ID: ${{ secrets.Firebase_Project_ID }}
-
+      
     steps:
       - uses: actions/checkout@v3
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
-
+          node-version: '20' # Recommended Node.js version for Firebase Functions 
+          
       - name: Install Firebase CLI
-        run: npm install firebase-tools@latest
-
+        run: |
+          npm install firebase-tools@latest
+          npx firebase --version # ✅ Use npx to avoid global pollution
+        
       - name: Write Firebase Service Account
         run: |
-          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}" | base64 -d > functions/service-account.json
-
+          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}" | base64 -d > ${{ github.workspace }}/functions/service-account.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=${{ github.workspace }}/functions/service-account.json" >> $GITHUB_ENV
+          
+      - name: Verify JSON file
+        run: |
+          head -n 5 ${{ github.workspace }}/functions/service-account.json
+          jq .type ${{ github.workspace }}/functions/service-account.json
+      - name: Install Function Dependencies
+        run: |
+          cd functions
+          npm install dotenv firebase-functions@latest firebase-admin@latest
+      - name: Initialize Firebase Admin (CI)
+        run: |
+          cd functions
+          echo "const admin = require('firebase-admin');" > temp-init.js
+          echo "const serviceAccount = require('./service-account.json');" >> temp-init.js
+          echo "admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });" >> temp-init.js
+          echo "console.log('Firebase admin initialized successfully');" >> temp-init.js
+          node temp-init.js
       - name: Deploy Functions
         run: |
           cd functions
           npx firebase deploy --only functions -P $FIREBASE_PROJECT_ID --force
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/functions/service-account.json
 
+      - name: Run Backend Unit Tests
+        run: |
+          cd functions
+          npm test -- --passWithNoTests
+# ----------------------------------------------------
+# JOB 3: DEPLOY PYTHON ML SERVICE TO CLOUD RUN
+# ----------------------------------------------------
   deploy-categorizer-service:
+
     name: Deploy Python Categorizer to Cloud Run
-    needs: build-android
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  
+    needs: build-android
     outputs:
       CLOUD_RUN_URL: ${{ steps.get_url.outputs.CLOUD_RUN_URL }}
-
+   
+ # --- DEFINE ENVIRONMENT VARIABLES ---
     env:
       GCP_PROJECT_ID: ${{ secrets.Firebase_Project_ID }}
       SERVICE_NAME: transaction-categorizer
       SERVICE_REGION: us-central1
-      BUILD_IMAGE_TAG: gcr.io/${{ secrets.Firebase_Project_ID }}/transaction-categorizer:${{ github.sha }}
+      IMAGE_TAG: us-central1-docker.pkg.dev/${{ secrets.Firebase_Project_ID }}/gcf-artifacts/transaction-categorizer:${{ github.sha }}
+      MODEL_BUCKET: fintraq-models
+      MODEL_OBJECT: model.pkl
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          repository: popeeliots-fintraq/finance-app-android
-          token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+    - uses: actions/checkout@v3
+      with:
+        repository: popeeliots-fintraq/finance-app-android
+        token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+        path: finance-app-android
+        
+          
+    # 1. ✅ CORRECTED: AUTHENTICATE USING SERVICE ACCOUNT KEY
+    - name: Authenticate with Service Account Key
+      uses: google-github-actions/auth@v2
+      with:
+        # This replaces the entire WIF block and uses the key file secret
+        credentials_json: ${{ secrets.GCP_CLOUD_RUN_KEY }} 
+        
+    # 2. Set up Cloud SDK and Docker Auth
+    - name: Set up Cloud SDK and Docker Auth
+      uses: google-github-actions/setup-gcloud@v2
+      with:
+        version: 'latest'
+        project_id: ${{ env.GCP_PROJECT_ID }} # This is now correctly configured via the key
 
-      - name: Authenticate with Service Account Key
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_CLOUD_RUN_KEY }}
-
-      - name: Set up Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-        with:
-          version: 'latest'
-          project_id: ${{ env.GCP_PROJECT_ID }}
-
-      - name: Authorize Docker
-        run: gcloud auth configure-docker gcr.io
-
-      - name: Verify categorizer folder contents
-        run: |
-          echo "Current directory:"
-          pwd
-          echo "Listing categorizer directory:"
-          ls -R categorizer || echo "categorizer folder NOT FOUND"
-
-      - name: Build Docker Image
-        run: |
-          docker build -t $BUILD_IMAGE_TAG -f categorizer/Dockerfile .
-          docker push $BUILD_IMAGE_TAG
-
-      - name: Deploy to Cloud Run
-        uses: google-github-actions/deploy-cloudrun@v2
-        with:
-          service: ${{ env.SERVICE_NAME }}
-          region: ${{ env.SERVICE_REGION }}
-          image: ${{ env.BUILD_IMAGE_TAG }}
-          command: gunicorn -w 1 -b :$PORT categorize_api:app
-
-      - name: Get Cloud Run URL
-        id: get_url
-        run: |
-          echo "CLOUD_RUN_URL=$(gcloud run services describe $SERVICE_NAME --region $SERVICE_REGION --format 'value(status.url)')" >> $GITHUB_OUTPUT
-
+    - name: Authorize Docker
+      run: gcloud auth configure-docker ${{ env.SERVICE_REGION }}-docker.pkg.dev
+    
+    # 3. Now build docker image, pointing to the correct path
+    - name: Build and push docker image
+      run: |
+        docker build -t $IMAGE_TAG ./finance-app-android/categorizer
+        docker push $IMAGE_TAG
+    
+    # 4. Deploy the Image to Cloud Run
+    - name: Deploy to Cloud Run
+      uses: google-github-actions/deploy-cloudrun@v2
+      with:
+        service: ${{ env.SERVICE_NAME }}
+        region: ${{ env.SERVICE_REGION }}
+        image: ${{ env.IMAGE_TAG }}
+        command: gunicorn -w 1 -b :$PORT categorizer_api:app
+    # 5. Export the Service URL for subsequent jobs
+    - name: Get Cloud Run URL
+      id: get_url
+      run: |
+        SERVICE_URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} \
+          --region ${{ env.SERVICE_REGION }} \
+          --project ${{ env.GCP_PROJECT_ID }} \
+          --format 'value(status.url)')
+        echo "CLOUD_RUN_URL=$SERVICE_URL" >> $GITHUB_OUTPUT
+# ----------------------------------------------------
+# JOB 4: VERIFY BACKEND API RESPONSE
+# ----------------------------------------------------
   verify-backend-api:
     name: Verify Backend API is Reachable
     runs-on: ubuntu-latest
@@ -142,6 +203,13 @@ jobs:
     steps:
       - name: Check Cloud Run API Health
         run: |
-          URL="${{ needs.deploy-categorizer-service.outputs.CLOUD_RUN_URL }}"
-          echo "Testing $URL..."
-          curl -I "$URL" || echo "❌ API unreachable"
+          echo "Testing Cloud Run API availability..."
+          URL="https://transaction-categorizer-801862457352.us-central1.run.app"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+          echo "HTTP Response: $STATUS"
+          if [ "$STATUS" -eq 200 ]; then
+            echo "✅ API is reachable and responding OK"
+          else
+            echo "❌ API test failed with status: $STATUS"
+            exit 1
+          fi
