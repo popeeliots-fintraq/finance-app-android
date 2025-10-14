@@ -178,7 +178,12 @@ jobs:
         ls -F categorizer/
         echo "Functions Directory:"
         ls -F functions/
-
+        
+    - name: Debug:List Files for Docker Context
+      run: |
+        echo "Listing root directory files:"
+        ls -R .
+        
     - name: Build Docker Image
       run: |
         # FIX: The Dockerfile is now at 'categorizer/Dockerfile' and the context is '.'
