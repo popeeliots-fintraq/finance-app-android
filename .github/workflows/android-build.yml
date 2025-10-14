@@ -82,7 +82,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          Path: .
+          path: .
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
