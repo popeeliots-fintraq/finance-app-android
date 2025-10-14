@@ -6,6 +6,7 @@ scikit-learn==1.5.0
 # Web server
 Flask==2.3.3
 gunicorn==21.2.0
+uvicorn==0.29.0
 
 # GCS client
 google-cloud-storage==2.10.0
