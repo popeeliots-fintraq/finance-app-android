@@ -13,6 +13,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          path: .
       - name: Generate Gradle Wrapper
         run: gradle wrapper --gradle-version 8.6 --gradle-distribution-sha256-sum 9631d53cf3e74bfa726893aee1f8994fee4e060c401335946dba2156f440f24c
       - name: Grant execute permission for gradlew
@@ -79,6 +81,8 @@ jobs:
       
     steps:
       - uses: actions/checkout@v3
+        with:
+          Path: .
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -89,7 +93,8 @@ jobs:
         run: |
           npm install firebase-tools@latest
           npx firebase --version # ✅ Use npx to avoid global pollution
-        
+
+      # consider removing the following steps for security as per prior advice  
       - name: Write Firebase Service Account
         run: |
           echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}" | base64 -d > ${{ github.workspace }}/functions/service-account.json
@@ -149,7 +154,7 @@ jobs:
       with:
         repository: popeeliots-fintraq/finance-app-android
         token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-        path: finance-app-android
+        path: .
         
           
     # 1. ✅ CORRECTED: AUTHENTICATE USING SERVICE ACCOUNT KEY
