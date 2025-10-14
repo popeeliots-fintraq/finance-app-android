@@ -128,6 +128,7 @@ jobs:
     needs: build-android 
     outputs:
       CLOUD_RUN_URL: ${{ steps.get_url.outputs.CLOUD_RUN_URL }}
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       
     
     # --- DEFINE ENVIRONMENT VARIABLES ---
@@ -182,7 +183,6 @@ jobs:
     - name: Build Docker Image
       run: |
         docker build -t $BUILD_IMAGE_TAG -f finance-app-android/categorizer/Dockerfile finance-app-android
-        docker push $BUILD_IMAGE_TAG
         
     # 6. Deploy the Image to Cloud Run
     - name: Deploy to Cloud Run
