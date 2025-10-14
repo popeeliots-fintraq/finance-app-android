@@ -178,9 +178,8 @@ jobs:
         
     - name: Build Docker Image
       run: |
-        # FIX: The Dockerfile is now at 'categorizer/Dockerfile' and the context is '.'
-        docker build -t $BUILD_IMAGE_TAG -f categorizer/Dockerfile . 
-        docker push $BUILD_IMAGE_TAG
+        docker build -t $BUILD_IMAGE_TAG -f finance-app-android/categorizer/Dockerfile finance-app-android
+
       
     # 6. Deploy the Image to Cloud Run
     - name: Deploy to Cloud Run
