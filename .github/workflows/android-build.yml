@@ -171,7 +171,6 @@ jobs:
     
     - name: Build Docker Image
       run: |
-        # FIX: Revert to root context to include 'functions/' and keep the 'Dockerfile' path
         docker build -t $BUILD_IMAGE_TAG -f categorizer/Dockerfile .
         docker push $BUILD_IMAGE_TAG
         
