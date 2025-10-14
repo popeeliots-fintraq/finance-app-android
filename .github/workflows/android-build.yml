@@ -169,11 +169,11 @@ jobs:
     - name: Authorize Docker
       run: gcloud auth configure-docker ${{ env.SERVICE_REGION }}-docker.pkg.dev
     
-    # 3. Now build docker image, pointing to the correct path
-    - name: Build and push docker image
+    - name: Build Docker Image
       run: |
-        docker build -t $IMAGE_TAG -f categorizer/Dockerfile finance-app-android/categorizer
-        docker push $IMAGE_TAG
+        # FIX: The context is now the 'categorizer' directory, and the Dockerfile is inside it.
+        docker build -t $BUILD_IMAGE_TAG -f categorizer/Dockerfile categorizer 
+        docker push $BUILD_IMAGE_TAG
         
     # 4. Deploy the Image to Cloud Run
     - name: Deploy to Cloud Run
