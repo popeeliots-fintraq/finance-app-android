@@ -170,16 +170,11 @@ jobs:
     - name: Authorize Docker
       run: gcloud auth configure-docker gcr.io
       
-    - name: 🔍 Debug:Show Full Directory Tree
+    - name: 🔍 Debug:Dump Directory Tree to File
       run: |
-        echo "===== ROOT (ls -F) ====="
-        ls -F
-        echo ""
-        echo "===== ROOT (ls -R .) ====="
+        echo "===== BEGIN FILE DUMP ====="
         ls -R .
-        echo ""
-        echo "===== USING tree (if installed) ====="
-        if command -v tree; then tree; else echo "tree not installed"; fi
+        echo "===== END FILE DUMP ====="
         
     - name: Build Docker Image
       run: |
