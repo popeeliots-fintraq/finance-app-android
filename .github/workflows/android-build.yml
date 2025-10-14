@@ -128,11 +128,7 @@ jobs:
     needs: build-android 
     outputs:
       CLOUD_RUN_URL: ${{ steps.get_url.outputs.CLOUD_RUN_URL }}
-    
-    if: |
-      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-      (github.event_name == 'pull_request' && github.base_ref == 'main')
-    
+      
     
     # --- DEFINE ENVIRONMENT VARIABLES ---
     env:
