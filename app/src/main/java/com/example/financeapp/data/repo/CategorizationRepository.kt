@@ -16,9 +16,14 @@ class CategorizationRepository {
             
             // Execute the API call
             val response = service.categorizeTransaction(request)
-            
-            // Success: Return the category and confidence score
-            Result.success(response)
+            if (response.isSuccessful && response.body() != null) {
+                // ✅ FIX 1: Extract the body before wrapping it in Result.success
+                Result.success(response.body()!!)
+            } else {
+                // Handle API error codes (e.g., 400, 500)
+                val errorBody = response.errorBody()?.string() ?: "Unknown API error"
+                throw Exception("API call failed: ${response.code()} - $errorBody")
+            }    
         } catch (e: Exception) {
             // Failure: Catch network/server errors and return failure
             println("API Error: ${e.message}")
