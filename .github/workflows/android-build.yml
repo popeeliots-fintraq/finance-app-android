@@ -42,7 +42,7 @@ jobs:
         run: ./gradlew clean --stacktrace --no-daemon
 
       - name: Build Debug APK with log capture
-        run: ./gradlew assembleDebug --stacktrace --debug --no-daemon --info > build-log.txt 2>&1
+        run: ./gradlew assembleDebug --stacktrace --debug --no-daemon --info
 
          # NEW STEP: Print the log contents ONLY if the build step failed
       - name: Print Gradle Log on Failure
