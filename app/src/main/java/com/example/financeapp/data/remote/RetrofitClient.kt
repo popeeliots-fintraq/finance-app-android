@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit
 object RetrofitClient {
 
     // ✅ Use your live backend URL
-    private const val BASE_URL = "https://8080-cs-243687223965-default.cs-asia-southeast1-fork.cloudshell.dev/"
+    private const val BASE_URL = "https://transaction-categorizer-801862457352.us-central1.run.app/"
 
     private val okHttpClient = OkHttpClient.Builder()
         .addInterceptor(HttpLoggingInterceptor().apply {
