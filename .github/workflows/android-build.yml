@@ -43,6 +43,19 @@ jobs:
 
       - name: Build Debug APK with log capture
         run: ./gradlew assembleDebug --stacktrace --debug --no-daemon --info > build-log.txt 2>&1
+
+         # NEW STEP: Print the log contents ONLY if the build step failed
+      - name: Print Gradle Log on Failure
+        if: always() # Use always() to run this step even if the previous one failed
+        run: |
+          echo "--- START OF GRADLE BUILD LOG ---"
+          # Check if the log file exists and print it
+          if [ -f "build-log.txt" ]; then
+            cat build-log.txt
+          else
+            echo "build-log.txt not found."
+          fi
+          echo "--- END OF GRADLE BUILD LOG ---"
         
       - name: Find and Upload APK
         if: success()
