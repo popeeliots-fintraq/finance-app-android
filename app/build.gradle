@@ -94,4 +94,10 @@ dependencies {
     implementation 'com.google.android.material:material:1.12.0'
     implementation 'androidx.compose.material3:material3:1.2.1' // If using Jetpack
 
+    // WorkManager (Needed for SmsProcessingWorker)
+    implementation 'androidx.work:work-runtime-ktx:2.9.0' // Use the latest stable version
+    
+    // Coroutines extension for Lifecycle/ViewModel (Highly recommended with WorkManager)
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0' // Ensure this version is recent
+
 }
