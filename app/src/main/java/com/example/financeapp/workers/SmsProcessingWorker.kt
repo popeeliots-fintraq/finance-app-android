@@ -36,26 +36,42 @@ class SmsProcessingWorker(appContext: Context, workerParams: WorkerParameters) :
              return Result.success() // Success, no further action needed
         }
         
-        // 2. LOCAL DB I/O (Moved from old receiver)
+        // 2. LOCAL DB I/O (Initial Insert)
+        val db = SmsDatabase.getDatabase(applicationContext) // Initialize DB access
+        
+        // Initialize SmsData object (id=0 will trigger autoGenerate)
+        var smsData = SmsData(sender = sender, messageBody = messageBody, timestamp = timestamp)
+
         try {
-            // Note: If you were using a custom encryption library, ensure the setup is here
-            val db = SmsDatabase.getDatabase(applicationContext) 
-            val smsData = SmsData(sender = sender, messageBody = messageBody, timestamp = timestamp)
-            db.smsDao().insert(smsData)
-            Log.d(TAG, "Saved SMS to encrypted database.")
+            // 💡 1. Capture the generated ID from the insert operation (Returns Long)
+            val generatedId = db.smsDao().insert(smsData)
+
+            // 💡 2. Update the smsData object with the generated ID for subsequent updates
+            smsData = smsData.copy(id = generatedId.toInt()) 
+            Log.d(TAG, "Saved SMS with generated ID: ${smsData.id}")
+
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to save SMS to DB: ${e.localizedMessage}")
+            Log.e(TAG, "Failed to save initial SMS to DB: ${e.localizedMessage}")
+            // Continue, as we still want to try the API call
         }
 
-        // 3. API CALL (Moved from old receiver)
+        // 3. API CALL & DB UPDATE (Final step of the worker)
         try {
-            val amount = parseAmountFromSms(messageBody) // Use the parser
-            
-            val result = repository.getCategorizedSpend(messageBody) // Use the repository
+            val amount = parseAmountFromSms(messageBody) 
+            val result = repository.getCategorizedSpend(messageBody)
             
             result.onSuccess { response ->
                 Log.d(TAG, "API Success! Category: ${response.category}, Confidence: ${response.confidenceScore}")
-                // TODO: Update the local database entry with the categorization result
+                
+                // 💡 3. Update the local DB entry with categorization results
+                val categorizedData = smsData.copy(
+                    category = response.category,
+                    confidenceScore = response.confidenceScore,
+                    isProcessed = true
+                )
+                db.smsDao().update(categorizedData) // Requires the update function in SmsDao.kt
+                Log.d(TAG, "Updated DB for SMS ID: ${categorizedData.id} with categorization.")
+
             }.onFailure { error ->
                 Log.e(TAG, "API Failure: ${error.message}")
                 return Result.retry() // Retry API call later if it fails
