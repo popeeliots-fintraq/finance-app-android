@@ -1,12 +1,12 @@
-package com.example.financeapp.workers // Create this 'workers' package
+package com.example.financeapp.workers
 
 import android.content.Context
 import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.example.financeapp.data.local.SmsData // Assuming this is correct
-import com.example.financeapp.data.local.SmsDatabase // Assuming this is correct
-import com.example.financeapp.data.repo.CategorizationRepository // You need the repo
+import com.example.financeapp.SmsData
+import com.example.financeapp.SmsDatabase
+import com.example.financeapp.data.repo.CategorizationRepository
 
 class SmsProcessingWorker(appContext: Context, workerParams: WorkerParameters) :
     CoroutineWorker(appContext, workerParams) {
