@@ -61,6 +61,7 @@ jobs:
         if: success()
         run: |
           find app/build/outputs/apk/ -type f -name "*.apk"
+          
       - name: Upload Gradle logs (on failure)
         if: failure()
         uses: actions/upload-artifact@v4
@@ -69,13 +70,16 @@ jobs:
           path: build-log.txt
           
       - name: Debug:List APK files
-        run: ls -R app/build/outputs/apk || echo "No APK files found"
+        run: |
+          echo "Listing all APKs:"
+          find app/build/outputs/apk/ -type f -name "*.apk"
         
       - name: Upload APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
-          path: app/build/outputs/**/*.apk
+          path: app/build/outputs/apk/debug/app-debug.apk
 
  # ----------------------------------------------------
   # JOB 2: DEPLOY FIREBASE FUNCTIONS (Continuous Deployment)
