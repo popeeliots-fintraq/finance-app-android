@@ -17,7 +17,7 @@ interface SalaryBucketDao {
     @Update
     suspend fun update(bucket: SalaryBucket)
 
-    @Query("SELECT * FROM Salary_buckets")
+    @Query("SELECT * FROM salary_buckets")
     suspend fun getAllBuckets(): List<SalaryBucket>
 }
 
@@ -30,10 +30,10 @@ interface LeakBucketDao {
     @Update
     suspend fun update(bucket: LeakBucket)
 
-    @Query("SELECT * FROM Leak_buckets")
+    @Query("SELECT * FROM leak_buckets")
     suspend fun getAllBuckets(): List<LeakBucket>
     
     // A key query for Fintraq's vision!
-    @Query("SELECT * FROM Leak_buckets WHERE bucketName = :name")
+    @Query("SELECT * FROM leak_buckets WHERE bucketName = :name")
     suspend fun getBucketByName(name: String): LeakBucket?
 }
