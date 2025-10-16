@@ -5,7 +5,8 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.example.financeapp.data.local.SalaryBucket
+// Explicitly importing both entities from the same package for Kapt stability
+import com.example.financeapp.data.local.SalaryBucket 
 import com.example.financeapp.data.local.LeakBucket
 
 // DAO for the source of funds
@@ -17,7 +18,8 @@ interface SalaryBucketDao {
     @Update
     suspend fun update(bucket: SalaryBucket)
 
-    @Query("SELECT * FROM salary_buckets")
+    // Using lowercase table name 'salary_buckets'
+    @Query("SELECT * FROM salary_buckets") 
     suspend fun getAllBuckets(): List<SalaryBucket>
 }
 
@@ -30,10 +32,12 @@ interface LeakBucketDao {
     @Update
     suspend fun update(bucket: LeakBucket)
 
-    @Query("SELECT * FROM leak_buckets")
+    // Using lowercase table name 'leak_buckets'
+    @Query("SELECT * FROM leak_buckets") 
     suspend fun getAllBuckets(): List<LeakBucket>
     
     // A key query for Fintraq's vision!
-    @Query("SELECT * FROM leak_buckets WHERE bucketName = :name")
+    // Using lowercase table name 'leak_buckets'
+    @Query("SELECT * FROM leak_buckets WHERE bucketName = :name") 
     suspend fun getBucketByName(name: String): LeakBucket?
 }
