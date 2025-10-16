@@ -8,7 +8,7 @@ data class SmsData(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val sender: String,
     val messageBody: String,
-    val timestamp: Long
+    val timestamp: Long,
     val category: String? = null, 
     val confidenceScore: Float? = null,
     val isProcessed: Boolean = false
