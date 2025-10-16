@@ -15,5 +15,5 @@ data class CategorizationResponse(
     
     // AI/Model Confidence Score (Your requested field)
     @SerializedName("confidence_score")
-    val confidenceScore: Float
+    val confidenceScore: Double
 )
