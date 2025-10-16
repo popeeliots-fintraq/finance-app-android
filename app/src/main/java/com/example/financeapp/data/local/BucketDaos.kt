@@ -1,4 +1,4 @@
-package com.example.financeapp // Use your root package
+package com.example.financeapp.data.local
 
 import androidx.room.Dao
 import androidx.room.Insert
