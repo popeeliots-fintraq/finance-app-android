@@ -1,4 +1,4 @@
-package com.example.financeapp.data.local // or com.example.financeapp
+package com.example.financeapp.data.local
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
