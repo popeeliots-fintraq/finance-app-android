@@ -5,6 +5,8 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.example.financeapp.data.local.SalaryBucket
+import com.example.financeapp.data.local.LeakBucket
 
 // DAO for the source of funds
 @Dao
