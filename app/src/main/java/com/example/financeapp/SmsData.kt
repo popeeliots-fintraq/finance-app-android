@@ -10,6 +10,6 @@ data class SmsData(
     val messageBody: String,
     val timestamp: Long,
     val category: String? = null, 
-    val confidenceScore: Float? = null,
+    val confidenceScore: Double? = null,
     val isProcessed: Boolean = false
 )
