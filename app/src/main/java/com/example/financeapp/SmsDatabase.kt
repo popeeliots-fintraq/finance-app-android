@@ -6,6 +6,10 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import net.sqlcipher.database.SQLiteDatabase
 import net.sqlcipher.database.SupportFactory
+import com.example.financeapp.data.local.SalaryBucket
+import com.example.financeapp.data.local.LeakBucket
+import com.example.financeapp.data.local.SalaryBucketDao
+import com.example.financeapp.data.local.LeakBucketDao
 
 @Database(entities = [SmsData::class, SalaryBucket::class, LeakBucket::class], version = 1, exportSchema = false)
 abstract class SmsDatabase : RoomDatabase() {
