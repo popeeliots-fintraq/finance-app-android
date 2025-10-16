@@ -12,6 +12,6 @@ data class LeakBucket(
     val currentLeakageAmount: Double = 0.0,
     // The maximum you'd allow for this bucket (optional goal setting)
     val targetLimit: Double? = null, 
-    // Human-readable description of why this is a leak (e.g., "Non-essential recurring spend")
+    // Human-readable description of why this is a leak
     val description: String 
 )
