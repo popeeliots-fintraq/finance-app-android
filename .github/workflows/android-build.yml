@@ -41,9 +41,6 @@ jobs:
       - name: Clean Build
         run: ./gradlew clean --stacktrace --no-daemon
 
-      - name: KAPT (Room Annotation Processing)
-        run: ./gradlew kaptKotlin --stacktrace --no-daemon
-
       - name: Build Debug APK with log capture
         run: ./gradlew assembleDebug --stacktrace --debug --no-daemon --info
 
