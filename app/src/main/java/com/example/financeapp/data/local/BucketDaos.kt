@@ -17,7 +17,7 @@ interface SalaryBucketDao {
     @Update
     suspend fun update(bucket: SalaryBucket)
 
-    @Query("SELECT * FROM salary_buckets")
+    @Query("SELECT * FROM Salary_buckets")
     suspend fun getAllBuckets(): List<SalaryBucket>
 }
 
