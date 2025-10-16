@@ -9,4 +9,7 @@ data class SmsData(
     val sender: String,
     val messageBody: String,
     val timestamp: Long
+    val category: String? = null, 
+    val confidenceScore: Float? = null,
+    val isProcessed: Boolean = false
 )
