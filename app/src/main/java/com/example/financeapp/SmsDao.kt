@@ -8,7 +8,7 @@ import androidx.room.Update
 @Dao
 interface SmsDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insert(smsData: SmsData)
+    suspend fun insert(smsData: SmsData): Long
     @Update
     suspend fun update(smsData: SmsData)
 }
