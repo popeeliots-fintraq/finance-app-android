@@ -7,10 +7,12 @@ import androidx.room.RoomDatabase
 import net.sqlcipher.database.SQLiteDatabase
 import net.sqlcipher.database.SupportFactory
 
-@Database(entities = [SmsData::class], version = 1, exportSchema = false)
+@Database(entities = [SmsData::class, SalaryBucket::class, LeakBucket::class], version = 1, exportSchema = false)
 abstract class SmsDatabase : RoomDatabase() {
 
     abstract fun smsDao(): SmsDao
+    abstract fun salaryBucketDao(): SalaryBucketDao
+    abstract fun leakBucketDao(): LeakBucketDao
 
     companion object {
         @Volatile
