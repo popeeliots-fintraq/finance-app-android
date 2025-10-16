@@ -30,10 +30,10 @@ interface LeakBucketDao {
     @Update
     suspend fun update(bucket: LeakBucket)
 
-    @Query("SELECT * FROM leak_buckets")
+    @Query("SELECT * FROM Leak_buckets")
     suspend fun getAllBuckets(): List<LeakBucket>
     
     // A key query for Fintraq's vision!
-    @Query("SELECT * FROM leak_buckets WHERE bucketName = :name")
+    @Query("SELECT * FROM Leak_buckets WHERE bucketName = :name")
     suspend fun getBucketByName(name: String): LeakBucket?
 }
