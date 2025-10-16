@@ -11,7 +11,7 @@ import com.example.financeapp.data.local.LeakBucket
 import com.example.financeapp.data.local.SalaryBucketDao
 import com.example.financeapp.data.local.LeakBucketDao
 
-@Database(entities = [SmsData::class, SalaryBucket::class, LeakBucket::class], version = 2, exportSchema = false)
+@Database(entities = [SmsData::class, SalaryBucket::class, LeakBucket::class], version = 3, exportSchema = false)
 abstract class SmsDatabase : RoomDatabase() {
 
     abstract fun smsDao(): SmsDao
