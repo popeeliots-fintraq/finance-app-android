@@ -10,7 +10,8 @@ jobs:
   build-android: # New, Corrected key job for building android
     runs-on: ubuntu-latest
     name: Build Android APK
-
+    env:
+      GRADLE_BUILD_ACTION_CACHE_KEY_PREFIX: v2
     steps:
       - uses: actions/checkout@v3
         with:
