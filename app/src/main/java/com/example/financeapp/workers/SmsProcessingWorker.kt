@@ -56,25 +56,6 @@ class SmsProcessingWorker(appContext: Context, workerParams: WorkerParameters) :
         // 3. API CALL & DB UPDATE (Final step of the worker)
         try {
             val amount = parseAmountFromSms(messageBody)
-            
-            result.onSuccess { response ->
-                Log.d(TAG, "API Success! Category: ${response.category}, Confidence: ${response.confidenceScore}")
-                
-                // 💡 3. Update the local DB entry with categorization results
-                val categorizedData = smsData.copy(
-                    category = response.category,
-                    confidenceScore = response.confidenceScore,
-                    isProcessed = true
-                )
-                db.smsDao().update(categorizedData) // Requires the update function in SmsDao.kt
-                Log.d(TAG, "Updated DB for SMS ID: ${categorizedData.id} with categorization.")
-
-            }.onFailure { error ->
-                Log.e(TAG, "API Failure: ${error.message}")
-                return Result.retry() // Retry API call later if it fails
-            }
-            
-            return Result.success()
 
         } catch (e: Exception) {
             Log.e(TAG, "API CRASHED: ${e.localizedMessage}")
