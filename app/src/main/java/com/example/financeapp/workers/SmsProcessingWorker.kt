@@ -40,13 +40,11 @@ class SmsProcessingWorker(appContext: Context, workerParams: WorkerParameters) :
             Log.d(TAG, "Ignoring non-transaction SMS.")
             return Result.success() // Success, no further action needed
         }
-        
         // 2. LOCAL DB I/O (Initial Insert)
         val db = SmsDatabase.getDatabase(applicationContext) // Initialize DB access
         
         // Initialize SmsData object (id=0 will trigger autoGenerate)
         var smsData = SmsData(sender = sender, messageBody = messageBody, timestamp = timestamp)
-
         try {
             // 💡 1. Capture the generated ID from the insert operation (Returns Long)
             val generatedId = db.smsDao().insert(smsData)
@@ -54,7 +52,6 @@ class SmsProcessingWorker(appContext: Context, workerParams: WorkerParameters) :
             // 💡 2. Update the smsData object with the generated ID for subsequent updates
             smsData = smsData.copy(id = generatedId.toInt()) 
             Log.d(TAG, "Saved SMS with generated ID: ${smsData.id}")
-
         } catch (e: Exception) {
             Log.e(TAG, "Failed to save initial SMS to DB: ${e.localizedMessage}")
             // Continue, as we still want to try the API call
