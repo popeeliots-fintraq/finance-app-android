@@ -8,8 +8,9 @@ import com.example.financeapp.SmsData
 import com.example.financeapp.SmsDatabase
 
 import com.example.financeapp.data.model.RawTransactionIn
-import com.example.financeapp.ApiService
+import com.example.financeapp.ApiService // Assuming ApiService is in the root financeapp package based on the last fix
 import com.example.financeapp.data.remote.RetrofitClient // Assuming you have a RetrofitClient
+import com.example.financeapp.data.model.CategorizedTransactionOut // Ensure this is imported
 
 class SmsProcessingWorker(appContext: Context, workerParams: WorkerParameters) :
     CoroutineWorker(appContext, workerParams) {
@@ -73,14 +74,19 @@ class SmsProcessingWorker(appContext: Context, workerParams: WorkerParameters) :
             val response = apiService.ingestRawTransaction(requestBody)
 
             if (response.isSuccessful && response.body() != null) {
-                val categorizedData = response.body()!!
-                Log.d(TAG, "API Success! Category: ${categorizedData.category}, Leak Bucket: ${categorizedData.leak_bucket}")
+                // Ensure the response body uses the correct data class (e.g., CategorizedTransactionOut)
+                val categorizedData = response.body()!! as CategorizedTransactionOut 
+                
+                // FIX: Use camelCase properties (.leakBucket, .confidenceScore) to match Kotlin data class
+                Log.d(TAG, "API Success! Category: ${categorizedData.category}, Leak Bucket: ${categorizedData.leakBucket}")
 
                 // 💡 3. Update the local DB entry with categorization and leak results
                 val updatedSmsData = smsData.copy(
                     category = categorizedData.category,
-                    leakBucket = categorizedData.leak_bucket,
-                    confidenceScore = categorizedData.confidence_score,
+                    // FIX: Use camelCase property
+                    leakBucket = categorizedData.leakBucket,
+                    // FIX: Use camelCase property
+                    confidenceScore = categorizedData.confidenceScore,
                     isProcessed = true
                 )
                 db.smsDao().update(updatedSmsData)
@@ -100,6 +106,7 @@ class SmsProcessingWorker(appContext: Context, workerParams: WorkerParameters) :
     
     // Helper function for transaction filtering
     private fun isTransactionMessage(body: String): Boolean {
+        // NOTE: Standard practice is to use Locale.getDefault() or Locale.ROOT for toLowerCase() in production
         return transactionKeywords.any { keyword -> body.toLowerCase().contains(keyword) }
     }
     
@@ -114,13 +121,4 @@ class SmsProcessingWorker(appContext: Context, workerParams: WorkerParameters) :
 
         for (pattern in patterns) {
             val match = pattern.find(message)
-            if (match != null) {
-                val amountStr = match.groups[1]?.value?.replace(",", "")
-                if (amountStr != null) {
-                    return amountStr.toDoubleOrNull() ?: 0.0
-                }
-            }
-        }
-        return 0.0
-    }
-}
+            if
