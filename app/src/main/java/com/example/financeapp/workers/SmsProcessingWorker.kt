@@ -16,7 +16,7 @@ class SmsProcessingWorker(appContext: Context, workerParams: WorkerParameters) :
     CoroutineWorker(appContext, workerParams) {
 
     // Initialize the API Service instance
-        Private val apiService = RetrofitClient.retrofit.create(ApiService::class.java)
+    private val apiService = RetrofitClient.retrofit.create(ApiService::class.java)
 
     // Define keys for input data
     companion object {
