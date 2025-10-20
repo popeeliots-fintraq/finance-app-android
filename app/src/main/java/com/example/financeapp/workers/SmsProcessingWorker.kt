@@ -6,18 +6,25 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.financeapp.SmsData
 import com.example.financeapp.SmsDatabase
-import com.example.financeapp.data.repo.CategorizationRepository
+// DELETE: import com.example.financeapp.data.repo.CategorizationRepository // <--- THIS LINE IS REMOVED
+
+import com.example.financeapp.data.model.RawTransactionIn
+import com.example.financeapp.data.remote.ApiService
+import com.example.financeapp.data.remote.RetrofitClient // Assuming you have a RetrofitClient
 
 class SmsProcessingWorker(appContext: Context, workerParams: WorkerParameters) :
     CoroutineWorker(appContext, workerParams) {
 
-    // Define keys for input data - These resolve the 'unresolved reference' error in the receiver!
+    // Initialize the API Service instance
+    private val apiService = RetrofitClient.retrofit.create(ApiService::class.java)
+
+    // Define keys for input data
     companion object {
         const val KEY_SENDER = "sender"
         const val KEY_BODY = "body"
         const val KEY_TIMESTAMP = "timestamp"
         private const val TAG = "SmsWorker"
-        // List of keywords for transaction filtering (moved from the previous suggestion)
+        // List of keywords for transaction filtering
         private val transactionKeywords = listOf("debited", "credit", "rs", "inr", "transferred", "paid")
     }
 
@@ -30,8 +37,8 @@ class SmsProcessingWorker(appContext: Context, workerParams: WorkerParameters) :
 
         // 1. FILTER MESSAGE 
         if (!isTransactionMessage(messageBody)) {
-             Log.d(TAG, "Ignoring non-transaction SMS.")
-             return Result.success() // Success, no further action needed
+            Log.d(TAG, "Ignoring non-transaction SMS.")
+            return Result.success() // Success, no further action needed
         }
         
         // 2. LOCAL DB I/O (Initial Insert)
@@ -57,8 +64,40 @@ class SmsProcessingWorker(appContext: Context, workerParams: WorkerParameters) :
         try {
             val amount = parseAmountFromSms(messageBody)
 
+            // Prepare the RawTransactionIn request body
+            val requestBody = RawTransactionIn(
+                id = smsData.id,
+                message_body = messageBody,
+                sender = sender,
+                timestamp = timestamp,
+                extracted_amount = amount
+            )
+
+            // Execute the network call
+            val response = apiService.ingestRawTransaction(requestBody)
+
+            if (response.isSuccessful && response.body() != null) {
+                val categorizedData = response.body()!!
+                Log.d(TAG, "API Success! Category: ${categorizedData.category}, Leak Bucket: ${categorizedData.leak_bucket}")
+
+                // 💡 3. Update the local DB entry with categorization and leak results
+                val updatedSmsData = smsData.copy(
+                    category = categorizedData.category,
+                    leak_bucket = categorizedData.leak_bucket,
+                    confidence_score = categorizedData.confidence_score,
+                    isProcessed = true
+                )
+                db.smsDao().update(updatedSmsData)
+                Log.d(TAG, "Updated DB for SMS ID: ${updatedSmsData.id} with categorization.")
+                
+                return Result.success()
+            } else {
+                Log.e(TAG, "API Failure: Response code ${response.code()}, Body: ${response.errorBody()?.string()}")
+                return Result.retry()
+            }
+
         } catch (e: Exception) {
-            Log.e(TAG, "API CRASHED: ${e.localizedMessage}")
+            Log.e(TAG, "API/Network Error: ${e.localizedMessage}")
             return Result.retry()
         }
     }
