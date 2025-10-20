@@ -67,10 +67,10 @@ class SmsProcessingWorker(appContext: Context, workerParams: WorkerParameters) :
             // Prepare the RawTransactionIn request body
             val requestBody = RawTransactionIn(
                 id = smsData.id,
-                message_body = messageBody,
+                messagebody = messageBody,
                 sender = sender,
                 timestamp = timestamp,
-                extracted_amount = amount
+                extractedAmount = amount
             )
 
             // Execute the network call
@@ -84,7 +84,7 @@ class SmsProcessingWorker(appContext: Context, workerParams: WorkerParameters) :
                 val updatedSmsData = smsData.copy(
                     category = categorizedData.category,
                     leak_bucket = categorizedData.leak_bucket,
-                    confidence_score = categorizedData.confidence_score,
+                    confidenceScore = categorizedData.confidence_score,
                     isProcessed = true
                 )
                 db.smsDao().update(updatedSmsData)
