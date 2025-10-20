@@ -67,7 +67,7 @@ class SmsProcessingWorker(appContext: Context, workerParams: WorkerParameters) :
             // Prepare the RawTransactionIn request body
             val requestBody = RawTransactionIn(
                 id = smsData.id,
-                messagebody = messageBody,
+                messageBody = messageBody,
                 sender = sender,
                 timestamp = timestamp,
                 extractedAmount = amount
