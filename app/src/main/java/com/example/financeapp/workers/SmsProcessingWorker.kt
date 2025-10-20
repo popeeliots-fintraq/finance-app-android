@@ -8,7 +8,7 @@ import com.example.financeapp.SmsData
 import com.example.financeapp.SmsDatabase
 
 import com.example.financeapp.data.model.RawTransactionIn
-import com.example.financeapp.data.remote.ApiService
+import com.example.financeapp.ApiService
 import com.example.financeapp.data.remote.RetrofitClient // Assuming you have a RetrofitClient
 
 class SmsProcessingWorker(appContext: Context, workerParams: WorkerParameters) :
