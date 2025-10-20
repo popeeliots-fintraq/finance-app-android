@@ -16,12 +16,21 @@ data class CategorizedTransactionOut(
 
     @SerializedName("merchant") // New field from backend schema
     val merchant: String,
-    
+
     @SerializedName("category")
     val category: String,
 
-    // The backend does not send 'confidence_score' in this new schema.
-    // It sends 'leak_potential' which is core to Fin-Traq's vision.
+    // FIX 1: Map the backend's 'leak_bucket' to a matching Kotlin property.
+    // The worker is explicitly trying to read 'categorizedData.leak_bucket'.
+    @SerializedName("leak_bucket") 
+    val leakBucket: String, // Note: Must be String to match the DB/Worker update call
+
+    // FIX 2: Map the backend's 'confidence_score' to a matching Kotlin property.
+    // The worker is explicitly trying to read 'categorizedData.confidence_score'.
+    @SerializedName("confidence_score")
+    val confidenceScore: Double,
+
+    // NEW FIELD: Keep the core Fin-Traq V2 field, even if the worker doesn't use it yet.
     @SerializedName("leak_potential")
-    val leakPotential: Double
+    val leakPotential: Double? = null // Made nullable/defaulted as it might not be in every response yet
 )
