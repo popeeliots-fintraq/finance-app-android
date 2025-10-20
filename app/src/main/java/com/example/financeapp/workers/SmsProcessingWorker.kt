@@ -72,11 +72,10 @@ class SmsProcessingWorker(appContext: Context, workerParams: WorkerParameters) :
 
             // Execute the network call
             val response = apiService.ingestRawTransaction(requestBody)
-
+            val categorizedData = response.body()
             if (response.isSuccessful && response.body() != null) {
                 // Ensure the response body uses the correct data class (e.g., CategorizedTransactionOut)
-                val categorizedData = response.body()!! as CategorizedTransactionOut 
-                
+                               
                 // FIX: Use camelCase properties (.leakBucket, .confidenceScore) to match Kotlin data class
                 Log.d(TAG, "API Success! Category: ${categorizedData.category}, Leak Bucket: ${categorizedData.leakBucket}")
 
