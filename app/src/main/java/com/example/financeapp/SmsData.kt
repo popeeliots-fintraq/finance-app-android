@@ -11,13 +11,13 @@ data class SmsData(
     val timestamp: Long,
     val category: String? = null,
     
-    // ✅ Keep the CAMELCASE property, which aligns with the updated Worker code.
+    // ✅ Keep ONLY the CAMELCASE property for the local DB entity
     val leakBucket: String? = null, 
     
-    // Keep the CAMELCASE property to be consistent with standard Kotlin practice.
+    // Keep the CAMELCASE property
     val confidenceScore: Double? = null, 
     
-    // The 'leak_bucket' property was removed here.
+    // The previous snake_case property 'leak_bucket' is REMOVED
     
     val isProcessed: Boolean = false
 )
