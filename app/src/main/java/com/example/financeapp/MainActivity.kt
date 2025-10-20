@@ -4,33 +4,30 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.example.financeapp.ui.viewmodel.CategorizationViewModel // Import your new ViewModel
+import com.example.financeapp.ui.viewmodel.CategorizationViewModel // Keep this import
 
 class MainActivity : AppCompatActivity() {
 
     private val TAG = "MainActivity"
     
     // Instantiate your new ViewModel
-    private val categorizationViewModel = CategorizationViewModel()
+    private val categorizationViewModel = CategorizationViewModel() // Keep this line
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         
         val textView: TextView = findViewById(R.id.textView)
-        textView.text = "fin-traq The Income Optimizer"
+        textView.text = "fin-traq The Income Optimizer" // fin-traq's vision [cite: 2025-10-15]
         
-        // ** NEW INTEGRATION BLOCK: Test the Cloud Run API call **
+        // --- NEW STATUS BLOCK ---
         
-        Log.d(TAG, "Launching Categorization API Test...")
+        Log.d(TAG, "Fin-Traq Main Activity Initialized.")
         
-        // This launches the coroutine inside the ViewModel to hit your Cloud Run service.
-        // Results will print to Logcat via the ViewModel's print statements.
-        categorizationViewModel.testApiCall()
+        // We call a clean function on the ViewModel to confirm it's working
+        categorizationViewModel.logStatus() 
         
-        // Update the TextView to show the test has been initiated.
-        textView.text = "API Categorization Test Initiated. Check Logcat for SUCCESS/FAILURE."
-        
-        // The old 'fetchMessage' function has been removed.
+        // Update the TextView to reflect the new architecture focus
+        textView.text = "Fin-Traq V2: Salary Autopilot Running in Worker."
     }
 }
