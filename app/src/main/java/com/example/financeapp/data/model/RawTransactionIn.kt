@@ -2,21 +2,22 @@ package com.example.financeapp.data.model
 
 import com.google.gson.annotations.SerializedName
 
-// RENAME: TransactionRequest.kt -> RawTransactionIn.kt
+// This DTO must match the data being sent from the SmsProcessingWorker
 data class RawTransactionIn(
-    // Matches 'transaction_text' in the backend schema
-    @SerializedName("transaction_text") 
-    val transactionText: String,
+    // ID is used internally in the worker and should be passed to the backend for correlation
+    val id: Int, 
+    
+    // Maps to 'message_body' in the backend Pydantic schema
+    @SerializedName("message_body")
+    val messageBody: String, // Use messageBody in Kotlin for camelCase
 
-    // Matches 'sms_date_time' in the backend schema
-    @SerializedName("sms_date_time")
-    val smsDateTime: String,
+    // Maps to 'sender' (bank identifier)
+    val sender: String, 
 
-    // Matches 'bank_identifier' in the backend schema
-    @SerializedName("bank_identifier")
-    val bankIdentifier: String,
-
-    // Matches 'pre_extracted_amount' in the backend schema
-    @SerializedName("pre_extracted_amount")
-    val preExtractedAmount: String? = null // Optional
+    // Maps to 'timestamp'
+    val timestamp: Long, 
+    
+    // Maps to 'extracted_amount' in the backend schema
+    @SerializedName("extracted_amount")
+    val extractedAmount: Double // Use extractedAmount in Kotlin for camelCase
 )
