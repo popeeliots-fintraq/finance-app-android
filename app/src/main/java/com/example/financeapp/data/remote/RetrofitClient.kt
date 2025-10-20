@@ -26,8 +26,4 @@ object RetrofitClient {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
-
-    val categorizerService: CategorizerService by lazy {
-        retrofit.create(CategorizerService::class.java)
-    }
 }
