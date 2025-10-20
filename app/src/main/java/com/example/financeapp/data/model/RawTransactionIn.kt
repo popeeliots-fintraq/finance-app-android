@@ -2,8 +2,21 @@ package com.example.financeapp.data.model
 
 import com.google.gson.annotations.SerializedName
 
-data class TransactionRequest(
-    // Backend expects 'sms_text', but we want to call it 'description' in Kotlin
-    @SerializedName("sms_text") 
-    val description: String
+// RENAME: TransactionRequest.kt -> RawTransactionIn.kt
+data class RawTransactionIn(
+    // Matches 'transaction_text' in the backend schema
+    @SerializedName("transaction_text") 
+    val transactionText: String,
+
+    // Matches 'sms_date_time' in the backend schema
+    @SerializedName("sms_date_time")
+    val smsDateTime: String,
+
+    // Matches 'bank_identifier' in the backend schema
+    @SerializedName("bank_identifier")
+    val bankIdentifier: String,
+
+    // Matches 'pre_extracted_amount' in the backend schema
+    @SerializedName("pre_extracted_amount")
+    val preExtractedAmount: String? = null // Optional
 )
