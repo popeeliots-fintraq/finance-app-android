@@ -21,8 +21,6 @@ class SmsProcessingWorker(appContext: Context, workerParams: WorkerParameters) :
         private val transactionKeywords = listOf("debited", "credit", "rs", "inr", "transferred", "paid")
     }
 
-    private val repository = CategorizationRepository()
-
     override suspend fun doWork(): Result {
         val sender = inputData.getString(KEY_SENDER) ?: return Result.failure()
         val messageBody = inputData.getString(KEY_BODY) ?: return Result.failure()
@@ -57,8 +55,7 @@ class SmsProcessingWorker(appContext: Context, workerParams: WorkerParameters) :
 
         // 3. API CALL & DB UPDATE (Final step of the worker)
         try {
-            val amount = parseAmountFromSms(messageBody) 
-            val result = repository.getCategorizedSpend(messageBody)
+            val amount = parseAmountFromSms(messageBody)
             
             result.onSuccess { response ->
                 Log.d(TAG, "API Success! Category: ${response.category}, Confidence: ${response.confidenceScore}")
