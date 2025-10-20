@@ -83,7 +83,7 @@ class SmsProcessingWorker(appContext: Context, workerParams: WorkerParameters) :
                 // 💡 3. Update the local DB entry with categorization and leak results
                 val updatedSmsData = smsData.copy(
                     category = categorizedData.category,
-                    leak_bucket = categorizedData.leak_bucket,
+                    leakBucket = categorizedData.leak_bucket,
                     confidenceScore = categorizedData.confidence_score,
                     isProcessed = true
                 )
