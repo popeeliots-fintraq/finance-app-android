@@ -121,8 +121,8 @@ class SmsProcessingWorker(appContext: Context, workerParams: WorkerParameters) :
         for (pattern in patterns) {
             val match = pattern.find(message)
             if (match != null) { // <-- The 'if' condition and body are added here
-                val amountString = match.groupValues[1].replace(",", "")
-                return amountString.toDoubleOrNull() ?: 0.0 // Return parsed amount or 0.0
+            val amountString = match.groupValues[1].replace(",", "")
+            return amountString.toDoubleOrNull() ?: 0.0 // Return parsed amount or 0.0
             }
         }
         return 0.0 // Default return if no amount is found
