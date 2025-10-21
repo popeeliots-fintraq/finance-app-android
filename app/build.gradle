@@ -22,7 +22,7 @@ android {
         buildConfigField "String", "GEMINI_API_KEY", "\"$geminiApiKey\""
 
         // 🎯 NEW: API_BASE_URL from Gradle property (passed via -PapiBaseUrl in CI)
-        def apiBaseUrl = project.hasProperty("apiBaseUrl") ? project.property("apiBaseUrl") : "https://fallback.example"
+        def apiBaseUrl = project.hasProperty("apiBaseUrl") ? project.property("apiBaseUrl") : "http://10.0.2.2:8000/"
         buildConfigField "String", "API_BASE_URL", "\"${apiBaseUrl}\""
     }
 
