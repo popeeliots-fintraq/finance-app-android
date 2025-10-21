@@ -16,7 +16,7 @@ class SmsProcessingWorker(
     workerParams: WorkerParameters
 ) : CoroutineWorker(appContext, workerParams) {
 
-    private val apiService = RRetrofitClient.apiService
+    private val apiService = RetrofitClient.apiService
 
     companion object {
         const val KEY_SENDER = "sender"
