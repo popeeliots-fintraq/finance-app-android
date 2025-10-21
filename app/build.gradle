@@ -20,6 +20,10 @@ android {
         // 🎯 NEW: Logic to load the Gemini API Key from local.properties
         def geminiApiKey = project.properties["geminiApiKey"] ?: ""
         buildConfigField "String", "GEMINI_API_KEY", "\"$geminiApiKey\""
+
+        // 🎯 NEW: API_BASE_URL from Gradle property (passed via -PapiBaseUrl in CI)
+        def apiBaseUrl = project.hasProperty("apiBaseUrl") ? project.property("apiBaseUrl") : "https://fallback.example"
+        buildConfigField "String", "API_BASE_URL", "\"${apiBaseUrl}\""
     }
 
     buildFeatures {
