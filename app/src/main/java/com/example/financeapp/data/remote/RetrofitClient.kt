@@ -1,5 +1,7 @@
 package com.example.financeapp.data.remote
 
+import com.example.financeapp.BuildConfig // <-- CRITICAL: Ensure this is imported!
+import com.example.financeapp.ApiService // <-- CRITICAL: Ensure your API service interface is imported!
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -8,8 +10,8 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
 
-    // ✅ Use your live backend URL
-    private const val BASE_URL = "https://transaction-categorizer-801862457352.us-central1.run.app/"
+    // ✅ Correctly uses the securely injected Base URL
+    private const val BASE_URL = BuildConfig.API_BASE_URL
 
     private val okHttpClient = OkHttpClient.Builder()
         .addInterceptor(HttpLoggingInterceptor().apply {
@@ -19,11 +21,17 @@ object RetrofitClient {
         .readTimeout(30, TimeUnit.SECONDS)
         .build()
 
-    val retrofit: Retrofit by lazy {
+    // The Retrofit instance
+    private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
+    }
+    
+    // 🔥 CRITICAL ADDITION: The public property to get the ApiService implementation
+    val apiService: ApiService by lazy {
+        retrofit.create(ApiService::class.java)
     }
 }
