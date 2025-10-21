@@ -6,62 +6,57 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.financeapp.SmsData
 import com.example.financeapp.SmsDatabase
-
 import com.example.financeapp.data.model.RawTransactionIn
-import com.example.financeapp.ApiService // Assuming ApiService is in the root financeapp package based on the last fix
-import com.example.financeapp.data.remote.RetrofitClient // Assuming you have a RetrofitClient
-import com.example.financeapp.data.model.CategorizedTransactionOut // Ensure this is imported
+import com.example.financeapp.ApiService
+import com.example.financeapp.data.remote.RetrofitClient
+import com.example.financeapp.data.model.CategorizedTransactionOut
 
-class SmsProcessingWorker(appContext: Context, workerParams: WorkerParameters) :
-    CoroutineWorker(appContext, workerParams) {
+class SmsProcessingWorker(
+    appContext: Context,
+    workerParams: WorkerParameters
+) : CoroutineWorker(appContext, workerParams) {
 
-    // Initialize the API Service instance
     private val apiService = RetrofitClient.retrofit.create(ApiService::class.java)
 
-    // Define keys for input data
     companion object {
         const val KEY_SENDER = "sender"
         const val KEY_BODY = "body"
         const val KEY_TIMESTAMP = "timestamp"
         private const val TAG = "SmsWorker"
-        // List of keywords for transaction filtering
-        private val transactionKeywords = listOf("debited", "credit", "rs", "inr", "transferred", "paid")
+
+        private val transactionKeywords = listOf(
+            "debited", "credit", "rs", "inr", "transferred", "paid"
+        )
     }
 
     override suspend fun doWork(): Result {
         val sender = inputData.getString(KEY_SENDER) ?: return Result.failure()
         val messageBody = inputData.getString(KEY_BODY) ?: return Result.failure()
         val timestamp = inputData.getLong(KEY_TIMESTAMP, 0L)
-        
+
         Log.d(TAG, "Worker started for SMS from $sender.")
 
-        // 1. FILTER MESSAGE 
+        // 1. Filter non-transaction messages
         if (!isTransactionMessage(messageBody)) {
             Log.d(TAG, "Ignoring non-transaction SMS.")
-            return Result.success() // Success, no further action needed
+            return Result.success()
         }
-        // 2. LOCAL DB I/O (Initial Insert)
-        val db = SmsDatabase.getDatabase(applicationContext) // Initialize DB access
-        
-        // Initialize SmsData object (id=0 will trigger autoGenerate)
-        var smsData = SmsData(sender = sender, messageBody = messageBody, timestamp = timestamp)
-        try {
-            // 💡 1. Capture the generated ID from the insert operation (Returns Long)
-            val generatedId = db.smsDao().insert(smsData)
 
-            // 💡 2. Update the smsData object with the generated ID for subsequent updates
-            smsData = smsData.copy(id = generatedId.toInt()) 
+        // 2. Save raw SMS to DB
+        val db = SmsDatabase.getDatabase(applicationContext)
+        var smsData = SmsData(sender = sender, messageBody = messageBody, timestamp = timestamp)
+
+        try {
+            val generatedId = db.smsDao().insert(smsData)
+            smsData = smsData.copy(id = generatedId.toInt())
             Log.d(TAG, "Saved SMS with generated ID: ${smsData.id}")
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to save initial SMS to DB: ${e.localizedMessage}")
-            // Continue, as we still want to try the API call
+            Log.e(TAG, "Failed to save initial SMS: ${e.localizedMessage}")
         }
 
-        // 3. API CALL & DB UPDATE (Final step of the worker)
-        try {
+        // 3. Parse amount and call API
+        return try {
             val amount = parseAmountFromSms(messageBody)
-
-            // Prepare the RawTransactionIn request body
             val requestBody = RawTransactionIn(
                 id = smsData.id,
                 messageBody = messageBody,
@@ -70,61 +65,51 @@ class SmsProcessingWorker(appContext: Context, workerParams: WorkerParameters) :
                 extractedAmount = amount
             )
 
-            // Execute the network call
             val response = apiService.ingestRawTransaction(requestBody)
-            val categorizedData = response.body()
             if (response.isSuccessful && response.body() != null) {
-                // Ensure the response body uses the correct data class (e.g., CategorizedTransactionOut)
-                               
-                // FIX: Use camelCase properties (.leakBucket, .confidenceScore) to match Kotlin data class
-                Log.d(TAG, "API Success! Category: ${categorizedData.category}, Leak Bucket: ${categorizedData.leakBucket}")
+                val categorizedData = response.body()!!
 
-                // 💡 3. Update the local DB entry with categorization and leak results
                 val updatedSmsData = smsData.copy(
                     category = categorizedData.category,
-                    // FIX: Use camelCase property
                     leakBucket = categorizedData.leakBucket,
-                    // FIX: Use camelCase property
                     confidenceScore = categorizedData.confidenceScore,
                     isProcessed = true
                 )
-                db.smsDao().update(updatedSmsData)
-                Log.d(TAG, "Updated DB for SMS ID: ${updatedSmsData.id} with categorization.")
-                
-                return Result.success()
-            } else {
-                Log.e(TAG, "API Failure: Response code ${response.code()}, Body: ${response.errorBody()?.string()}")
-                return Result.retry()
-            }
 
+                db.smsDao().update(updatedSmsData)
+                Log.d(TAG, "Updated DB for SMS ID: ${updatedSmsData.id}")
+                Result.success()
+            } else {
+                Log.e(TAG, "API Failure: Code ${response.code()}")
+                Result.retry()
+            }
         } catch (e: Exception) {
-            Log.e(TAG, "API/Network Error: ${e.localizedMessage}")
-            return Result.retry()
+            Log.e(TAG, "Network/API Error: ${e.localizedMessage}")
+            Result.retry()
         }
     }
-    
-    // Helper function for transaction filtering
+
     private fun isTransactionMessage(body: String): Boolean {
-        // NOTE: Standard practice is to use Locale.getDefault() or Locale.ROOT for toLowerCase() in production
-        return transactionKeywords.any { keyword -> body.toLowerCase().contains(keyword) }
+        return transactionKeywords.any { keyword ->
+            body.lowercase().contains(keyword)
+        }
     }
-    
-    // The robust amount parser you created
+
     private fun parseAmountFromSms(message: String): Double {
         val patterns = listOf(
-            """(?i)(?:rs|inr)[\s.:]*([\d,]+\.?\d*)""".toRegex(),
-            """(?i)(?:debited|credited|spent|received)[\s:]*([\d,]+\.?\d*)""".toRegex(),
-            """(?i)upi\s*(?:payment|txn|transfer)[\s:]*([\d,]+\.?\d*)""".toRegex(),
-            """(?i)a/c\s*x\d+[:\s]+(?:rs|inr)[\s]*([\d,]+\.?\d*)""".toRegex()
+            "(?i)(?:rs|inr)[\\s.:]*([\\d,]+\\.?\\d*)".toRegex(),
+            "(?i)(?:debited|credited|spent|received)[\\s:]*([\\d,]+\\.?\\d*)".toRegex(),
+            "(?i)upi\\s*(?:payment|txn|transfer)[\\s:]*([\\d,]+\\.?\\d*)".toRegex(),
+            "(?i)a/c\\s*x\\d+[:\\s]+(?:rs|inr)[\\s]*([\\d,]+\\.?\\d*)".toRegex()
         )
 
         for (pattern in patterns) {
             val match = pattern.find(message)
-            if (match != null) { // <-- The 'if' condition and body are added here
-            val amountString = match.groupValues[1].replace(",", "")
-            return amountString.toDoubleOrNull() ?: 0.0 // Return parsed amount or 0.0
-            }
-        }
-        return 0.0 // Default return if no amount is found
-    }
-} // <-- Ensure the class body is closed
+            if (match != null) {
+                val amountString = match.groupValues[1].replace(",", "")
+                return amountString.toDoubleOrNull() ?: 0.0
+            }
+        }
+        return 0.0
+    }
+}
