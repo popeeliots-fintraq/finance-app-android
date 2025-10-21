@@ -5,6 +5,15 @@ import json
 import re 
 from flask import Flask, request, jsonify
 
+# --- API KEY IMPORTS ---
+try:
+    from .dependencies import get_expected_api_key # Import the key retrieval function
+except ImportError:
+    # Define a simple local function if the imported file is not found (for local testing/fallback)
+    def get_expected_api_key():
+        """Reads the expected API Key from the server's environment."""
+        return os.getenv("FASTAPI_API_KEY", "")
+
 # Cloud Service Imports
 from google.cloud import storage
 import firebase_admin 
@@ -85,11 +94,33 @@ def health_check():
 @app.route('/categorize', methods=['POST'])
 def categorize():
     try:
-        # --- SECURITY CRITICAL: TOKEN VERIFICATION (ADDED LOGIC) ---
+        # -------------------------------------------------------------
+        # --- SECURITY CRITICAL: 1. SYSTEM API KEY VERIFICATION (New Check) ---
+        # Checks for the 'X-API-Key' header used for CI/CD and system calls
+        # -------------------------------------------------------------
+        
+        x_api_key = request.headers.get('X-API-Key')
+        expected_key = get_expected_api_key()
+
+        # Check 1a: Server Misconfiguration Check
+        if not expected_key:
+            print("CRITICAL ERROR: FASTAPI_API_KEY not configured on server!")
+            return jsonify({'error': 'Internal Server Error: Server misconfiguration'}), 500
+
+        # Check 1b: Client Authorization Check
+        if not x_api_key or x_api_key != expected_key:
+            return jsonify({'error': 'Unauthorized: Invalid or missing X-API-Key'}), 401
+            
+        # -------------------------------------------------------------
+        # --- SECURITY CRITICAL: 2. USER TOKEN VERIFICATION (Existing Firebase Logic) ---
+        # Ensures a valid Fin-Traq user is making the request
+        # -------------------------------------------------------------
+        
         auth_header = request.headers.get('Authorization')
         
         # Check for presence and format
         if not auth_header or not auth_header.startswith('Bearer '):
+            # This check only fires if the API Key passed but the token failed
             return jsonify({'error': 'Unauthorized: Missing or invalid Authorization header'}), 401
         
         id_token = auth_header.split('Bearer ')[1]
