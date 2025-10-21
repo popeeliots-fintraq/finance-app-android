@@ -17,8 +17,6 @@ jobs:
         with:
           token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           path: .
-      - name: Build Debug APK with API_BASE_URL
-        run: ./gradlew assembleDebug --stacktrace --no-daemon -PapiBaseUrl="${{ secrets.API_BASE_URL }}"
           
       - name: Generate Gradle Wrapper
         run: gradle wrapper --gradle-version 8.6 --gradle-distribution-sha256-sum 9631d53cf3e74bfa726893aee1f8994fee4e060c401335946dba2156f440f24c
@@ -43,6 +41,9 @@ jobs:
       # Now, we will force a clean build to resolve any lingering issues
       - name: Clean Build
         run: ./gradlew clean --stacktrace --no-daemon
+
+      - name: Build Debug APK with API_BASE_URL
+        run: ./gradlew assembleDebug --stacktrace --no-daemon -PapiBaseUrl="${{ secrets.API_BASE_URL }}"
 
          # NEW STEP: Print the log contents ONLY if the build step failed
       # - name: Print Gradle Log on Failure
