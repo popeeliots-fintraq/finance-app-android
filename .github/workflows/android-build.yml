@@ -12,6 +12,7 @@ jobs:
     name: Build Android APK
     env:
       GRADLE_BUILD_ACTION_CACHE_KEY_PREFIX: v2
+      FIN_TRAQ_API_KEY: ${{ secrets.API_KEY }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -41,6 +42,9 @@ jobs:
       # Now, we will force a clean build to resolve any lingering issues
       - name: Clean Build
         run: ./gradlew clean --stacktrace --no-daemon
+
+      - name: Run Unit Tests (Including API Auth Tests)
+        run: ./gradlew testDebugUnitTest --stacktrace --no-daemon
 
       - name: Build Debug APK with API_BASE_URL
         run: ./gradlew assembleDebug --stacktrace --no-daemon -PapiBaseUrl="${{ secrets.API_BASE_URL }}"
