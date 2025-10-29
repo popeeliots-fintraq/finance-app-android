@@ -2,22 +2,24 @@ package com.example.financeapp.data.model
 
 import com.google.gson.annotations.SerializedName
 
-// This DTO must match the data being sent from the SmsProcessingWorker
-data class RawTransactionIn(
-    // ID is used internally in the worker and should be passed to the backend for correlation
-    val id: Int, 
+/**
+ * DTO for sending raw SMS data to the backend's high-speed IngestionService.
+ * This is the V2 DTO for Frictionless Flow (Gap #1).
+ */
+data class RawSmsIn(
+    // 🚨 IMPORTANT: Match the field names expected by the backend's RawTransaction Pydantic schema
     
-    // Maps to 'message_body' in the backend Pydantic schema
-    @SerializedName("message_body")
-    val messageBody: String, // Use messageBody in Kotlin for camelCase
-
-    // Maps to 'sender' (bank identifier)
-    val sender: String, 
-
-    // Maps to 'timestamp'
-    val timestamp: Long, 
+    // Auth is handled via Header, but include user_id in the body for audit/service layer
+    @SerializedName("user_id")
+    val userId: Int,
     
-    // Maps to 'extracted_amount' in the backend schema
-    @SerializedName("extracted_amount")
-    val extractedAmount: Double // Use extractedAmount in Kotlin for camelCase
+    @SerializedName("raw_text")
+    val rawText: String, 
+
+    @SerializedName("source_type")
+    val sourceType: String, // e.g., "ANDROID_SMS_LISTENER"
+
+    // Use a Long to capture the local timestamp before sending
+    @SerializedName("local_timestamp")
+    val localTimestamp: Long
 )
