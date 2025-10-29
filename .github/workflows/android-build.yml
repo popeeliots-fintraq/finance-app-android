@@ -2,16 +2,15 @@ name: Android CI
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
   pull_request:
-    branches: ["main"]
+    branches: [ "main" ]
 
 jobs:
 
   build-android:
     runs-on: ubuntu-latest
     name: Build Android APK
-
     env:
       GRADLE_BUILD_ACTION_CACHE_KEY_PREFIX: v2
       FIN_TRAQ_API_KEY: ${{ secrets.API_KEY }}
@@ -43,10 +42,10 @@ jobs:
       - name: Clean Build
         run: ./gradlew clean --stacktrace --no-daemon
 
-      - name: Run Unit Tests (Including API Auth Tests)
+      - name: Run Unit Tests
         run: ./gradlew testDebugUnitTest --stacktrace --no-daemon
 
-      - name: Build Debug APK with API_BASE_URL
+      - name: Build Debug APK
         run: ./gradlew assembleDebug --stacktrace --no-daemon -PapiBaseUrl="${{ secrets.API_BASE_URL }}"
 
       - name: Upload Gradle logs (on failure)
@@ -58,7 +57,6 @@ jobs:
 
       - name: Debug: List APK files
         run: |
-          echo "Listing all APKs in repo:"
           find . -type f -name "*.apk"
 
       - name: Upload APK
@@ -77,15 +75,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
-  # ----------------------------------------------------
-  # JOB 2: DEPLOY FIREBASE FUNCTIONS
-  # ----------------------------------------------------
-
   deploy-backend:
     name: Deploy Categorization Backend
     needs: build-android
     runs-on: ubuntu-latest
-
     env:
       FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
       FIREBASE_PROJECT_ID: ${{ secrets.Firebase_Project_ID }}
@@ -99,7 +92,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "20"
+          node-version: '20'
 
       - name: Install Firebase CLI
         run: |
@@ -143,16 +136,11 @@ jobs:
           npm test -- --passWithNoTests
 
 
-  # ----------------------------------------------------
-  # JOB 3: DEPLOY PYTHON ML SERVICE TO CLOUD RUN
-  # ----------------------------------------------------
-
   deploy-categorizer-service:
     name: Deploy Python Categorizer to Cloud Run
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build-android
-
     outputs:
       CLOUD_RUN_URL: ${{ steps.get_url.outputs.CLOUD_RUN_URL }}
 
@@ -178,28 +166,16 @@ jobs:
       - name: Set up Cloud SDK and Docker Auth
         uses: google-github-actions/setup-gcloud@v2
         with:
-          version: "latest"
+          version: 'latest'
           project_id: ${{ env.GCP_PROJECT_ID }}
 
       - name: Authorize Docker
         run: gcloud auth configure-docker ${{ env.SERVICE_REGION }}-docker.pkg.dev
 
-      - name: Print Docker env
-        run: printenv | grep IMAGE_TAG
-
-      - name: List workspace root
-        run: ls -l
-
-      - name: List categorizer folder
-        run: ls -l categorizer
-
       - name: Build Docker Image
         run: |
           docker build -t "$IMAGE_TAG" -f categorizer/Dockerfile . --progress=plain --no-cache
           docker push "$IMAGE_TAG"
-
-      - name: Echo Docker Build Command
-        run: echo docker build -t "$IMAGE_TAG" -f categorizer/Dockerfile .
 
       - name: Deploy to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2
@@ -213,15 +189,11 @@ jobs:
         id: get_url
         run: |
           SERVICE_URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} \
-            --region ${{ env.SERVICE_REGION }} \
-            --project ${{ env.GCP_PROJECT_ID }} \
-            --format 'value(status.url)')
+          --region ${{ env.SERVICE_REGION }} \
+          --project ${{ env.GCP_PROJECT_ID }} \
+          --format 'value(status.url)')
           echo "CLOUD_RUN_URL=$SERVICE_URL" >> $GITHUB_OUTPUT
 
-
-  # ----------------------------------------------------
-  # JOB 4: VERIFY BACKEND API RESPONSE
-  # ----------------------------------------------------
 
   verify-backend-api:
     name: Verify Backend API is Reachable
@@ -231,13 +203,12 @@ jobs:
     steps:
       - name: Check Cloud Run API Health
         run: |
-          echo "Testing Cloud Run API availability..."
           URL="https://transaction-categorizer-801862457352.us-central1.run.app"
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
           echo "HTTP Response: $STATUS"
           if [ "$STATUS" -eq 200 ]; then
-            echo "✅ API is reachable and responding OK"
+            echo "✅ API is reachable"
           else
-            echo "❌ API test failed with status: $STATUS"
+            echo "❌ API test failed"
             exit 1
           fi
