@@ -1,4 +1,76 @@
-name: Android CI
+name: Android CI (Fin-Traq Mobile App)
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-android: # The single job for building the APK
+    runs-on: ubuntu-latest
+    name: Build Android APK
+    env:
+      GRADLE_BUILD_ACTION_CACHE_KEY_PREFIX: v2
+      FIN_TRAQ_API_KEY: ${{ secrets.API_KEY }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          path: .
+          
+      - name: Generate Gradle Wrapper
+        run: gradle wrapper --gradle-version 8.6 --gradle-distribution-sha256-sum 9631d53cf3e74bfa726893aee1f8994fee4e060c4013359946dba2156f440f24c
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          # cache: gradle # 🛑 CRITICAL FIX: Temporarily disabled to bypass Cache Service 400 errors.
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.6
+          
+      - name: Clean Build
+        run: ./gradlew clean --stacktrace --no-daemon
+
+      - name: Run Unit Tests (Including API Auth Tests)
+        run: ./gradlew testDebugUnitTest --stacktrace --no-daemon
+
+      - name: Build Debug APK with API_BASE_URL
+        run: ./gradlew assembleDebug --stacktrace --no-daemon -PapiBaseUrl="${{ secrets.API_BASE_URL }}"
+          
+      - name: Upload Gradle logs (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-build-logs
+          path: build-log.txt
+          
+      - name: Debug: List APK files
+        run: |
+          echo "Listing all APKs in repo:"
+          find . -type f -name "*.apk"
+          
+      - name: Upload APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-apk
+          path: app/build/outputs/apk/**/*.apk
+
+      - name: Upload APK to GitHub Release
+        if: success() && startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: app/build/outputs/apk/**/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}name: Android CI
 
 
 
