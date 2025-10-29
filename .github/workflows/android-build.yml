@@ -19,28 +19,28 @@ jobs:
           token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           path: .
           
-      # 1. Set up JDK 17 (Must run before any Gradle commands)
+      # 1. CRITICAL: Grant execute permission immediately after checkout.
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        
+      # 2. Generate Gradle Wrapper (MUST run after permission is granted)
+      - name: Generate Gradle Wrapper
+        run: gradle wrapper --gradle-version 8.6 --gradle-distribution-sha256-sum 9631d53cf3e74bfa726893aee1f8994fee4e060c401335946dba2156f440f24c
+
+      # 3. Set up JDK 17
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
-          # cache: gradle # 🛑 DISABLED: Bypassing the cache that caused the 400 error.
+          # cache: gradle # Temporarily bypassed for 400 errors
 
-      # 2. Set up Gradle (Must run before any Gradle commands)
+      # 4. Set up Gradle
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: 8.6
           
-      # 3. Grant execute permission for gradlew (Moved up, must be before wrapper generation)
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      # 4. Generate Gradle Wrapper (Restored)
-      - name: Generate Gradle Wrapper
-        run: gradle wrapper --gradle-version 8.6 --gradle-distribution-sha256-sum 9631d53cf3e74bfa726893aee1f8994fee4e060c401335946dba2156f440f24c
-        
       # 5. Build Steps
       - name: Clean Build
         run: ./gradlew clean --stacktrace --no-daemon
@@ -51,6 +51,7 @@ jobs:
       - name: Build Debug APK with API_BASE_URL
         run: ./gradlew assembleDebug --stacktrace --no-daemon -PapiBaseUrl="${{ secrets.API_BASE_URL }}"
           
+      # ... (Artifact Uploads remain unchanged)
       - name: Upload Gradle logs (on failure)
         if: failure()
         uses: actions/upload-artifact@v4
