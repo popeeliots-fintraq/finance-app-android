@@ -1,12 +1,15 @@
+# --- Fin-Traq V2 Backend Dependencies ---
+
 # ML libraries (NumPy 2.x compatible)
 numpy==2.3.3
 pandas==2.2.2
 scikit-learn==1.5.0
 
-# Web server
-Flask==2.3.3
-gunicorn==21.2.0
-uvicorn==0.29.0
+# Web server (ASGI for FastAPI)
+fastapi==0.111.0  # Use a recent, stable FastAPI version
+pydantic==2.7.4   # Required for data validation
+gunicorn==21.2.0  # Production WSGI/ASGI server
+uvicorn==0.29.0   # ASGI worker for Gunicorn
 
 # GCS client
 google-cloud-storage==2.10.0
