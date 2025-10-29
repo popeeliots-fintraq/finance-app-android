@@ -13,28 +13,30 @@ jobs:
     env:
       FIN_TRAQ_API_KEY: ${{ secrets.API_KEY }}
     steps:
-      # 1. Checkout (Use your specific token for multi-repo if needed, otherwise default)
-      - uses: actions/checkout@v3
+      # 1. Checkout (Use the latest, stable action with default permissions)
+      - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-          path: .
+          # Note: We are removing all custom tokens and paths for maximum stability.
+          # The default GITHUB_TOKEN is used.
           
-      # 2. Set up JDK 17
-      # Note: We rely on the gradle/actions/setup-gradle for cache management below.
+      # 2. CRITICAL FIX: Force Grant execute permission immediately
+      - name: Force Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # 3. Set up JDK 17
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      # 3. CRITICAL: Use the Official Gradle Action (Handles Wrapper, Permissions, and Cache)
+      # 4. Set up Gradle (This handles the cache, wrapper download/check, and path)
       - name: Setup Gradle Environment
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: 8.6
-          # The action will create/manage the wrapper and permissions automatically.
-
-      # 4. Build Steps (These now rely on the correct environment setup above)
+          
+      # 5. Build Steps (These now rely on the correct environment setup above)
       - name: Clean Build
         run: ./gradlew clean --stacktrace --no-daemon
 
@@ -44,7 +46,7 @@ jobs:
       - name: Build Debug APK with API_BASE_URL
         run: ./gradlew assembleDebug --stacktrace --no-daemon -PapiBaseUrl="${{ secrets.API_BASE_URL }}"
           
-      # ... (Artifact Uploads remain unchanged)
+      # ... (Artifact Uploads below)
       - name: Upload Gradle logs (on failure)
         if: failure()
         uses: actions/upload-artifact@v4
