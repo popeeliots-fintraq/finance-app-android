@@ -45,4 +45,4 @@ EXPOSE 8080
 # 🚨 CRITICAL FIX: Use the $PORT environment variable and Gunicorn with Uvicorn workers
 # This forces the application to listen on the port (e.g., 8080) dynamically assigned by Cloud Run,
 # and increases stability with multiple workers.
-CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "categorizer.categorizer_api:app", "--bind", "0.0.0.0:${PORT}"]
+CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:${PORT}", "categorizer_api:app"]
