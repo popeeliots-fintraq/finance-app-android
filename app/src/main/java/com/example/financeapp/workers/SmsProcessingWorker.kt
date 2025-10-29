@@ -5,7 +5,9 @@ import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 // Use your actual package names for DTOs
-import com.example.financeapp.data.model.RawSmsIn 
+import com.example.financeapp.data.model.RawSmsIn // DTO for network request
+import com.example.financeapp.data.model.RawSmsOut // DTO for network response (Assuming you have this)
+import com.example.financeapp.data.model.LocalSmsRecord // 🚨 CRITICAL FIX: Local DB model import
 import com.example.financeapp.ApiService
 import com.example.financeapp.data.remote.RetrofitClient
 import com.example.financeapp.SmsDatabase // Keep local DB save as audit trail
@@ -47,10 +49,16 @@ class SmsProcessingWorker(
         
         // 1. Save raw SMS to local DB (Retained for local audit/backup)
         val db = SmsDatabase.getDatabase(applicationContext)
-        val smsData = SmsData(sender = sender, messageBody = messageBody, timestamp = timestamp, isProcessed = false)
+        // 🚨 CRITICAL FIX: Renamed local model to LocalSmsRecord (or your actual local model name)
+        val localSmsRecord = LocalSmsRecord(
+            sender = sender, 
+            messageBody = messageBody, 
+            timestamp = timestamp, 
+            isProcessed = false
+        )
         try {
             // We use the local ID as a correlation ID, but the backend generates its own
-            val generatedId = db.smsDao().insert(smsData)
+            val generatedId = db.smsDao().insert(localSmsRecord)
             Log.d(TAG, "Saved local audit SMS with ID: $generatedId")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to save initial SMS to local audit DB: ${e.localizedMessage}")
@@ -61,29 +69,31 @@ class SmsProcessingWorker(
         return try {
             val apiService = RetrofitClient.apiService // Fetch service instance here
             
-            // 🚨 CRITICAL FIX: Send only the essential RAW data (Gap #1 fix)
+            // 🚨 CRITICAL FIX: Ensure the RawSmsIn constructor uses DTO names (usually camelCase, but matching the DTO is key)
             val requestBody = RawSmsIn(
-                user_id = userId,
-                raw_text = messageBody,
-                source_type = "ANDROID_SMS_LISTENER",
-                local_timestamp = timestamp // Pass local time for backend context
+                userId = userId, // Assuming RawSmsIn DTO uses camelCase for Kotlin
+                rawText = messageBody,
+                sourceType = "ANDROID_SMS_LISTENER",
+                localTimestamp = timestamp 
             )
 
+            // NOTE: Using token = "Bearer $authToken" requires the ApiService method to accept a @Header parameter
             val response = apiService.ingestRawSms(
                 token = "Bearer $authToken",
                 rawSmsData = requestBody
             )
             
             if (response.isSuccessful && response.body() != null) {
-                val rawSmsOut = response.body()!!
+                // Assuming RawSmsOut has an 'id' field
+                val rawSmsOut = response.body()!! 
                 Log.d(TAG, "Backend Ingestion successful. Backend Raw ID: ${rawSmsOut.id}")
                 
                 // Optional: Update local DB to reflect successful ingestion (by local ID)
-                // db.smsDao().updateIngestionStatus(localSmsId, true)
+                // db.smsDao().updateIngestionStatus(generatedId, true) 
                 
                 Result.success()
             } else {
-                Log.e(TAG, "API Failure: Code ${response.code()}. Backend is responsible for categorization.")
+                Log.e(TAG, "API Failure: Code ${response.code()}. Message: ${response.errorBody()?.string()}")
                 Result.retry() // Retry on non-success HTTP status
             }
         } catch (e: Exception) {
