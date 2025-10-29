@@ -1,16 +1,23 @@
-package com.example.financeapp // Use your actual package name
+package com.example.financeapp 
 
-import retrofit2.Response // Use Response for CoroutineWorker compatibility
+import retrofit2.Response 
 import retrofit2.http.POST
 import retrofit2.http.Body
-// You must ensure these DTOs are correctly defined and accessible in your project
-import com.example.financeapp.data.model.RawTransactionIn
-import com.example.financeapp.data.model.CategorizedTransactionOut
+import retrofit2.http.Header // Added for user auth
+// Assuming these new DTOs will be created in data.model package
+import com.example.financeapp.data.model.RawSmsIn
+import com.example.financeapp.data.model.RawSmsOut 
 
 interface ApiService {
-    // This is the new endpoint that sends the raw SMS data to the backend
-    @POST("api/v1/transactions/ingest-raw")
-    suspend fun ingestRawTransaction(
-        @Body rawTransaction: RawTransactionIn
-    ): Response<CategorizedTransactionOut>
+    // --- V2 Salary Autopilot Raw Ingestion Endpoint (Gap #1 Fix) ---
+    /**
+     * Sends the RAW, unparsed SMS message to the backend's high-speed IngestionService
+     * for asynchronous processing.
+     * Maps to POST /v2/ingestion/raw-sms
+     */
+    @POST("v2/ingestion/raw-sms") // Changed endpoint to V2/ingestion
+    suspend fun ingestRawSms( // Renamed method
+        @Header("Authorization") token: String, // Added token for user authentication
+        @Body rawSmsData: RawSmsIn // Changed DTO to the simple RawSmsIn
+    ): Response<RawSmsOut> // Changed response DTO
 }
