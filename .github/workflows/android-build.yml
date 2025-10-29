@@ -25,7 +25,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-          # cache: gradle # Still disabled to bypass Cache Service 400 errors.
+          # cache: gradle # 🛑 DISABLED: Bypassing the cache that caused the 400 error.
 
       # 2. Set up Gradle (Must run before any Gradle commands)
       - name: Set up Gradle
@@ -33,14 +33,13 @@ jobs:
         with:
           gradle-version: 8.6
           
-      # 3. CRITICAL FIX: Generate Gradle Wrapper (restored and correctly positioned)
-      # This command requires Gradle to be in the path, provided by the previous step.
-      - name: Generate Gradle Wrapper
-        run: gradle wrapper --gradle-version 8.6 --gradle-distribution-sha256-sum 9631d53cf3e74bfa726893aee1f8994fee4e060c401335946dba2156f440f24c
-        
-      # 4. Grant execute permission for gradlew
+      # 3. Grant execute permission for gradlew (Moved up, must be before wrapper generation)
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
+      # 4. Generate Gradle Wrapper (Restored)
+      - name: Generate Gradle Wrapper
+        run: gradle wrapper --gradle-version 8.6 --gradle-distribution-sha256-sum 9631d53cf3e74bfa726893aee1f8994fee4e060c401335946dba2156f440f24c
         
       # 5. Build Steps
       - name: Clean Build
