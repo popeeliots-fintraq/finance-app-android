@@ -40,12 +40,11 @@ class CategorizationOut(BaseModel):
 MODEL_BUCKET = os.environ.get("MODEL_BUCKET", "fintraq-models")
 MODEL_OBJECT = os.environ.get("MODEL_OBJECT", "model.pkl")
 
-# 🚨 CRITICAL FIX: Use the current working directory, which is '/app' inside the container.
-# This assumes the Dockerfile copies the 'functions' directory directly into /app.
+# Use the current working directory, which is '/app' inside the container.
 CATEGORY_MAP_FILE = os.path.join(os.getcwd(), "functions", "merchant-map.json")
 
 
-# 🚨 CRITICAL FIX: Explicitly initialize Firebase using the file path environment variable
+# Explicitly initialize Firebase using the file path environment variable
 try:
     cred_path = os.environ.get("FIREBASE_CONFIG_PATH")
     if cred_path and os.path.exists(cred_path):
@@ -53,7 +52,7 @@ try:
         firebase_admin.initialize_app(cred)
         print("✅ Firebase client initialized using service account JSON.")
     else:
-        # This relies on the Cloud Run service account having appropriate roles (ideal for production)
+        # This relies on the Cloud Run service account having appropriate roles
         firebase_admin.initialize_app()
         print("✅ Firebase client initialized using default credentials (no explicit JSON file found).")
     db = firestore.client()
@@ -69,7 +68,8 @@ try:
         CATEGORY_MAP = json.load(f)
     print(f"✅ Loaded {len(CATEGORY_MAP)} entries from {CATEGORY_MAP_FILE}.")
 except FileNotFoundError:
-    print(f"❌ CRITICAL ERROR: Category Map file not found at {CATEGORY_MAP_FILE}. Ensure Docker COPY is correct.")
+    # If file not found, we print error but continue with empty map (Rule-only fallback)
+    print(f"❌ CRITICAL ERROR: Category Map file not found at {CATEGORY_MAP_FILE}.")
 except Exception as e:
     print(f"⚠️ WARNING: Failed to load {CATEGORY_MAP_FILE}: {e}")
 
@@ -77,6 +77,8 @@ except Exception as e:
 def load_model_from_gcs(bucket_name=MODEL_BUCKET, object_name=MODEL_OBJECT):
     """Loads the model and vectorizer from Google Cloud Storage."""
     print(f"Attempting to load model from GCS: {bucket_name}/{object_name}")
+    
+    # 🚨 CHANGE 1: Use storage.Client() inside try/except for resilience
     client = storage.Client()
     bucket = client.bucket(bucket_name)
     blob = bucket.blob(object_name)
@@ -87,14 +89,22 @@ MODEL = None
 VECTORIZER = None
 try:
     MODEL_AND_VECTORIZER = load_model_from_gcs()
+    
+    # 🚨 CHANGE 2: Simplify model success check
     if isinstance(MODEL_AND_VECTORIZER, dict):
         MODEL = MODEL_AND_VECTORIZER.get('model')
         VECTORIZER = MODEL_AND_VECTORIZER.get('vectorizer')
     elif isinstance(MODEL_AND_VECTORIZER, tuple) and len(MODEL_AND_VECTORIZER) == 2:
         MODEL, VECTORIZER = MODEL_AND_VECTORIZER
-    print("✅ ML Model loaded from GCS")
+    
+    if MODEL and VECTORIZER:
+        print("✅ ML Model loaded from GCS")
+    else:
+        raise ValueError("Model or Vectorizer was missing from loaded object.")
+
 except Exception as e:
-    print(f"⚠️ WARNING: Failed to load model from GCS: {e}. Ensure GCS credentials are correct and the file exists. Falling back to rule-only.")
+    # This robust except block ensures the app continues if ML model loading fails
+    print(f"⚠️ WARNING: Failed to load model from GCS: {e}. Falling back to rule-only mode.")
 
 # --- 4. CATEGORIZATION LOGIC ---
 def rule_based_categorize(text_lower: str, full_map: Dict[str, Any]):
@@ -106,3 +116,15 @@ def rule_based_categorize(text_lower: str, full_map: Dict[str, Any]):
     for merchant, category in full_map.items():
         if merchant in text_lower:
             return category, 0.9
+
+# --- 5. API ROUTES ---
+app = FastAPI()
+
+# 🚨 CHANGE 3: Add a simple root health check
+@app.get("/")
+def health_check():
+    """Simple health check endpoint that only confirms the FastAPI instance is running."""
+    status_msg = "OK" if MODEL else "WARNING: ML Model is not loaded (Rule-only mode)."
+    return {"status": status_msg, "model_loaded": bool(MODEL), "message": "Categorizer Service is Running."}
+
+# ... (You would add your transaction categorization route here)
