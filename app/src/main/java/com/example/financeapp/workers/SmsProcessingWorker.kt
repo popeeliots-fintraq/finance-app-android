@@ -4,19 +4,23 @@ import android.content.Context
 import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.example.financeapp.SmsData
-import com.example.financeapp.SmsDatabase
-import com.example.financeapp.data.model.RawTransactionIn
+// Use your actual package names for DTOs
+import com.example.financeapp.data.model.RawSmsIn 
 import com.example.financeapp.ApiService
 import com.example.financeapp.data.remote.RetrofitClient
-import com.example.financeapp.data.model.CategorizedTransactionOut
+import com.example.financeapp.SmsDatabase // Keep local DB save as audit trail
+
+// NOTE: We assume these are passed via inputData from where the worker is launched
+const val KEY_USER_ID = "user_id"
+const val KEY_AUTH_TOKEN = "auth_token"
 
 class SmsProcessingWorker(
     appContext: Context,
     workerParams: WorkerParameters
 ) : CoroutineWorker(appContext, workerParams) {
 
-    private val apiService = RetrofitClient.apiService
+    // Removed the direct apiService assignment to ensure lazy loading if needed, but your approach is fine.
+    // private val apiService = RetrofitClient.apiService 
 
     companion object {
         const val KEY_SENDER = "sender"
@@ -24,92 +28,69 @@ class SmsProcessingWorker(
         const val KEY_TIMESTAMP = "timestamp"
         private const val TAG = "SmsWorker"
 
-        private val transactionKeywords = listOf(
-            "debited", "credit", "rs", "inr", "transferred", "paid"
-        )
+        // No longer needed: private val transactionKeywords = ...
     }
 
     override suspend fun doWork(): Result {
         val sender = inputData.getString(KEY_SENDER) ?: return Result.failure()
         val messageBody = inputData.getString(KEY_BODY) ?: return Result.failure()
         val timestamp = inputData.getLong(KEY_TIMESTAMP, 0L)
+        val userId = inputData.getInt(KEY_USER_ID, -1)
+        val authToken = inputData.getString(KEY_AUTH_TOKEN)
 
-        Log.d(TAG, "Worker started for SMS from $sender.")
-
-        // 1. Filter non-transaction messages
-        if (!isTransactionMessage(messageBody)) {
-            Log.d(TAG, "Ignoring non-transaction SMS.")
-            return Result.success()
+        if (userId == -1 || authToken.isNullOrEmpty()) {
+             Log.e(TAG, "Missing User ID or Auth Token. Cannot ingest.")
+             return Result.failure()
         }
 
-        // 2. Save raw SMS to DB
+        Log.d(TAG, "Worker started for SMS from $sender. Initiating Frictionless Ingestion.")
+        
+        // 1. Save raw SMS to local DB (Retained for local audit/backup)
         val db = SmsDatabase.getDatabase(applicationContext)
-        var smsData = SmsData(sender = sender, messageBody = messageBody, timestamp = timestamp)
-
+        val smsData = SmsData(sender = sender, messageBody = messageBody, timestamp = timestamp, isProcessed = false)
         try {
+            // We use the local ID as a correlation ID, but the backend generates its own
             val generatedId = db.smsDao().insert(smsData)
-            smsData = smsData.copy(id = generatedId.toInt())
-            Log.d(TAG, "Saved SMS with generated ID: ${smsData.id}")
+            Log.d(TAG, "Saved local audit SMS with ID: $generatedId")
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to save initial SMS: ${e.localizedMessage}")
+            Log.e(TAG, "Failed to save initial SMS to local audit DB: ${e.localizedMessage}")
+            // Continue execution to send to backend even if local save fails
         }
 
-        // 3. Parse amount and call API
+        // 2. Call the V2 Ingestion API
         return try {
-            val amount = parseAmountFromSms(messageBody)
-            val requestBody = RawTransactionIn(
-                id = smsData.id,
-                messageBody = messageBody,
-                sender = sender,
-                timestamp = timestamp,
-                extractedAmount = amount
+            val apiService = RetrofitClient.apiService // Fetch service instance here
+            
+            // 🚨 CRITICAL FIX: Send only the essential RAW data (Gap #1 fix)
+            val requestBody = RawSmsIn(
+                user_id = userId,
+                raw_text = messageBody,
+                source_type = "ANDROID_SMS_LISTENER",
+                local_timestamp = timestamp // Pass local time for backend context
             )
 
-            val response = apiService.ingestRawTransaction(requestBody)
+            val response = apiService.ingestRawSms(
+                token = "Bearer $authToken",
+                rawSmsData = requestBody
+            )
+            
             if (response.isSuccessful && response.body() != null) {
-                val categorizedData = response.body()!!
-
-                val updatedSmsData = smsData.copy(
-                    category = categorizedData.category,
-                    leakBucket = categorizedData.leakBucket,
-                    confidenceScore = categorizedData.confidenceScore,
-                    isProcessed = true
-                )
-
-                db.smsDao().update(updatedSmsData)
-                Log.d(TAG, "Updated DB for SMS ID: ${updatedSmsData.id}")
+                val rawSmsOut = response.body()!!
+                Log.d(TAG, "Backend Ingestion successful. Backend Raw ID: ${rawSmsOut.id}")
+                
+                // Optional: Update local DB to reflect successful ingestion (by local ID)
+                // db.smsDao().updateIngestionStatus(localSmsId, true)
+                
                 Result.success()
             } else {
-                Log.e(TAG, "API Failure: Code ${response.code()}")
-                Result.retry()
+                Log.e(TAG, "API Failure: Code ${response.code()}. Backend is responsible for categorization.")
+                Result.retry() // Retry on non-success HTTP status
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Network/API Error: ${e.localizedMessage}")
-            Result.retry()
+            Log.e(TAG, "Network/API Error during Ingestion: ${e.localizedMessage}")
+            Result.retry() // Retry on connection failure
         }
     }
-
-    private fun isTransactionMessage(body: String): Boolean {
-        return transactionKeywords.any { keyword ->
-            body.lowercase().contains(keyword)
-        }
-    }
-
-    private fun parseAmountFromSms(message: String): Double {
-        val patterns = listOf(
-            "(?i)(?:rs|inr)[\\s.:]*([\\d,]+\\.?\\d*)".toRegex(),
-            "(?i)(?:debited|credited|spent|received)[\\s:]*([\\d,]+\\.?\\d*)".toRegex(),
-            "(?i)upi\\s*(?:payment|txn|transfer)[\\s:]*([\\d,]+\\.?\\d*)".toRegex(),
-            "(?i)a/c\\s*x\\d+[:\\s]+(?:rs|inr)[\\s]*([\\d,]+\\.?\\d*)".toRegex()
-        )
-
-        for (pattern in patterns) {
-            val match = pattern.find(message)
-            if (match != null) {
-                val amountString = match.groupValues[1].replace(",", "")
-                return amountString.toDoubleOrNull() ?: 0.0
-            }
-        }
-        return 0.0
-    }
+    
+    // Removed isTransactionMessage and parseAmountFromSms as categorization is now backend-only.
 }
