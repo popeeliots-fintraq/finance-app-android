@@ -2,6 +2,7 @@
 package com.example.financeapp.data.model // This is your correct package path
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Contextual
 import java.math.BigDecimal
 import java.time.LocalDate 
 
