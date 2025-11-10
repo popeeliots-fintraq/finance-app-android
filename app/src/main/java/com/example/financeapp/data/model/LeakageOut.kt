@@ -1,21 +1,25 @@
 // LeakageOut.kt
-package com.example.financeapp.data.model // This is your correct package path
+package com.example.financeapp.data.model 
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Contextual
-import java.math.BigDecimal
-import java.time.LocalDate 
+// NOTE: java.math.BigDecimal is no longer needed
+// NOTE: java.time.LocalDate is no longer needed
 
 @Serializable
 data class LeakageOut(
-    val total_reclaimable_salary: BigDecimal, 
-    val if_leak_fixed_new_salary: BigDecimal, 
-    val net_monthly_income: BigDecimal,
-    val reporting_period: LocalDate,
+    // CRITICAL FIX: Change BigDecimal to String
+    val total_reclaimable_salary: String, 
+    // CRITICAL FIX: Change BigDecimal to String
+    val if_leak_fixed_new_salary: String, 
+    // CRITICAL FIX: Change BigDecimal to String
+    val net_monthly_income: String, 
+    // CRITICAL FIX: Change LocalDate to String (e.g., "2025-11-01")
+    val reporting_period: String, 
     
-    // References LeakageBucketNetwork.kt
     val leakage_buckets: List<LeakageBucketNetwork>, 
 
-    val e_family_size: BigDecimal,
-    val essential_target: BigDecimal
+    // CRITICAL FIX: Change BigDecimal to String
+    val e_family_size: String,
+    // CRITICAL FIX: Change BigDecimal to String
+    val essential_target: String
 )
