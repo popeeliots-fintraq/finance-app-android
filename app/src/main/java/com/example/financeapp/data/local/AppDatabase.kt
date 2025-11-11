@@ -1,44 +1,66 @@
-// AppDatabase.kt
 package com.example.financeapp.data.local
 
+import android.content.Context
 import androidx.room.Database
+import androidx.room.Room
 import androidx.room.RoomDatabase
-// NOTE: You will need to import your other entities (e.g., SalaryBucket) here as well.
-// Assuming your SalaryBucket.kt is also in this package.
+import net.sqlcipher.database.SQLiteDatabase
+import net.sqlcipher.database.SupportFactory
 
-// 🚨 CRITICAL: List all your entities here.
+/**
+ * Room Database for the encrypted storage of all Fin-Traq data.
+ *
+ * @property entities Includes all existing bucket entities and the new TransactionEntity.
+ * @property version Incremented to 2 due to the addition of the TransactionEntity table.
+ */
 @Database(
     entities = [
         LeakBucket::class,
-        SalaryBucket::class // Assuming this is the name of your other entity
+        SalaryBucket::class,
+        TransactionEntity::class // NEW: For granular transaction history
     ],
-    version = 1, // Start at version 1
-    exportSchema = true 
+    version = 2, // CRITICAL: Incremented from 1 to 2 for the schema change
+    exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
 
-    // 🚨 CRITICAL: Expose all your DAOs here.
+    // Existing DAOs
     abstract fun leakBucketDao(): LeakBucketDao
     abstract fun salaryBucketDao(): SalaryBucketDao
 
-    // This companion object handles singleton creation of the database instance.
+    // NEW DAO for transaction history
+    abstract fun transactionDao(): TransactionDao
+
     companion object {
-        // Marks the field as immediately visible to other threads
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
-        // Placeholder function for database creation/retrieval
-        fun getDatabase(context: android.content.Context): AppDatabase {
+        /**
+         * Creates or retrieves the encrypted Room database instance using SQLCipher.
+         *
+         * @param context Application context.
+         * @param passphrase The encryption key (DB_PASSPHRASE from BuildConfig).
+         */
+        fun getDatabase(context: Context, passphrase: String): AppDatabase {
             return INSTANCE ?: synchronized(this) {
-                val instance = androidx.room.Room.databaseBuilder(
+                // 1. Load SQLCipher native libraries
+                SQLiteDatabase.loadLibs(context)
+
+                // 2. Create the encryption factory using the passphrase
+                val factory = SupportFactory(
+                    SQLiteDatabase.getBytes(passphrase.toCharArray())
+                )
+
+                val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "fintraq_database"
+                    "fintraq_database" // Using your existing database name
                 )
-                // Since you are using SQLCipher, the final setup will be slightly more complex
-                // (using net.zetetic:android-database-sqlcipher:4.5.4) which we will add later.
-                // For now, let's just make Kapt compile the structure.
-                .build()
+                    // Allows Room to rebuild the database if no migrations are provided (safe for development)
+                    .fallbackToDestructiveMigration()
+                    // 3. Apply the SQLCipher encryption factory
+                    .openHelperFactory(factory)
+                    .build()
                 INSTANCE = instance
                 instance
             }
