@@ -3,8 +3,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'kotlin-kapt' 
-    // ✅ Correct plugin — DO NOT add version here (Android handles it)
+    id 'kotlin-kapt'
     id 'org.jetbrains.kotlin.plugin.serialization'
 }
 
@@ -20,17 +19,17 @@ android {
         versionName "1.0"
 
         buildConfigField "String", "DB_PASSPHRASE", "\"c4f7a1b9e2d5f8a0-3b6c7e1d\""
-        
+
         // Gemini API Key from local.properties
         def geminiApiKey = project.properties["geminiApiKey"] ?: ""
         buildConfigField "String", "GEMINI_API_KEY", "\"$geminiApiKey\""
 
         // Backend Base URL
-        def apiBaseUrl = project.hasProperty("apiBaseUrl") 
-                ? project.property("apiBaseUrl") 
+        def apiBaseUrl = project.hasProperty("apiBaseUrl")
+                ? project.property("apiBaseUrl")
                 : "http://10.0.2.2:8000/"
         buildConfigField "String", "API_BASE_URL", "\"${apiBaseUrl}\""
-        
+
         // FIN-TRAQ API KEY
         buildConfigField "String", "FIN_TRAQ_API_KEY", "\"YOUR_ACTUAL_API_KEY_HERE\""
     }
@@ -38,7 +37,7 @@ android {
     buildFeatures {
         buildConfig true
     }
-    
+
     buildTypes {
         debug {
             debuggable true
@@ -66,7 +65,7 @@ android {
 dependencies {
 
     // Kotlin BOM
-    implementation(platform('org.jetbrains.kotlin:kotlin-bom:1.9.23'))
+    implementation platform('org.jetbrains.kotlin:kotlin-bom:1.9.23')
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
 
     // Jetpack + Material
@@ -83,26 +82,27 @@ dependencies {
     // ✅ Retrofit Core
     implementation 'com.squareup.retrofit2:retrofit:2.11.0'
 
-    // ✅ Kotlinx Serialization JSON
+    // ✅ Kotlinx Serialization
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3'
-    implementation 'com.squareup.retrofit2:converter-kotlinx-serialization:2.11.0'
 
-    // ✅ Jake Wharton Kotlinx Serialization Retrofit Converter
-    implementation 'com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0'
+    // ✅ OFFICIAL Retrofit Kotlinx Serialization Converter
+    implementation "com.squareup.retrofit2:converter-kotlinx-serialization:2.11.0"
+
+    // ❌ REMOVED WRONG JakeWharton converter
 
     // ✅ OkHttp
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
-    
+
     // Room
     def room_version = "2.6.1"
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
-    kapt "androidx.room:room-compiler:$room_version" 
-    
+    kapt "androidx.room:room-compiler:$room_version"
+
     // SQLCipher
     implementation "net.zetetic:android-database-sqlcipher:4.5.4"
-    
+
     // Coroutines
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0"
@@ -111,7 +111,7 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.7.0"
     kapt "androidx.lifecycle:lifecycle-compiler:2.6.2"
-    
+
     // WorkManager
     implementation 'androidx.work:work-runtime-ktx:2.9.0'
 }
