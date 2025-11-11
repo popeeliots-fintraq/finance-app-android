@@ -58,9 +58,6 @@ android {
     // 🔥 CRITICAL FIX: This flag prevents Kapt from processing Kotlin Serialization DTOs.
     kapt {
         correctErrorTypes true
-        arguments {
-            arg("kapt.include.compile.classpath", false)
-        }
     }
 }
 
@@ -76,6 +73,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.12.0'
     implementation 'androidx.compose.material3:material3:1.2.1'
+    implementation 'com.google.code.gson:gson:2.10.1'
 
     // Retrofit & Serialization Converter
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
