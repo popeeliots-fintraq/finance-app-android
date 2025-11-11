@@ -20,17 +20,15 @@ android {
 
         buildConfigField "String", "DB_PASSPHRASE", "\"c4f7a1b9e2d5f8a0-3b6c7e1d\""
         
-        // 🎯 NEW: Logic to load the Gemini API Key from local.properties
+        // Logic to load the Gemini API Key from local.properties
         def geminiApiKey = project.properties["geminiApiKey"] ?: ""
         buildConfigField "String", "GEMINI_API_KEY", "\"$geminiApiKey\""
 
-        // 🎯 NEW: API_BASE_URL from Gradle property (passed via -PapiBaseUrl in CI)
+        // API_BASE_URL from Gradle property (passed via -PapiBaseUrl in CI)
         def apiBaseUrl = project.hasProperty("apiBaseUrl") ? project.property("apiBaseUrl") : "http://10.0.2.2:8000/"
         buildConfigField "String", "API_BASE_URL", "\"${apiBaseUrl}\""
         
-        // 🔥 CRITICAL FIX: Define the FIN_TRAQ_API_KEY to resolve the compilation error.
-        // The key is defined here to be available in BuildConfig.
-        // NOTE: Replace "YOUR_ACTUAL_API_KEY_HERE" with your key or load it from a secure source.
+        // Define the FIN_TRAQ_API_KEY
         buildConfigField "String", "FIN_TRAQ_API_KEY", "\"YOUR_ACTUAL_API_KEY_HERE\""
     }
 
@@ -57,8 +55,7 @@ android {
         jvmTarget = "17"
     }
 
-    // 🔥 CRITICAL FIX: Add arguments to exclude network DTOs from Kapt processing.
-    // This fixes the serialization/Kapt conflict ("incompatible types: Object cannot be converted to Annotation").
+    // 🔥 CRITICAL FIX: This flag prevents Kapt from processing Kotlin Serialization DTOs.
     kapt {
         correctErrorTypes true
         arguments {
@@ -72,7 +69,7 @@ dependencies {
     implementation(platform('org.jetbrains.kotlin:kotlin-bom:1.9.23'))
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
 
-    // Without this, the GenerativeModel class will not be found.
+    // Gemini API
     implementation 'com.google.ai.client.generativeai:generativeai:0.8.0' 
 
     implementation 'androidx.core:core-ktx:1.12.0'
@@ -80,7 +77,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.12.0'
     implementation 'androidx.compose.material3:material3:1.2.1'
 
-    // Retrofit, Gson, and OkHttp
+    // Retrofit & Serialization Converter
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0'
 
@@ -92,21 +89,21 @@ dependencies {
     def room_version = "2.6.1"
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
-    kapt "androidx.room:room-compiler:$room_version" // KAPT for Room
+    kapt "androidx.room:room-compiler:$room_version" 
     
     // SQLCipher for encrypted Room database
     implementation "net.zetetic:android-database-sqlcipher:4.5.4"
     
-    // Coroutines
+    // Coroutines & Serialization
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0"
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0'
 
-    // Lifecycle/ViewModel Scope (REQUIRED for Coroutine use in ViewModel)
+    // Lifecycle/ViewModel Scope
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0") 
-    kapt "androidx.lifecycle:lifecycle-compiler:2.6.2" // KAPT for Lifecycle annotations
+    kapt "androidx.lifecycle:lifecycle-compiler:2.6.2"
     
-    // WorkManager (Needed for SmsProcessingWorker)
+    // WorkManager 
     implementation 'androidx.work:work-runtime-ktx:2.9.0'
 }
