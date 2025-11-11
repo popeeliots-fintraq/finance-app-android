@@ -4,6 +4,7 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-kapt'
+    id 'com.google.dagger.hilt.android'
     id 'org.jetbrains.kotlin.plugin.serialization'
 }
 
@@ -117,4 +118,9 @@ dependencies {
 
     // WorkManager
     implementation 'androidx.work:work-runtime-ktx:2.9.0'
+    def hiltVersion = "2.44.1" // Use your desired version
+    // Hilt Core
+    implementation "com.google.dagger:hilt-android:$hiltVersion"
+    // Hilt Compiler (Required for code generation)
+    kapt "com.google.dagger:hilt-compiler:$hiltVersion"
 }
