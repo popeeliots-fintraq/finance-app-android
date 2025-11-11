@@ -44,7 +44,7 @@ jobs:
         run: ./gradlew clean --stacktrace --no-daemon
 
       - name: Run Unit Tests (Including API Auth Tests)
-        run: ./gradlew testDebugUnitTest --stacktrace --no-daemon
+        run: ./gradlew testDebugUnitTest --stacktrace --no-daemon --refresh-dependencies
 
       - name: Build Debug APK with API_BASE_URL
         run: ./gradlew assembleDebug --stacktrace --no-daemon -PapiBaseUrl="${{ secrets.API_BASE_URL }}"
