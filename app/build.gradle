@@ -3,8 +3,9 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'kotlin-kapt' // Retained for Room compiler
-    id 'org.jetbrains.kotlin.plugin.serialization' version '1.9.23'
+    id 'kotlin-kapt' 
+    // ✅ Correct plugin — DO NOT add version here (Android handles it)
+    id 'org.jetbrains.kotlin.plugin.serialization'
 }
 
 android {
@@ -20,15 +21,17 @@ android {
 
         buildConfigField "String", "DB_PASSPHRASE", "\"c4f7a1b9e2d5f8a0-3b6c7e1d\""
         
-        // Logic to load the Gemini API Key from local.properties
+        // Gemini API Key from local.properties
         def geminiApiKey = project.properties["geminiApiKey"] ?: ""
         buildConfigField "String", "GEMINI_API_KEY", "\"$geminiApiKey\""
 
-        // API_BASE_URL from Gradle property (passed via -PapiBaseUrl in CI)
-        def apiBaseUrl = project.hasProperty("apiBaseUrl") ? project.property("apiBaseUrl") : "http://10.0.2.2:8000/"
+        // Backend Base URL
+        def apiBaseUrl = project.hasProperty("apiBaseUrl") 
+                ? project.property("apiBaseUrl") 
+                : "http://10.0.2.2:8000/"
         buildConfigField "String", "API_BASE_URL", "\"${apiBaseUrl}\""
         
-        // Define the FIN_TRAQ_API_KEY
+        // FIN-TRAQ API KEY
         buildConfigField "String", "FIN_TRAQ_API_KEY", "\"YOUR_ACTUAL_API_KEY_HERE\""
     }
 
@@ -55,53 +58,59 @@ android {
         jvmTarget = "17"
     }
 
-    // 🔥 CRITICAL FIX: This flag prevents Kapt from processing Kotlin Serialization DTOs.
     kapt {
         correctErrorTypes true
     }
 }
 
 dependencies {
-    // Correct way to manage Kotlin versions across the project.
+
+    // Kotlin BOM
     implementation(platform('org.jetbrains.kotlin:kotlin-bom:1.9.23'))
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
 
-    // Gemini API
-    implementation 'com.google.ai.client.generativeai:generativeai:0.8.0' 
-
+    // Jetpack + Material
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.12.0'
-    implementation 'androidx.compose.material3:material3:1.2.1'
+
+    // JSON (Gson kept for non-network use)
     implementation 'com.google.code.gson:gson:2.10.1'
 
-    // Retrofit & Serialization Converter
+    // Gemini API
+    implementation 'com.google.ai.client.generativeai:generativeai:0.8.0'
+
+    // ✅ Retrofit Core
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+
+    // ✅ Kotlinx Serialization JSON
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3'
+
+    // ✅ Jake Wharton Kotlinx Serialization Retrofit Converter
     implementation 'com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0'
 
-    def okhttp_version = "4.12.0"
-    implementation("com.squareup.okhttp3:okhttp:$okhttp_version")
-    implementation("com.squareup.okhttp3:logging-interceptor:$okhttp_version")
+    // ✅ OkHttp
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
     
-    // Room components
+    // Room
     def room_version = "2.6.1"
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
     kapt "androidx.room:room-compiler:$room_version" 
     
-    // SQLCipher for encrypted Room database
+    // SQLCipher
     implementation "net.zetetic:android-database-sqlcipher:4.5.4"
     
-    // Coroutines & Serialization
+    // Coroutines
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0"
-    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3'
 
-    // Lifecycle/ViewModel Scope
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0") 
+    // Lifecycle
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.7.0"
     kapt "androidx.lifecycle:lifecycle-compiler:2.6.2"
     
-    // WorkManager 
+    // WorkManager
     implementation 'androidx.work:work-runtime-ktx:2.9.0'
 }
