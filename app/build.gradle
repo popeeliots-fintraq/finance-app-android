@@ -59,6 +59,9 @@ android {
 
     kapt {
         correctErrorTypes true
+        arguments {
+            arg("kapt.include.compile.classpath", false)
+        }
     }
 }
 
