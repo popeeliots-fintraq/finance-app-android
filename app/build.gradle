@@ -124,6 +124,4 @@ dependencies {
 
     // WorkManager
     implementation 'androidx.work:work-runtime-ktx:2.9.0'
-    def hiltVersion = "2.44.1" // Use your desired version
- 
 }
