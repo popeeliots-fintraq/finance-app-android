@@ -23,7 +23,7 @@ jobs:
         run: chmod +x gradlew
           
       - name: Generate Gradle Wrapper
-        run: ./gradlew wrapper --gradle-version 8.6 --gradle-distribution-sha256-sum 9631d53cf3e74bfa726893aee1f8994fee4e060c401335946dba2156f440f24c
+        run: gradle wrapper --gradle-version 8.6 --gradle-distribution-sha256-sum 9631d53cf3e74bfa726893aee1f8994fee4e060c401335946dba2156f440f24c
 
 
       - name: Set up JDK 17
