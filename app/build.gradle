@@ -3,7 +3,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'com.google.dagger.hilt.android' version '2.44.1'
+    id 'com.google.dagger.hilt.android' version '2.51.1'
     id 'kotlin-kapt'
     id 'org.jetbrains.kotlin.plugin.serialization'
 }
@@ -64,7 +64,7 @@ android {
 dependencies {
 
     // Define Versions here
-    def hiltVersion = "2.44.1" 
+    def hiltVersion = "2.51.1" 
     def room_version = "2.6.1"
 
     // Kotlin BOM
