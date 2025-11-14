@@ -1,9 +1,9 @@
 // app/build.gradle (Groovy DSL)
-
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'com.google.dagger.hilt.android' version '2.51.1'
+    // Ensure this version matches the dependency defined below
+    id 'com.google.dagger.hilt.android' version '2.51.1' 
     id 'kotlin-kapt'
     id 'org.jetbrains.kotlin.plugin.serialization'
 }
@@ -18,6 +18,8 @@ android {
         targetSdk 34
         versionCode 1
         versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField "String", "DB_PASSPHRASE", "\"c4f7a1b9e2d5f8a0-3b6c7e1d\""
 
@@ -50,6 +52,7 @@ android {
     }
 
     compileOptions {
+        // Keeping your JVM 17 settings
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
@@ -57,8 +60,6 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
-    
-    // The previous 'kapt { ... }' block has been REMOVED from here.
 }
 
 dependencies {
@@ -67,8 +68,8 @@ dependencies {
     def hiltVersion = "2.51.1" 
     def room_version = "2.6.1"
 
-    // Kotlin BOM
-    implementation platform('org.jetbrains.kotlin:kotlin-bom:1.9.23')
+    // **** CRITICAL FIX: Updating Kotlin BOM to 2.0.0 to match KGP in root build.gradle (build.gradle) ****
+    implementation platform('org.jetbrains.kotlin:kotlin-bom:2.0.0') 
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
 
     // Jetpack + Material
@@ -108,14 +109,18 @@ dependencies {
     implementation "net.zetetic:android-database-sqlcipher:4.5.4"
 
     // Coroutines
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0"
+    // Updated to latest stable 1.8.1 for compatibility and stability
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1"
 
     // Lifecycle
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2"
+    // Aligned all Lifecycle components to the latest stable 2.7.0
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.7.0"
-    kapt "androidx.lifecycle:lifecycle-compiler:2.6.2"
+    kapt "androidx.lifecycle:lifecycle-compiler:2.7.0"
 
     // WorkManager
     implementation 'androidx.work:work-runtime-ktx:2.9.0'
 }
+
+Please copy the entire second block of code above and use it to replace the contents of your `app/build.gradle` file. I hope this resolves the visibility issue!
