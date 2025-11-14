@@ -56,13 +56,8 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
-
-    kapt {
-        correctErrorTypes true
-        arguments {
-            arg("kapt.include.compile.classpath", false)
-        }
-    }
+    
+    // The previous 'kapt { ... }' block has been REMOVED from here.
 }
 
 dependencies {
@@ -90,21 +85,20 @@ dependencies {
     implementation "com.google.dagger:hilt-android:$hiltVersion"
     kapt "com.google.dagger:hilt-compiler:$hiltVersion"
 
-    // ✅ Retrofit Core
+    // Retrofit Core
     implementation 'com.squareup.retrofit2:retrofit:2.11.0'
 
-    // ✅ Kotlinx Serialization
+    // Kotlinx Serialization
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3'
 
-    // ✅ OFFICIAL Retrofit Kotlinx Serialization Converter
+    // OFFICIAL Retrofit Kotlinx Serialization Converter
     implementation "com.squareup.retrofit2:converter-kotlinx-serialization:2.11.0"
 
-    // ✅ OkHttp
+    // OkHttp
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
 
     // Room
-    def room_version = "2.6.1"
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
