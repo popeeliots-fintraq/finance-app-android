@@ -2,8 +2,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    // Ensure this version matches the dependency defined below
-    id 'com.google.dagger.hilt.android' version '2.51.1' 
+    id 'com.google.dagger.hilt.android'
     id 'kotlin-kapt'
     id 'org.jetbrains.kotlin.plugin.serialization'
 }
@@ -52,7 +51,6 @@ android {
     }
 
     compileOptions {
-        // Keeping your JVM 17 settings
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
@@ -68,7 +66,7 @@ dependencies {
     def hiltVersion = "2.51.1" 
     def room_version = "2.6.1"
 
-    // **** CRITICAL FIX: Updating Kotlin BOM to 2.0.0 to match KGP in root build.gradle (build.gradle) ****
+    // **** CRITICAL FIX: Updating Kotlin BOM to 2.0.0 to match KGP in root build.gradle ****
     implementation platform('org.jetbrains.kotlin:kotlin-bom:2.0.0') 
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
 
@@ -109,12 +107,10 @@ dependencies {
     implementation "net.zetetic:android-database-sqlcipher:4.5.4"
 
     // Coroutines
-    // Updated to latest stable 1.8.1 for compatibility and stability
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1"
 
     // Lifecycle
-    // Aligned all Lifecycle components to the latest stable 2.7.0
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.7.0"
     kapt "androidx.lifecycle:lifecycle-compiler:2.7.0"
@@ -122,5 +118,3 @@ dependencies {
     // WorkManager
     implementation 'androidx.work:work-runtime-ktx:2.9.0'
 }
-
-Please copy the entire second block of code above and use it to replace the contents of your `app/build.gradle` file. I hope this resolves the visibility issue!
