@@ -8,81 +8,11 @@ on:
 
 jobs:
   # ----------------------------------------------------
-  # JOB 0: TEMPORARY WRAPPER REPAIR (RUN ONCE, THEN DELETE)
-  # This job fixes the corrupted gradle-wrapper.jar file in your repository.
-  # DELETE THIS JOB AFTER THE MAIN BUILD SUCCEEDS ONCE.
-  # ----------------------------------------------------
-  repair-wrapper:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          # IMPORTANT: This token must have 'repo' scope (read/write) for the push to succeed.
-          token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }} 
-          path: .
-          
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-          
-      - name: Robustly Repair and Regenerate Gradle 8.6 Wrapper (Final Attempt)
-        run: |
-          echo "Attempting robust wrapper repair by creating isolated environment..."
-          
-          # 1. Create a temporary folder
-          mkdir temp-wrapper-fix
-          cd temp-wrapper-fix
-          
-          # 2. CRITICAL FIX: Create an empty settings.gradle file for isolation.
-          touch settings.gradle
-          echo "Created dummy settings.gradle for isolation."
-          
-          # 3. Copy the existing gradle-wrapper.properties to ensure correct version (8.6)
-          cp ../gradle/wrapper/gradle-wrapper.properties gradle-wrapper.properties
-          
-          # 4. Use the global Gradle (9.2.0) to generate the NEW 8.6 wrapper files in isolation
-          gradle wrapper --gradle-version 8.6 --distribution-type all
-          
-          # 5. Copy the newly generated wrapper files back to the main project directory
-          cd ..
-          cp temp-wrapper-fix/gradlew gradlew
-          cp temp-wrapper-fix/gradlew.bat gradlew.bat
-          mkdir -p gradle/wrapper
-          cp temp-wrapper-fix/gradle/wrapper/gradle-wrapper.jar gradle/wrapper/gradle-wrapper.jar
-          
-          echo "Wrapper files successfully regenerated and copied."
-        
-      - name: Commit Fixed Wrapper Files
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
-          
-          # Show current status for debugging
-          git status
-          
-          # Add the regenerated files
-          git add gradlew gradlew.bat gradle/wrapper/gradle-wrapper.jar
-          
-          # Force a commit, even if files are identical, to ensure consistency.
-          # If there are no changes, the commit command will exit non-zero, so we use || true to handle it gracefully.
-          git commit -m "CI FIX: Final fix for Gradle wrapper: regenerated and committed in isolation." || true
-          
-          # Check if the commit succeeded (i.e., there were changes) before pushing
-          if git log -1 --pretty=format:"%s" | grep "CI FIX"; then
-             echo "Pushing changes..."
-             git push
-          else
-             echo "No changes were detected or committed. Skipping push."
-          fi
-
-  # ----------------------------------------------------
   # JOB 1: BUILD ANDROID APK
+  # Note: The temporary 'repair-wrapper' job has been removed as the wrapper is fixed.
+  # We are now targeting Gradle 8.7 as required by the Android Gradle Plugin (AGP).
   # ----------------------------------------------------
-  build-android: # New, Corrected key job for building android
-    # ⚠️ This dependency ensures we wait for the repaired files to be pushed
-    needs: repair-wrapper 
+  build-android:
     runs-on: ubuntu-latest
     name: Build Android APK
     env:
@@ -104,12 +34,12 @@ jobs:
           java-version: 17
           cache: gradle
 
-      - name: Set up Gradle 
+      - name: Set up Gradle 8.7
         uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-version: 8.6
+          # REQUIRED: Changed from 8.6 to 8.7 to meet the minimum version requirement of the Android Gradle Plugin
+          gradle-version: 8.7 
       
-      # Now, we will force a clean build to resolve any lingering issues
       - name: Clean Build
         run: ./gradlew clean --stacktrace --no-daemon
 
@@ -153,7 +83,7 @@ jobs:
   
   deploy-backend:
     name: Deploy Categorization Backend
-    # Only run this job if the Android build succeeds
+    # The dependency on 'repair-wrapper' has been removed
     needs: build-android 
     runs-on: ubuntu-latest
 
