@@ -11,5 +11,5 @@ plugins {
     
     // CRITICAL FIX: The full ID for the Kotlin Kapt plugin is 'org.jetbrains.kotlin.kapt'.
     // Using 'kotlin-kapt' without the full ID fails resolution in the root build file on modern Gradle versions.
-    id 'org.jetbrains.kotlin.kapt' version '1.9.23' apply false
+    id 'org.jetbrains.kotlin.kapt' version '2.0.0' apply false
 }
