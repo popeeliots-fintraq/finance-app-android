@@ -20,16 +20,35 @@ jobs:
           token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           path: .
           
-      - name: Set up Java and Gradle
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
-          # REMOVED: cache: none (omitting 'cache' disables it, which is what we need)
           
-      - name: Repair and Regenerate Gradle 8.6 Wrapper
-        # This command uses the runner's global Gradle to ensure the local wrapper files are clean.
-        run: gradle wrapper --gradle-version 8.6 --distribution-type all
+      - name: Robustly Repair and Regenerate Gradle 8.6 Wrapper
+        run: |
+          echo "Attempting robust wrapper repair to avoid Gradle 9.x configuration issues..."
+          
+          # 1. Create a temporary folder
+          mkdir temp-wrapper-fix
+          cd temp-wrapper-fix
+          
+          # 2. Copy the existing gradle-wrapper.properties to ensure correct version (8.6)
+          cp ../gradle/wrapper/gradle-wrapper.properties gradle-wrapper.properties
+          
+          # 3. Use the global Gradle (9.2.0) to generate the NEW 8.6 wrapper files in isolation
+          # This command only needs the properties file and avoids running the main build configuration.
+          gradle wrapper --gradle-version 8.6 --distribution-type all
+          
+          # 4. Copy the newly generated wrapper files back to the main project directory
+          cd ..
+          cp temp-wrapper-fix/gradlew gradlew
+          cp temp-wrapper-fix/gradlew.bat gradlew.bat
+          mkdir -p gradle/wrapper
+          cp temp-wrapper-fix/gradle/wrapper/gradle-wrapper.jar gradle/wrapper/gradle-wrapper.jar
+          
+          echo "Wrapper files successfully regenerated and copied."
         
       - name: Commit Fixed Wrapper Files
         run: |
@@ -43,7 +62,7 @@ jobs:
           if git diff --cached --exit-code; then
             echo "No changes found in wrapper files. Skipping commit."
           else
-            git commit -m "CI FIX: Regenerated Gradle 8.6 wrapper files to fix IDownload error"
+            git commit -m "CI FIX: Regenerated Gradle 8.6 wrapper files robustly to fix build configuration failure."
             git push
             echo "Successfully pushed repaired wrapper files."
           fi
