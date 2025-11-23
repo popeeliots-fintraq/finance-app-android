@@ -32,12 +32,7 @@ jobs:
           distribution: temurin
           java-version: 17
           cache: gradle
-
-      - name: Set up Gradle 
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: 8.6
-     
+    
       # Now, we will force a clean build to resolve any lingering issues
       - name: Clean Build
         run: ./gradlew clean --stacktrace --no-daemon
