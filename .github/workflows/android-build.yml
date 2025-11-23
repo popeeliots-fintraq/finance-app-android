@@ -7,44 +7,25 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-android:
+  build-android: # New, Corrected key job for building android
     runs-on: ubuntu-latest
     name: Build Android APK
     env:
       GRADLE_BUILD_ACTION_CACHE_KEY_PREFIX: v2
       FIN_TRAQ_API_KEY: ${{ secrets.API_KEY }}
-
     steps:
       - uses: actions/checkout@v3
         with:
           token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           path: .
 
-      # -----------------------------------------------------
-      # FIX: DELETE BROKEN WRAPPER BEFORE ANY GRADLE COMMANDS
-      # -----------------------------------------------------
-      - name: Remove corrupted Gradle wrapper
-        run: |
-          rm -rf gradle
-          rm -f gradlew
-          rm -f gradlew.bat
-
-      # -----------------------------------------------------
-      # FIX: REGENERATE A CLEAN GRADLE WRAPPER (8.6)
-      # -----------------------------------------------------
-      - name: Install temporary system Gradle
-        run: sudo apt-get update && sudo apt-get install -y gradle
-
-      - name: Generate fresh Gradle Wrapper (8.6)
-        run: gradle wrapper --gradle-version 8.6 \
-             --gradle-distribution-sha256-sum 9631d53cf3e74bfa726893aee1f8994fee4e060c401335946dba2156f440f24c
-
-      - name: Grant execute permission
+      - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+          
+      - name: Generate Gradle Wrapper
+        run: gradle wrapper --gradle-version 8.6 --gradle-distribution-sha256-sum 9631d53cf3e74bfa726893aee1f8994fee4e060c401335946dba2156f440f24c
 
-      # -----------------------------------------------------
-      # JAVA + GRADLE ACTION
-      # -----------------------------------------------------
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -56,13 +37,8 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: 8.6
-      - name: Rebuild Gradle wrapper (fresh)
-        run: |
-          gradle wrapper --gradle-version 8.6 --distribution-type all
-          ls -R gradle/wrapper
-      # -----------------------------------------------------
-      # CLEAN + BUILD
-      # -----------------------------------------------------
+     
+      # Now, we will force a clean build to resolve any lingering issues
       - name: Clean Build
         run: ./gradlew clean --stacktrace --no-daemon
 
@@ -72,6 +48,19 @@ jobs:
       - name: Build Debug APK with API_BASE_URL
         run: ./gradlew assembleDebug --stacktrace --no-daemon -PapiBaseUrl="${{ secrets.API_BASE_URL }}"
 
+         # NEW STEP: Print the log contents ONLY if the build step failed
+      # - name: Print Gradle Log on Failure
+       # if: always() # Use always() to run this step even if the previous one failed
+        # run: |
+         # echo "--- START OF GRADLE BUILD LOG ---"
+          # Check if the log file exists and print it
+         # if [ -f "build-log.txt" ]; then
+        #    cat build-log.txt
+        #  else
+         #   echo "build-log.txt not found."
+        #  fi
+        #  echo "--- END OF GRADLE BUILD LOG ---"
+                
       - name: Upload Gradle logs (on failure)
         if: failure()
         uses: actions/upload-artifact@v4
@@ -99,17 +88,24 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+
+ # ----------------------------------------------------
+  # JOB 2: DEPLOY FIREBASE FUNCTIONS (Continuous Deployment)
   # ----------------------------------------------------
-  # JOB 2: DEPLOY FIREBASE FUNCTIONS
-  # ----------------------------------------------------
+  
   deploy-backend:
     name: Deploy Categorization Backend
-    needs: build-android
+    # Only run this job if the Android build succeeds
+    needs: build-android 
     runs-on: ubuntu-latest
+
+    
+    # Crucial: Only deploy the live backend when merging/pushing directly to 'main'
+    # if: github.event_name == 'push' && github.ref == 'refs/heads/main' 
     env:
       FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
       FIREBASE_PROJECT_ID: ${{ secrets.Firebase_Project_ID }}
-
+      
     steps:
       - uses: actions/checkout@v3
         with:
@@ -119,13 +115,13 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
-
+          node-version: '20' # Recommended Node.js version for Firebase Functions 
+          
       - name: Install Firebase CLI
         run: |
           npm install firebase-tools@latest
-          npx firebase --version
-
+          npx firebase --version # ✅ Use npx to avoid global pollution
+      # consider removing the following steps for security as per prior advice  
       - name: Write Firebase Service Account
         run: |
           echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}" | base64 -d > ${{ github.workspace }}/functions/service-account.json
@@ -135,12 +131,10 @@ jobs:
         run: |
           head -n 5 ${{ github.workspace }}/functions/service-account.json
           jq .type ${{ github.workspace }}/functions/service-account.json
-
       - name: Install Function Dependencies
         run: |
           cd functions
           npm install dotenv firebase-functions@latest firebase-admin@latest
-
       - name: Initialize Firebase Admin (CI)
         run: |
           cd functions
@@ -149,7 +143,6 @@ jobs:
           echo "admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });" >> temp-init.js
           echo "console.log('Firebase admin initialized successfully');" >> temp-init.js
           node temp-init.js
-
       - name: Deploy Functions
         run: |
           cd functions
@@ -161,19 +154,20 @@ jobs:
         run: |
           cd functions
           npm test -- --passWithNoTests
-
-  # ----------------------------------------------------
-  # JOB 3: DEPLOY PYTHON ML SERVICE TO CLOUD RUN
-  # ----------------------------------------------------
+# ----------------------------------------------------
+# JOB 3: DEPLOY PYTHON ML SERVICE TO CLOUD RUN
+# ----------------------------------------------------
   deploy-categorizer-service:
+
     name: Deploy Python Categorizer to Cloud Run
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  
     needs: build-android
-
     outputs:
       CLOUD_RUN_URL: ${{ steps.get_url.outputs.CLOUD_RUN_URL }}
-
+   
+ # --- DEFINE ENVIRONMENT VARIABLES ---
     env:
       GCP_PROJECT_ID: ${{ secrets.Firebase_Project_ID }}
       SERVICE_NAME: transaction-categorizer
@@ -186,23 +180,26 @@ jobs:
       - uses: actions/checkout@v3
         with:
           token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-          path: .
-
+          path: .        
+          
+    # 1. ✅ CORRECTED: AUTHENTICATE USING SERVICE ACCOUNT KEY
       - name: Authenticate with Service Account Key
         uses: google-github-actions/auth@v2
         with:
+        # This replaces the entire WIF block and uses the key file secret
           credentials_json: ${{ secrets.GCP_CLOUD_RUN_KEY }} 
-
+        
+    # 2. Set up Cloud SDK and Docker Auth
       - name: Set up Cloud SDK and Docker Auth
         uses: google-github-actions/setup-gcloud@v2
         with:
           version: 'latest'
-          project_id: ${{ env.GCP_PROJECT_ID }}
+          project_id: ${{ env.GCP_PROJECT_ID }} # This is now correctly configured via the key
 
       - name: Authorize Docker
         run: gcloud auth configure-docker ${{ env.SERVICE_REGION }}-docker.pkg.dev
 
-      - name: Print env vars
+      - name: Print all env variables relevant to Docker
         run: printenv | grep IMAGE_TAG
 
       - name: List workspace root
@@ -215,17 +212,19 @@ jobs:
         run: |
           docker build -t "$IMAGE_TAG" -f categorizer/Dockerfile . --progress=plain --no-cache
           docker push "$IMAGE_TAG"
-
       - name: Echo Docker Build Command
         run: echo docker build -t "$IMAGE_TAG" -f categorizer/Dockerfile .
 
+        
+    # 4. Deploy the Image to Cloud Run
       - name: Deploy to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2
         with:
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.SERVICE_REGION }}
           image: ${{ env.IMAGE_TAG }}
-
+          
+    # 5. Export the Service URL for subsequent jobs
       - name: Get Cloud Run URL
         id: get_url
         run: |
@@ -234,10 +233,9 @@ jobs:
           --project ${{ env.GCP_PROJECT_ID }} \
           --format 'value(status.url)')
           echo "CLOUD_RUN_URL=$SERVICE_URL" >> $GITHUB_OUTPUT
-
-  # ----------------------------------------------------
-  # JOB 4: VERIFY BACKEND
-  # ----------------------------------------------------
+# ----------------------------------------------------
+# JOB 4: VERIFY BACKEND API RESPONSE
+# ----------------------------------------------------
   verify-backend-api:
     name: Verify Backend API is Reachable
     runs-on: ubuntu-latest
@@ -251,8 +249,8 @@ jobs:
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
           echo "HTTP Response: $STATUS"
           if [ "$STATUS" -eq 200 ]; then
-            echo "API is reachable"
+            echo "✅ API is reachable and responding OK"
           else
-            echo "API test failed with status: $STATUS"
+            echo "❌ API test failed with status: $STATUS"
             exit 1
           fi
