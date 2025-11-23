@@ -26,22 +26,28 @@ jobs:
           distribution: temurin
           java-version: 17
           
-      - name: Robustly Repair and Regenerate Gradle 8.6 Wrapper
+      - name: Robustly Repair and Regenerate Gradle 8.6 Wrapper (Final Attempt)
         run: |
-          echo "Attempting robust wrapper repair to avoid Gradle 9.x configuration issues..."
+          echo "Attempting robust wrapper repair by creating isolated environment..."
           
           # 1. Create a temporary folder
           mkdir temp-wrapper-fix
           cd temp-wrapper-fix
           
-          # 2. Copy the existing gradle-wrapper.properties to ensure correct version (8.6)
+          # 2. CRITICAL FIX: Create an empty settings.gradle file. 
+          # This tells the global Gradle (9.2.0) that this is an independent build, 
+          # preventing it from failing due to the parent project's settings.gradle.
+          touch settings.gradle
+          echo "Created dummy settings.gradle for isolation."
+          
+          # 3. Copy the existing gradle-wrapper.properties to ensure correct version (8.6)
           cp ../gradle/wrapper/gradle-wrapper.properties gradle-wrapper.properties
           
-          # 3. Use the global Gradle (9.2.0) to generate the NEW 8.6 wrapper files in isolation
+          # 4. Use the global Gradle (9.2.0) to generate the NEW 8.6 wrapper files in isolation
           # This command only needs the properties file and avoids running the main build configuration.
           gradle wrapper --gradle-version 8.6 --distribution-type all
           
-          # 4. Copy the newly generated wrapper files back to the main project directory
+          # 5. Copy the newly generated wrapper files back to the main project directory
           cd ..
           cp temp-wrapper-fix/gradlew gradlew
           cp temp-wrapper-fix/gradlew.bat gradlew.bat
@@ -62,7 +68,7 @@ jobs:
           if git diff --cached --exit-code; then
             echo "No changes found in wrapper files. Skipping commit."
           else
-            git commit -m "CI FIX: Regenerated Gradle 8.6 wrapper files robustly to fix build configuration failure."
+            git commit -m "CI FIX: Final fix for Gradle wrapper: regenerated in isolation."
             git push
             echo "Successfully pushed repaired wrapper files."
           fi
