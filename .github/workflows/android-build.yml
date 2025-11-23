@@ -104,4 +104,152 @@ jobs:
     needs: build-android
     runs-on: ubuntu-latest
     env:
-      FIREBASE_TOKEN: ${{ secrets.FIRE_
+      FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+      FIREBASE_PROJECT_ID: ${{ secrets.Firebase_Project_ID }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          path: .
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install Firebase CLI
+        run: |
+          npm install firebase-tools@latest
+          npx firebase --version
+
+      - name: Write Firebase Service Account
+        run: |
+          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}" | base64 -d > ${{ github.workspace }}/functions/service-account.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=${{ github.workspace }}/functions/service-account.json" >> $GITHUB_ENV
+          
+      - name: Verify JSON file
+        run: |
+          head -n 5 ${{ github.workspace }}/functions/service-account.json
+          jq .type ${{ github.workspace }}/functions/service-account.json
+
+      - name: Install Function Dependencies
+        run: |
+          cd functions
+          npm install dotenv firebase-functions@latest firebase-admin@latest
+
+      - name: Initialize Firebase Admin (CI)
+        run: |
+          cd functions
+          echo "const admin = require('firebase-admin');" > temp-init.js
+          echo "const serviceAccount = require('./service-account.json');" >> temp-init.js
+          echo "admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });" >> temp-init.js
+          echo "console.log('Firebase admin initialized successfully');" >> temp-init.js
+          node temp-init.js
+
+      - name: Deploy Functions
+        run: |
+          cd functions
+          npx firebase deploy --only functions -P $FIREBASE_PROJECT_ID --force
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/functions/service-account.json
+
+      - name: Run Backend Unit Tests
+        run: |
+          cd functions
+          npm test -- --passWithNoTests
+
+  # ----------------------------------------------------
+  # JOB 3: DEPLOY PYTHON ML SERVICE TO CLOUD RUN
+  # ----------------------------------------------------
+  deploy-categorizer-service:
+    name: Deploy Python Categorizer to Cloud Run
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build-android
+
+    outputs:
+      CLOUD_RUN_URL: ${{ steps.get_url.outputs.CLOUD_RUN_URL }}
+
+    env:
+      GCP_PROJECT_ID: ${{ secrets.Firebase_Project_ID }}
+      SERVICE_NAME: transaction-categorizer
+      SERVICE_REGION: us-central1
+      IMAGE_TAG: us-central1-docker.pkg.dev/${{ secrets.Firebase_Project_ID }}/gcf-artifacts/transaction-categorizer:${{ github.sha }}
+      MODEL_BUCKET: fintraq-models
+      MODEL_OBJECT: model.pkl
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          path: .
+
+      - name: Authenticate with Service Account Key
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CLOUD_RUN_KEY }} 
+
+      - name: Set up Cloud SDK and Docker Auth
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          version: 'latest'
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Authorize Docker
+        run: gcloud auth configure-docker ${{ env.SERVICE_REGION }}-docker.pkg.dev
+
+      - name: Print env vars
+        run: printenv | grep IMAGE_TAG
+
+      - name: List workspace root
+        run: ls -l
+
+      - name: List categorizer folder
+        run: ls -l categorizer
+        
+      - name: Build Docker Image
+        run: |
+          docker build -t "$IMAGE_TAG" -f categorizer/Dockerfile . --progress=plain --no-cache
+          docker push "$IMAGE_TAG"
+
+      - name: Echo Docker Build Command
+        run: echo docker build -t "$IMAGE_TAG" -f categorizer/Dockerfile .
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.SERVICE_NAME }}
+          region: ${{ env.SERVICE_REGION }}
+          image: ${{ env.IMAGE_TAG }}
+
+      - name: Get Cloud Run URL
+        id: get_url
+        run: |
+          SERVICE_URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} \
+          --region ${{ env.SERVICE_REGION }} \
+          --project ${{ env.GCP_PROJECT_ID }} \
+          --format 'value(status.url)')
+          echo "CLOUD_RUN_URL=$SERVICE_URL" >> $GITHUB_OUTPUT
+
+  # ----------------------------------------------------
+  # JOB 4: VERIFY BACKEND
+  # ----------------------------------------------------
+  verify-backend-api:
+    name: Verify Backend API is Reachable
+    runs-on: ubuntu-latest
+    needs: deploy-categorizer-service
+
+    steps:
+      - name: Check Cloud Run API Health
+        run: |
+          echo "Testing Cloud Run API availability..."
+          URL="https://transaction-categorizer-801862457352.us-central1.run.app"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+          echo "HTTP Response: $STATUS"
+          if [ "$STATUS" -eq 200 ]; then
+            echo "API is reachable"
+          else
+            echo "API test failed with status: $STATUS"
+            exit 1
+          fi
