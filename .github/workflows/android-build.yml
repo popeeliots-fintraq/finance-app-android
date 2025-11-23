@@ -56,7 +56,10 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: 8.6
-
+      - name: Rebuild Gradle wrapper (fresh)
+        run: |
+          gradle wrapper --gradle-version 8.6 --distribution-type all
+          ls -R gradle/wrapper
       # -----------------------------------------------------
       # CLEAN + BUILD
       # -----------------------------------------------------
