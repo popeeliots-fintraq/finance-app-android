@@ -25,7 +25,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-          cache: none # Skip cache for reliable repair
+          # REMOVED: cache: none (omitting 'cache' disables it, which is what we need)
           
       - name: Repair and Regenerate Gradle 8.6 Wrapper
         # This command uses the runner's global Gradle to ensure the local wrapper files are clean.
