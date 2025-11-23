@@ -31,7 +31,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-          cache: gradle
+          cache: none
     
       # Now, we will force a clean build to resolve any lingering issues
       - name: Clean Build
