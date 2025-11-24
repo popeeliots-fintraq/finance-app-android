@@ -17,38 +17,27 @@ import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
-    // 1. Initialize ViewBinding
     private lateinit var binding: ActivityMainBinding
-
-    // 2. Initialize the V2 LeakageViewModel 
     private val viewModel: LeakageViewModel by viewModels()
-
-    // 3. Initialize the Adapter for the Leakage Bucket List
     private lateinit var leakageAdapter: LeakageBucketAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Setup ViewBinding
+        // Setup ViewBinding (ActivityMainBinding now correctly generated)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root) 
         
-        // --- Setup RecyclerView ---
         setupRecyclerView()
-        
-        // --- Start Observing Data ---
         observeLeakageUiState()
     }
 
     private fun setupRecyclerView() {
-        // Define the click action for a bucket (part of the Guided Execution flow)
         leakageAdapter = LeakageBucketAdapter { bucket ->
-            // TODO: Implement logic to show Leak Detail/Insight card for 'Guided execution'
             Toast.makeText(this, "Tapped on leak: ${bucket.bucketName}", Toast.LENGTH_SHORT).show()
         }
         
-        // Access views using the binding object
-        // The ViewBinding fix in build.gradle should resolve rvLeakageBuckets, adapter, and layoutManager now.
+        // Accessing the RecyclerView using the binding object (rvLeakageBuckets is now resolved)
         binding.rvLeakageBuckets.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = leakageAdapter
@@ -60,26 +49,25 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             viewModel.uiState.collect { state ->
                 
-                // --- Handle Loading and Error States ---
+                // Binding all elements, which should now be resolved
+                val leakageTextView = binding.tvCurrentLeakage
+                val salaryTextView = binding.tvProjectedSalary
+                
                 if (state.isLoading) {
-                    // Accessing TextViews directly from the binding object
-                    binding.tvCurrentLeakage.text = "Loading..." 
+                    leakageTextView.text = "Loading..." 
                 }
                 if (state.errorMessage != null) {
                     Toast.makeText(this@MainActivity, state.errorMessage, Toast.LENGTH_LONG).show()
-                    binding.tvCurrentLeakage.text = "Data Error."
+                    leakageTextView.text = "Data Error."
                 }
                 
-                // --- Bind Projection Card Data ---
                 if (!state.isLoading && state.errorMessage == null) {
+                    val formatter = NumberFormat.getCurrencyInstance(Locale("en", "IN"))
                     
-                    val formatter = NumberFormat.getCurrencyInstance(Locale("en", "IN")) // Customize locale
-                    
-                    // Accessing TextViews directly from the binding object
-                    binding.tvCurrentLeakage.text = formatter.format(state.currentLeakageAmount)
-                    binding.tvProjectedSalary.text = formatter.format(state.reclaimedSalaryProjection)
+                    // Direct binding to the resolved IDs
+                    leakageTextView.text = formatter.format(state.currentLeakageAmount)
+                    salaryTextView.text = formatter.format(state.reclaimedSalaryProjection)
 
-                    // --- Bind Leakage Bucket List Data ---
                     leakageAdapter.submitList(state.leakageBuckets)
                 }
             }
