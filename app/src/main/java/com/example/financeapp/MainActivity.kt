@@ -6,25 +6,27 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-// *** ViewBinding Class Generated from activity_main.xml ***
 import com.example.financeapp.databinding.ActivityMainBinding 
-// *** New V2 Imports ***
 import com.example.financeapp.ui.adapter.LeakageBucketAdapter 
 import com.example.financeapp.ui.viewmodel.LeakageViewModel 
+import dagger.hilt.android.AndroidEntryPoint // Hilt Import
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
 
+// Add @AndroidEntryPoint for Hilt to inject the ViewModel
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
+    // IMPORTANT: The by viewModels() delegate works only after @AndroidEntryPoint is added
+    private val viewModel: LeakageViewModel by viewModels() 
+    
     private lateinit var binding: ActivityMainBinding
-    private val viewModel: LeakageViewModel by viewModels()
     private lateinit var leakageAdapter: LeakageBucketAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Setup ViewBinding (ActivityMainBinding now correctly generated)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root) 
         
@@ -37,7 +39,7 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Tapped on leak: ${bucket.bucketName}", Toast.LENGTH_SHORT).show()
         }
         
-        // Accessing the RecyclerView using the binding object (rvLeakageBuckets is now resolved)
+        // All IDs are now accessed via the 'binding' object which Hilt compilation may help resolve
         binding.rvLeakageBuckets.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = leakageAdapter
@@ -49,7 +51,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             viewModel.uiState.collect { state ->
                 
-                // Binding all elements, which should now be resolved
+                // Using the binding object to reference TextViews
                 val leakageTextView = binding.tvCurrentLeakage
                 val salaryTextView = binding.tvProjectedSalary
                 
@@ -64,7 +66,6 @@ class MainActivity : AppCompatActivity() {
                 if (!state.isLoading && state.errorMessage == null) {
                     val formatter = NumberFormat.getCurrencyInstance(Locale("en", "IN"))
                     
-                    // Direct binding to the resolved IDs
                     leakageTextView.text = formatter.format(state.currentLeakageAmount)
                     salaryTextView.text = formatter.format(state.reclaimedSalaryProjection)
 
