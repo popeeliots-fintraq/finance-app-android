@@ -2,28 +2,26 @@ package com.example.financeapp
 
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.viewModels
+import androidx.activity.viewModels // Must be resolved by activity-ktx dependency
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.financeapp.databinding.ActivityMainBinding
-// *** IMPORTANT: New V2 Imports ***
-import com.example.financeapp.ui.adapter.LeakageBucketAdapter
-import com.example.financeapp.ui.viewmodel.LeakageViewModel // Use the new ViewModel
+// *** ViewBinding Class Generated from activity_main.xml ***
+import com.example.financeapp.databinding.ActivityMainBinding 
+// *** New V2 Imports ***
+import com.example.financeapp.ui.adapter.LeakageBucketAdapter // Must be resolved by file creation
+import com.example.financeapp.ui.viewmodel.LeakageViewModel 
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
-
-// NOTE: Ensure your build.gradle has viewBinding { enabled = true } and the
-// necessary dependencies for the 'by viewModels()' delegate (activity-ktx).
 
 class MainActivity : AppCompatActivity() {
 
     // 1. Initialize ViewBinding
     private lateinit var binding: ActivityMainBinding
 
-    // 2. Initialize the V2 LeakageViewModel using the recommended delegate
-    // NOTE: This assumes Hilt or a ViewModelFactory is configured to inject ApiService
+    // 2. Initialize the V2 LeakageViewModel 
+    // Uses the 'viewModels' delegate (requires activity-ktx)
     private val viewModel: LeakageViewModel by viewModels()
 
     // 3. Initialize the Adapter for the Leakage Bucket List
@@ -33,8 +31,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         
         // Setup ViewBinding
+        // NOTE: ActivityMainBinding is generated from activity_main.xml
         binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(binding.root) // Set the root view from the binding object
         
         // --- Setup RecyclerView ---
         setupRecyclerView()
@@ -42,17 +41,18 @@ class MainActivity : AppCompatActivity() {
         // --- Start Observing Data ---
         observeLeakageUiState()
         
-        // The old logStatus() call and TextView find are no longer needed
-        // The UI elements now automatically reflect the ViewModel state
+        // NOTE: Old references to CategorizationViewModel and its logStatus() call are removed.
+        // The V2 system is now fully active.
     }
 
     private fun setupRecyclerView() {
         // Define the click action for a bucket (part of the Guided Execution flow)
         leakageAdapter = LeakageBucketAdapter { bucket ->
-            // TODO: Implement logic to show Leak Detail/Insight card for 'Guided execution' [cite: 2025-10-15]
+            // TODO: Implement logic to show Leak Detail/Insight card for 'Guided execution'
             Toast.makeText(this, "Tapped on leak: ${bucket.bucketName}", Toast.LENGTH_SHORT).show()
         }
         
+        // Access views using the binding object
         binding.rvLeakageBuckets.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = leakageAdapter
@@ -61,18 +61,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun observeLeakageUiState() {
-        // Observe the ViewModel's stateflow using the lifecycleScope
         lifecycleScope.launch {
             viewModel.uiState.collect { state ->
                 
                 // --- Handle Loading and Error States ---
                 if (state.isLoading) {
-                    // Optionally show a progress spinner or loading text
                     binding.tvCurrentLeakage.text = "Loading..." 
                 }
                 if (state.errorMessage != null) {
                     Toast.makeText(this@MainActivity, state.errorMessage, Toast.LENGTH_LONG).show()
-                    // Set error on the main view
                     binding.tvCurrentLeakage.text = "Data Error."
                 }
                 
@@ -81,16 +78,11 @@ class MainActivity : AppCompatActivity() {
                     
                     val formatter = NumberFormat.getCurrencyInstance(Locale("en", "IN")) // Customize locale
                     
-                    // Bind Current Leakage Amount
-                    binding.projectionCard.tvCurrentLeakage.text = 
-                        formatter.format(state.currentLeakageAmount)
-                    
-                    // Bind Projected New Salary (The "If Leak Fixed → New Salary" value)
-                    binding.projectionCard.tvProjectedSalary.text = 
-                        formatter.format(state.reclaimedSalaryProjection)
+                    // Accessing TextViews inside the Projection Card
+                    binding.tvCurrentLeakage.text = formatter.format(state.currentLeakageAmount)
+                    binding.tvProjectedSalary.text = formatter.format(state.reclaimedSalaryProjection)
 
                     // --- Bind Leakage Bucket List Data ---
-                    // This completes the 'Leakage Bucket View' implementation [cite: 2025-10-15]
                     leakageAdapter.submitList(state.leakageBuckets)
                 }
             }
