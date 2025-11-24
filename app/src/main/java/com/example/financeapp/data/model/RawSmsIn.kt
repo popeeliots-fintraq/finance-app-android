@@ -1,25 +1,39 @@
 package com.example.financeapp.data.model
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName // Replaces Gson's @SerializedName
 
 /**
- * DTO for sending raw SMS data to the backend's high-speed IngestionService.
- * This is the V2 DTO for Frictionless Flow (Gap #1).
+ * Data Transfer Object (DTO) for sending raw SMS content to the backend.
+ * This DTO is aligned with the backend's RawTransaction Pydantic schema and uses Kotlinx Serialization.
  */
+@Serializable // Mandatory for Kotlinx Serialization
 data class RawSmsIn(
-    // 🚨 IMPORTANT: Match the field names expected by the backend's RawTransaction Pydantic schema
-    
     // Auth is handled via Header, but include user_id in the body for audit/service layer
-    @SerializedName("user_id")
+    @SerialName("user_id")
     val userId: Int,
     
-    @SerializedName("raw_text")
+    @SerialName("raw_text")
     val rawText: String, 
 
-    @SerializedName("source_type")
+    @SerialName("source_type")
     val sourceType: String, // e.g., "ANDROID_SMS_LISTENER"
 
     // Use a Long to capture the local timestamp before sending
-    @SerializedName("local_timestamp")
+    @SerialName("local_timestamp")
     val localTimestamp: Long
+)
+
+/**
+ * Data Transfer Object (DTO) for the synchronous response from the IngestionService. 
+ * Confirms that the raw message was saved and handed off for async processing.
+ */
+@Serializable // Mandatory for Kotlinx Serialization
+data class RawSmsOut(
+    // The ID of the RawTransaction entry created in the backend DB
+    @SerialName("id") 
+    val id: Int, 
+
+    @SerialName("message")
+    val message: String? = "Raw message ingested successfully for async processing."
 )
