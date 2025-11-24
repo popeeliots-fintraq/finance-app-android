@@ -1,9 +1,19 @@
+package com.example.financeapp.ui.viewmodel
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import com.fintraq.android.api.ApiService // Assume this is the API interface
+
+// *** DTO Imports (Based on your data/model structure) ***
+import com.example.financeapp.data.model.LeakageOut
+// *** UI Model Imports (Ensure these files exist in ui/model) ***
+import com.example.financeapp.ui.model.LeakageUiState
+import com.example.financeapp.ui.model.LeakBucketUiModel
+// *** API Interface (From your original snippet) ***
+import com.fintraq.android.api.ApiService 
+
 
 class LeakageViewModel(private val apiService: ApiService) : ViewModel() {
 
@@ -20,22 +30,37 @@ class LeakageViewModel(private val apiService: ApiService) : ViewModel() {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
             
             try {
-                // Call the completed V2 API endpoint
-                val response = apiService.fetchLeakageView() [cite: 11]
+                // Call the completed V2 API endpoint. Ensure ApiService returns LeakageOut.
+                val response: LeakageOut = apiService.fetchLeakageView()
                 
-                // --- Transformation Logic for Projection Card ---
-                val totalLeakage = response.totalLeakageAmount // Assume this field exists in the backend model
-                val projectedSalary = response.projectedNewSalary // Assume this field exists
+                // CRITICAL STEP: Safely parse String amounts to Double for display.
+                // Uses toDoubleOrNull() and defaults to 0.0 if parsing fails.
+                val currentLeakage = response.total_reclaimable_salary.toDoubleOrNull() ?: 0.0
+                val projectedSalary = response.if_leak_fixed_new_salary.toDoubleOrNull() ?: 0.0
                 
+                // --- Transformation Logic for Projection Card and Bucket List ---
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    currentLeakageAmount = totalLeakage,
+                    
+                    // 1. Projection Card Data (Using converted Doubles)
+                    currentLeakageAmount = currentLeakage,
                     reclaimedSalaryProjection = projectedSalary,
-                    leakageBuckets = response.leakageBuckets.map { /* ... map to LeakBucketUiModel */ },
-                    // Clear the placeholder status as real data is loaded
-                    autopilotStatusText = "Leakage Data Loaded" 
+                    
+                    // 2. Leakage Bucket List Data (Mapping DTO to UI Model)
+                    leakageBuckets = response.leakage_buckets.map { networkBucket ->
+                        LeakBucketUiModel(
+                            // Maps DTO field 'category' to UI model field 'bucketName'
+                            bucketName = networkBucket.category, 
+                            // Converts and maps DTO field 'leak_amount'
+                            leakageAmount = networkBucket.leak_amount.toDoubleOrNull() ?: 0.0
+                        )
+                    },
+                    // Update status as data is successfully loaded
+                    autopilotStatusText = "Leakage Data Loaded"
                 )
             } catch (e: Exception) {
+                // Log the full stack trace for better debugging in GitHub Actions
+                e.printStackTrace()
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     errorMessage = "Error fetching leakage data: ${e.message}"
