@@ -5,18 +5,17 @@ import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
 import com.example.financeapp.api.ApiService
 import com.example.financeapp.data.dao.SmsDao
+import com.example.financeapp.data.model.LocalSmsRecord
 import com.example.financeapp.data.model.RawSmsIn
 import com.example.financeapp.data.model.RawSmsOut
-import com.example.financeapp.data.model.LocalSmsRecord
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 
-/**
- * Worker responsible for sending raw SMS audit data to the backend for ingestion.
- * Renamed from SmsProcessingWorker to force Kapt regeneration and fix build errors.
- */
+// IMPORTANT: This annotation is added solely to force the Kapt tool to
+// regenerate its internal stub files, bypassing the corrupted build cache error.
+@PlaceholderAnnotation 
 @HiltWorker
 class RawSmsIngestionWorker @AssistedInject constructor(
     @Assisted appContext: Context,
