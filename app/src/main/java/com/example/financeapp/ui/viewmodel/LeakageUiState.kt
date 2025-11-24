@@ -1,17 +1,29 @@
 package com.example.financeapp.ui.model
 
+/**
+ * Data class representing a single item in the Leakage Bucket RecyclerView.
+ */
+data class LeakBucketUiModel(
+    val bucketName: String,
+    val leakageAmount: Double,
+    val insightSummary: String = "Tap for next action."
+)
+
+/**
+ * Data class representing the overall state of the Leakage View screen.
+ * This is used to manage and update the UI via Kotlin Flow/StateFlow.
+ */
 data class LeakageUiState(
-    // Status to manage loading/error/success states
-    val isLoading: Boolean = false,
+    val isLoading: Boolean = true,
     val errorMessage: String? = null,
     
-    // Core data for the Projection Card
+    // Projection Card Data
     val currentLeakageAmount: Double = 0.0,
     val reclaimedSalaryProjection: Double = 0.0,
     
-    // Data for the Leakage Bucket List (next task)
+    // List Data
     val leakageBuckets: List<LeakBucketUiModel> = emptyList(),
     
-    // Flag to ensure the Autopilot is confirmed running
-    val autopilotStatusText: String = "Fin-Traq V2: Salary Autopilot Running in Worker"
+    // Autopilot Status
+    val autopilotStatusText: String = "Initializing Autopilot..."
 )
