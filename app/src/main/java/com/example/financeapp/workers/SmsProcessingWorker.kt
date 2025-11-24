@@ -8,7 +8,7 @@ import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import com.example.financeapp.api.ApiService 
-// CRITICAL FIX: Changed to SmsDao and LocalSmsRecord
+// CRITICAL FIX: Retaining only correct DAO and Entity imports
 import com.example.financeapp.data.dao.SmsDao 
 import com.example.financeapp.data.model.RawSmsIn 
 import com.example.financeapp.data.model.RawSmsOut 
@@ -17,6 +17,7 @@ import com.example.financeapp.data.model.LocalSmsRecord
 /**
  * Worker responsible for sending raw SMS data to the backend for processing and categorization.
  * Uses Hilt for dependency injection (ApiService, SmsDao).
+ * * NOTE: This file's imports were cleaned up to remove references to the deleted RawSmsDao/RawSmsEntity. 
  */
 @HiltWorker
 class SmsProcessingWorker @AssistedInject constructor(
