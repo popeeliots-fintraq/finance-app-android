@@ -8,26 +8,29 @@ import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import com.example.financeapp.api.ApiService 
-import com.example.financeapp.data.dao.RawSmsDao 
+// CRITICAL FIX: Changed to SmsDao and LocalSmsRecord
+import com.example.financeapp.data.dao.SmsDao 
 import com.example.financeapp.data.model.RawSmsIn 
 import com.example.financeapp.data.model.RawSmsOut 
-import com.example.financeapp.data.model.RawSmsEntity 
+import com.example.financeapp.data.model.LocalSmsRecord 
 
 /**
  * Worker responsible for sending raw SMS data to the backend for processing and categorization.
- * Uses Hilt for dependency injection (ApiService, RawSmsDao).
+ * Uses Hilt for dependency injection (ApiService, SmsDao).
  */
 @HiltWorker
 class SmsProcessingWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
     private val apiService: ApiService, // Injected dependency
-    private val rawSmsDao: RawSmsDao // Injected dependency
+    private val smsDao: SmsDao // CRITICAL FIX: Now injecting SmsDao
 ) : CoroutineWorker(appContext, workerParams) {
 
     companion object {
         private const val TAG = "SmsProcessingWorker"
         const val INPUT_DATA_KEY_SMS_ID = "sms_id"
+        // Defined the required source type as per the DTO comment
+        private const val SOURCE_TYPE = "ANDROID_SMS_LISTENER" 
     }
 
     override suspend fun doWork(): Result {
@@ -38,18 +41,20 @@ class SmsProcessingWorker @AssistedInject constructor(
         }
         
         // 1. Fetch raw SMS data from the local database
-        val rawSmsEntity = rawSmsDao.getRawSmsById(smsId) 
-        if (rawSmsEntity == null) {
-            Log.e(TAG, "Raw SMS entity not found for ID: $smsId")
+        // CRITICAL FIX: Using the new DAO method and Entity
+        val localSmsRecord = smsDao.getLocalSmsRecordById(smsId) 
+        if (localSmsRecord == null) {
+            Log.e(TAG, "Local SMS audit record not found for ID: $smsId")
             return Result.failure()
         }
 
-        // 2. Prepare DTO for network call
+        // 2. Prepare DTO for network call using the new structure
+        // CRITICAL FIX: Mapping LocalSmsRecord fields to RawSmsIn fields
         val rawSmsIn = RawSmsIn(
-            id = rawSmsEntity.id.toString(), // Assuming RawSmsEntity has an 'id' property
-            sender_id = rawSmsEntity.sender,
-            content = rawSmsEntity.content,
-            timestamp = rawSmsEntity.timestamp
+            userId = localSmsRecord.userId, 
+            rawText = localSmsRecord.messageBody, // Maps messageBody -> rawText
+            sourceType = SOURCE_TYPE, 
+            localTimestamp = localSmsRecord.timestamp // Maps timestamp -> localTimestamp
         )
 
         try {
@@ -59,8 +64,16 @@ class SmsProcessingWorker @AssistedInject constructor(
             val response = apiService.ingestRawSms(token, rawSmsIn) 
 
             if (response.isSuccessful) {
+                // Use the new ID field from RawSmsOut as the backend reference ID
+                val backendRefId = response.body()?.id?.toString()
+                
                 // 4. Update ingestion status in the local database
-                rawSmsDao.updateIngestionStatus(smsId, isProcessed = true, backendReferenceId = response.body()?.ingestion_ref_id)
+                // CRITICAL FIX: Using SmsDao's updateIngestionStatus
+                smsDao.updateIngestionStatus(
+                    localId = smsId, 
+                    processed = true, 
+                    backendId = backendRefId
+                )
                 Log.d(TAG, "SMS ID $smsId successfully ingested and status updated.")
                 return Result.success()
             } else {
