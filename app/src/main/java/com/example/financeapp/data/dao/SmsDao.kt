@@ -1,21 +1,34 @@
-package com.example.financeapp.data.model
+package com.example.financeapp.data.dao
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Update
+import com.example.financeapp.data.model.LocalSmsRecord
 
 /**
- * The local Room database entity for storing raw SMS audit records before they are processed by the backend.
- * This is the sole entity used for local SMS storage.
+ * Data Access Object for LocalSmsRecord management.
  */
-@Entity(tableName = "local_sms_records")
-data class LocalSmsRecord(
-    @PrimaryKey(autoGenerate = true)
-    val localId: Long = 0,
+@Dao
+interface SmsDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(record: LocalSmsRecord): Long
 
-    val userId: Int, 
-    val messageBody: String, // The actual raw SMS text
-    val timestamp: Long, // When the SMS was received/recorded (Epoch ms)
-    
-    val processed: Boolean = false, 
-    val backendRefId: String? = null 
-)
+    @Query("SELECT * FROM local_sms_records WHERE localId = :localId")
+    suspend fun getLocalSmsRecordById(localId: Long): LocalSmsRecord?
+
+    @Query("SELECT * FROM local_sms_records ORDER BY timestamp DESC")
+    fun getAllRecords(): kotlinx.coroutines.flow.Flow<List<LocalSmsRecord>>
+
+    // Method used by SmsProcessingWorker
+    suspend fun updateIngestionStatus(localId: Long, processed: Boolean, backendId: String?) {
+        updateRecordStatus(localId, processed, backendId)
+    }
+
+    @Query("UPDATE local_sms_records SET processed = :processed, backendRefId = :backendId WHERE localId = :localId")
+    suspend fun updateRecordStatus(localId: Long, processed: Boolean, backendId: String?)
+
+    @Update
+    suspend fun updateRecord(record: LocalSmsRecord)
+}
