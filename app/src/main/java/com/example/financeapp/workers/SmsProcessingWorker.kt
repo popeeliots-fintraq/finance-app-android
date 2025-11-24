@@ -2,105 +2,76 @@ package com.example.financeapp.workers
 
 import android.content.Context
 import android.util.Log
+import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-// Use your actual package names for DTOs
-import com.example.financeapp.data.model.RawSmsIn // DTO for network request
-import com.example.financeapp.data.model.RawSmsOut // DTO for network response (Assuming you have this)
-import com.example.financeapp.data.model.LocalSmsRecord // 🚨 CRITICAL FIX: Local DB model import
-import com.example.financeapp.ApiService
-import com.example.financeapp.data.remote.RetrofitClient
-import com.example.financeapp.SmsDatabase // Keep local DB save as audit trail
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
+import com.example.financeapp.api.ApiService 
+import com.example.financeapp.data.dao.RawSmsDao 
+import com.example.financeapp.data.model.RawSmsIn 
+import com.example.financeapp.data.model.RawSmsOut 
+import com.example.financeapp.data.model.RawSmsEntity 
 
-// NOTE: We assume these are passed via inputData from where the worker is launched
-const val KEY_USER_ID = "user_id"
-const val KEY_AUTH_TOKEN = "auth_token"
-
-class SmsProcessingWorker(
-    appContext: Context,
-    workerParams: WorkerParameters
+/**
+ * Worker responsible for sending raw SMS data to the backend for processing and categorization.
+ * Uses Hilt for dependency injection (ApiService, RawSmsDao).
+ */
+@HiltWorker
+class SmsProcessingWorker @AssistedInject constructor(
+    @Assisted appContext: Context,
+    @Assisted workerParams: WorkerParameters,
+    private val apiService: ApiService, // Injected dependency
+    private val rawSmsDao: RawSmsDao // Injected dependency
 ) : CoroutineWorker(appContext, workerParams) {
 
-    // Removed the direct apiService assignment to ensure lazy loading if needed, but your approach is fine.
-    // private val apiService = RetrofitClient.apiService 
-
     companion object {
-        const val KEY_SENDER = "sender"
-        const val KEY_BODY = "body"
-        const val KEY_TIMESTAMP = "timestamp"
-        private const val TAG = "SmsWorker"
-
-        // No longer needed: private val transactionKeywords = ...
+        private const val TAG = "SmsProcessingWorker"
+        const val INPUT_DATA_KEY_SMS_ID = "sms_id"
     }
 
     override suspend fun doWork(): Result {
-        val sender = inputData.getString(KEY_SENDER) ?: return Result.failure()
-        val messageBody = inputData.getString(KEY_BODY) ?: return Result.failure()
-        val timestamp = inputData.getLong(KEY_TIMESTAMP, 0L)
-        val userId = inputData.getInt(KEY_USER_ID, -1)
-        val authToken = inputData.getString(KEY_AUTH_TOKEN)
-
-        if (userId == -1 || authToken.isNullOrEmpty()) {
-             Log.e(TAG, "Missing User ID or Auth Token. Cannot ingest.")
-             return Result.failure()
+        val smsId = inputData.getLong(INPUT_DATA_KEY_SMS_ID, -1L)
+        if (smsId == -1L) {
+            Log.e(TAG, "Missing SMS ID in input data.")
+            return Result.failure()
         }
-
-        Log.d(TAG, "Worker started for SMS from $sender. Initiating Frictionless Ingestion.")
         
-        // 1. Save raw SMS to local DB (Retained for local audit/backup)
-        val db = SmsDatabase.getDatabase(applicationContext)
-        // 🚨 CRITICAL FIX: Renamed local model to LocalSmsRecord (or your actual local model name)
-        val localSmsRecord = LocalSmsRecord(
-            sender = sender, 
-            messageBody = messageBody, 
-            timestamp = timestamp, 
-            isProcessed = false
-        )
-        try {
-            // We use the local ID as a correlation ID, but the backend generates its own
-            val generatedId = db.smsDao().insert(localSmsRecord)
-            Log.d(TAG, "Saved local audit SMS with ID: $generatedId")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to save initial SMS to local audit DB: ${e.localizedMessage}")
-            // Continue execution to send to backend even if local save fails
+        // 1. Fetch raw SMS data from the local database
+        val rawSmsEntity = rawSmsDao.getRawSmsById(smsId) 
+        if (rawSmsEntity == null) {
+            Log.e(TAG, "Raw SMS entity not found for ID: $smsId")
+            return Result.failure()
         }
 
-        // 2. Call the V2 Ingestion API
-        return try {
-            val apiService = RetrofitClient.apiService // Fetch service instance here
-            
-            // 🚨 CRITICAL FIX: Ensure the RawSmsIn constructor uses DTO names (usually camelCase, but matching the DTO is key)
-            val requestBody = RawSmsIn(
-                userId = userId, // Assuming RawSmsIn DTO uses camelCase for Kotlin
-                rawText = messageBody,
-                sourceType = "ANDROID_SMS_LISTENER",
-                localTimestamp = timestamp 
-            )
+        // 2. Prepare DTO for network call
+        val rawSmsIn = RawSmsIn(
+            id = rawSmsEntity.id.toString(), // Assuming RawSmsEntity has an 'id' property
+            sender_id = rawSmsEntity.sender,
+            content = rawSmsEntity.content,
+            timestamp = rawSmsEntity.timestamp
+        )
 
-            // NOTE: Using token = "Bearer $authToken" requires the ApiService method to accept a @Header parameter
-            val response = apiService.ingestRawSms(
-                token = "Bearer $authToken",
-                rawSmsData = requestBody
-            )
-            
-            if (response.isSuccessful && response.body() != null) {
-                // Assuming RawSmsOut has an 'id' field
-                val rawSmsOut = response.body()!! 
-                Log.d(TAG, "Backend Ingestion successful. Backend Raw ID: ${rawSmsOut.id}")
-                
-                // Optional: Update local DB to reflect successful ingestion (by local ID)
-                // db.smsDao().updateIngestionStatus(generatedId, true) 
-                
-                Result.success()
+        try {
+            // 3. Call the API to ingest the raw SMS
+            // The API requires an Authorization token, using a placeholder "DUMMY_TOKEN" for now.
+            val token = "Bearer DUMMY_TOKEN" 
+            val response = apiService.ingestRawSms(token, rawSmsIn) 
+
+            if (response.isSuccessful) {
+                // 4. Update ingestion status in the local database
+                rawSmsDao.updateIngestionStatus(smsId, isProcessed = true, backendReferenceId = response.body()?.ingestion_ref_id)
+                Log.d(TAG, "SMS ID $smsId successfully ingested and status updated.")
+                return Result.success()
             } else {
-                Log.e(TAG, "API Failure: Code ${response.code()}. Message: ${response.errorBody()?.string()}")
-                Result.retry() // Retry on non-success HTTP status
+                Log.w(TAG, "API Ingestion failed for SMS ID $smsId. Code: ${response.code()}")
+                // Retry for recoverable errors (e.g., 5xx)
+                return if (response.code() in 500..599) Result.retry() else Result.failure()
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Network/API Error during Ingestion: ${e.localizedMessage}")
-            Result.retry() // Retry on connection failure
+            Log.e(TAG, "Network exception during SMS ingestion for ID $smsId: ${e.message}", e)
+            // Retry on network failure
+            return Result.retry()
         }
     }
-    
-    // Removed isTransactionMessage and parseAmountFromSms as categorization is now backend-only.
 }
