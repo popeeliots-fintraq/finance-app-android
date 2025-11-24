@@ -2,14 +2,14 @@ package com.example.financeapp
 
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.viewModels // Must be resolved by activity-ktx dependency
+import androidx.activity.viewModels 
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 // *** ViewBinding Class Generated from activity_main.xml ***
 import com.example.financeapp.databinding.ActivityMainBinding 
 // *** New V2 Imports ***
-import com.example.financeapp.ui.adapter.LeakageBucketAdapter // Must be resolved by file creation
+import com.example.financeapp.ui.adapter.LeakageBucketAdapter 
 import com.example.financeapp.ui.viewmodel.LeakageViewModel 
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
@@ -21,7 +21,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     // 2. Initialize the V2 LeakageViewModel 
-    // Uses the 'viewModels' delegate (requires activity-ktx)
     private val viewModel: LeakageViewModel by viewModels()
 
     // 3. Initialize the Adapter for the Leakage Bucket List
@@ -31,18 +30,14 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         
         // Setup ViewBinding
-        // NOTE: ActivityMainBinding is generated from activity_main.xml
         binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root) // Set the root view from the binding object
+        setContentView(binding.root) 
         
         // --- Setup RecyclerView ---
         setupRecyclerView()
         
         // --- Start Observing Data ---
         observeLeakageUiState()
-        
-        // NOTE: Old references to CategorizationViewModel and its logStatus() call are removed.
-        // The V2 system is now fully active.
     }
 
     private fun setupRecyclerView() {
@@ -53,6 +48,7 @@ class MainActivity : AppCompatActivity() {
         }
         
         // Access views using the binding object
+        // The ViewBinding fix in build.gradle should resolve rvLeakageBuckets, adapter, and layoutManager now.
         binding.rvLeakageBuckets.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = leakageAdapter
@@ -66,6 +62,7 @@ class MainActivity : AppCompatActivity() {
                 
                 // --- Handle Loading and Error States ---
                 if (state.isLoading) {
+                    // Accessing TextViews directly from the binding object
                     binding.tvCurrentLeakage.text = "Loading..." 
                 }
                 if (state.errorMessage != null) {
@@ -78,7 +75,7 @@ class MainActivity : AppCompatActivity() {
                     
                     val formatter = NumberFormat.getCurrencyInstance(Locale("en", "IN")) // Customize locale
                     
-                    // Accessing TextViews inside the Projection Card
+                    // Accessing TextViews directly from the binding object
                     binding.tvCurrentLeakage.text = formatter.format(state.currentLeakageAmount)
                     binding.tvProjectedSalary.text = formatter.format(state.reclaimedSalaryProjection)
 
