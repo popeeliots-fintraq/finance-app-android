@@ -1,17 +1,9 @@
 package com.example.financeapp.ui.model
 
-/**
- * Data class representing a single item in the Leakage Bucket RecyclerView.
- */
-data class LeakBucketUiModel(
-    val bucketName: String,
-    val leakageAmount: Double,
-    val insightSummary: String = "Tap for next action."
-)
+// NOTE: LeakBucketUiModel is defined in LeakBucketUiModel.kt and should not be duplicated here.
 
 /**
  * Data class representing the overall state of the Leakage View screen.
- * This is used to manage and update the UI via Kotlin Flow/StateFlow.
  */
 data class LeakageUiState(
     val isLoading: Boolean = true,
