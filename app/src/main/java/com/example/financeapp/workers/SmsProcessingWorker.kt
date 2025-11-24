@@ -14,11 +14,11 @@ import com.example.financeapp.data.model.RawSmsOut
 import com.example.financeapp.data.model.LocalSmsRecord
 
 /**
- * Worker responsible for sending raw SMS data to the backend for ingestion.
- * It uses Hilt to inject the ApiService and the SmsDao.
+ * Worker responsible for sending raw SMS audit data to the backend for ingestion.
+ * Renamed from SmsProcessingWorker to force Kapt regeneration and fix build errors.
  */
 @HiltWorker
-class SmsProcessingWorker @AssistedInject constructor(
+class RawSmsIngestionWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
     private val apiService: ApiService,
@@ -26,7 +26,7 @@ class SmsProcessingWorker @AssistedInject constructor(
 ) : CoroutineWorker(appContext, workerParams) {
 
     companion object {
-        private const val TAG = "SmsProcessingWorker"
+        private const val TAG = "RawSmsIngestionWorker"
         const val INPUT_DATA_KEY_SMS_ID = "sms_id"
         private const val SOURCE_TYPE = "ANDROID_SMS_LISTENER"
     }
@@ -55,12 +55,10 @@ class SmsProcessingWorker @AssistedInject constructor(
 
         try {
             // 3. Call the API to ingest the raw SMS
-            // TODO: Replace DUMMY_TOKEN with actual authenticated token later
-            val token = "Bearer DUMMY_TOKEN" 
+            val token = "Bearer DUMMY_TOKEN" // Placeholder token
             val response = apiService.ingestRawSms(token, rawSmsIn) 
 
             if (response.isSuccessful) {
-                // Assuming RawSmsOut is the type of response.body()
                 val backendRefId = (response.body() as? RawSmsOut)?.id?.toString()
                 
                 // 4. Update ingestion status in the local database
@@ -73,12 +71,10 @@ class SmsProcessingWorker @AssistedInject constructor(
                 return Result.success()
             } else {
                 Log.w(TAG, "API Ingestion failed for SMS ID $smsId. Code: ${response.code()}, Body: ${response.errorBody()?.string()}")
-                // Retry for server errors (5xx)
                 return if (response.code() in 500..599) Result.retry() else Result.failure()
             }
         } catch (e: Exception) {
             Log.e(TAG, "Network exception during SMS ingestion for ID $smsId: ${e.message}", e)
-            // Retry on network failure
             return Result.retry()
         }
     }
