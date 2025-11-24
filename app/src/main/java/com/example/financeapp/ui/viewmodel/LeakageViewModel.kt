@@ -2,20 +2,25 @@ package com.example.financeapp.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel // Hilt Import
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject // Inject Import
 
-// *** DTO Imports ***
+// DTO Imports
 import com.example.financeapp.data.model.LeakageOut 
-// *** UI Model Imports ***
+// UI Model Imports
 import com.example.financeapp.ui.model.LeakageUiState
 import com.example.financeapp.ui.model.LeakBucketUiModel
-// *** Corrected API Interface Path (Assuming standard package structure) ***
+// API Interface Path
 import com.example.financeapp.api.ApiService 
 
-
-class LeakageViewModel(private val apiService: ApiService) : ViewModel() {
+// 1. Add @HiltViewModel annotation
+@HiltViewModel
+class LeakageViewModel @Inject constructor( // 2. Add @Inject to the constructor
+    private val apiService: ApiService
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LeakageUiState())
     val uiState: StateFlow<LeakageUiState> = _uiState
