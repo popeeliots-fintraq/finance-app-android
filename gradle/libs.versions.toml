@@ -6,9 +6,10 @@ coreKtx = "1.13.1"
 junit = "4.13.2"
 appcompat = "1.6.1"
 material = "1.11.0"
-# --- NEW: Kotlin Coroutines Version ---
 coroutines = "1.8.1"
-# --------------------------------------
+# --- NEW: AndroidX Lifecycle Version ---
+lifecycle = "2.7.0" 
+# ---------------------------------------
 
 [libraries]
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -16,10 +17,12 @@ appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "a
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
-# --- NEW: Kotlin Coroutines Libraries (Mapped to libs.kotlinx.coroutines.*) ---
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
-# ----------------------------------------------------------------------------
+# --- NEW: AndroidX Lifecycle Libraries (Allowing libs.androidx.lifecycle.* access) ---
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
+androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
+# -----------------------------------------------------------------------------
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
