@@ -1,7 +1,7 @@
 package com.example.financeapp.data.model
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerialName // Replaces Gson's @SerializedName
+import kotlinx.serialization.SerialName 
 
 /**
  * Data Transfer Object (DTO) for sending raw SMS content to the backend.
@@ -23,17 +23,4 @@ data class RawSmsIn(
     @SerialName("local_timestamp")
     val localTimestamp: Long
 )
-
-/**
- * Data Transfer Object (DTO) for the synchronous response from the IngestionService. 
- * Confirms that the raw message was saved and handed off for async processing.
- */
-@Serializable // Mandatory for Kotlinx Serialization
-data class RawSmsOut(
-    // The ID of the RawTransaction entry created in the backend DB
-    @SerialName("id") 
-    val id: Int, 
-
-    @SerialName("message")
-    val message: String? = "Raw message ingested successfully for async processing."
-)
+// Removed the duplicate definition of RawSmsOut
