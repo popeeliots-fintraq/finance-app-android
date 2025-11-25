@@ -19,18 +19,3 @@
     </application>
 
 </manifest>
-```
-
-**To be clear:**
-
-1.  **Old/Incorrect Manifest (Caused Failure):**
-    ```xml
-    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-        package="com.example.financeapp"> <!-- <-- THIS WAS THE PROBLEM -->
-    ```
-    The AGP now dictates that the application package (namespace) must be defined only in the `build.gradle` file, not in the `AndroidManifest.xml`.
-
-2.  **Current/Correct Manifest (In the Canvas):**
-    ```xml
-    <manifest xmlns:android="http://schemas.android.com/apk/res/android"> 
-        <!-- The package attribute is correctly removed -->
