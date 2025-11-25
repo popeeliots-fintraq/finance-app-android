@@ -2,6 +2,8 @@ plugins {
     // Groovy DSL uses 'id' instead of alias(libs.plugins.xxx)
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'kotlin-parcelize' // Added: Often useful for data classes
+    id 'org.jetbrains.kotlin.plugin.serialization' // FIX: Required for @Serializable DTOs
     // Hilt setup
     id 'com.google.dagger.hilt.android'
     id 'kotlin-kapt'
@@ -10,9 +12,8 @@ plugins {
 }
 
 android {
-    // CRITICAL FIX: Changing namespace to force full Kapt cache invalidation.
-    // We will revert this to "com.example.financeapp" once the build succeeds.
-    namespace 'com.example.financeapp.fix'
+    // FIX: Reverting namespace to the correct package now that cache invalidation is done
+    namespace 'com.example.financeapp' 
     compileSdk 34
 
     defaultConfig {
@@ -79,9 +80,10 @@ dependencies {
     implementation libs.androidx.room.ktx
     kapt libs.androidx.room.compiler
 
-    // Retrofit & Moshi (Network Layer)
+    // Retrofit & Kotlin Serialization (Network Layer)
     implementation libs.retrofit
-    implementation libs.converter.moshi
+    // FIX: Replacing Moshi with Kotlinx Serialization converter as DTOs use @Serializable
+    implementation 'com.squareup.retrofit2:converter-kotlinx-serialization:1.0.0' // Use 1.0.0 for consistency if no libs.toml is available
     implementation libs.logging.interceptor
 
     // Work Manager
