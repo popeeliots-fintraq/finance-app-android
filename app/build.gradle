@@ -2,18 +2,19 @@ plugins {
     // Groovy DSL uses 'id' instead of alias(libs.plugins.xxx)
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'kotlin-parcelize' // Added: Often useful for data classes
+    id 'kotlin-parcelize'
     id 'org.jetbrains.kotlin.plugin.serialization' // Required for @Serializable DTOs
     // Hilt setup
     id 'com.google.dagger.hilt.android'
     id 'kotlin-kapt'
-    // KSP (assuming the ID is present)
+    // KSP 
     id 'com.google.devtools.ksp'
 }
 
 android {
-    // Reverting namespace to the correct package
-    namespace 'com.example.financeapp' 
+    // CRITICAL FIX: Changing namespace *again* to force full Kapt cache invalidation.
+    // We will revert this to "com.example.financeapp" once the build succeeds.
+    namespace 'com.example.financeapp.fix_kapt_3' 
     compileSdk 34
 
     defaultConfig {
@@ -38,6 +39,9 @@ android {
     }
     kotlinOptions {
         jvmTarget = '1.8'
+        // FIX: Explicitly setting language/API versions to stabilize KAPT
+        languageVersion = '1.9' 
+        apiVersion = '1.9'
     }
     // Required for data binding 
     buildFeatures {
@@ -82,9 +86,7 @@ dependencies {
 
     // Retrofit & Kotlin Serialization (Network Layer)
     implementation libs.retrofit
-    // FIX 1: Add the core Kotlinx Serialization JSON library
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0' 
-    // FIX 2: Correct the Retrofit Converter coordinates
     implementation 'com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0'
     implementation libs.logging.interceptor
 
