@@ -3,7 +3,7 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-parcelize' // Added: Often useful for data classes
-    id 'org.jetbrains.kotlin.plugin.serialization' // FIX: Required for @Serializable DTOs
+    id 'org.jetbrains.kotlin.plugin.serialization' // Required for @Serializable DTOs
     // Hilt setup
     id 'com.google.dagger.hilt.android'
     id 'kotlin-kapt'
@@ -12,7 +12,7 @@ plugins {
 }
 
 android {
-    // FIX: Reverting namespace to the correct package now that cache invalidation is done
+    // Reverting namespace to the correct package
     namespace 'com.example.financeapp' 
     compileSdk 34
 
@@ -82,8 +82,10 @@ dependencies {
 
     // Retrofit & Kotlin Serialization (Network Layer)
     implementation libs.retrofit
-    // FIX: Replacing Moshi with Kotlinx Serialization converter as DTOs use @Serializable
-    implementation 'com.squareup.retrofit2:converter-kotlinx-serialization:1.0.0' // Use 1.0.0 for consistency if no libs.toml is available
+    // FIX 1: Add the core Kotlinx Serialization JSON library
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0' 
+    // FIX 2: Correct the Retrofit Converter coordinates
+    implementation 'com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0'
     implementation libs.logging.interceptor
 
     // Work Manager
