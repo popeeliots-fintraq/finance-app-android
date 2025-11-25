@@ -27,13 +27,15 @@ class MainActivity : AppCompatActivity() {
     private val leakageAdapter = LeakageBucketAdapter { bucket ->
         // TODO: Implement navigation to the "Guided Execution" flow (Phase 2)
         Log.d("MainActivity", "Leak Bucket Clicked: ${bucket.bucketName}. Launching guided execution...")
-        showToast("Starting Guided Execution for: ${bucket.bucketName}") // Use a simple toast for now
+        // Since we cannot use Toast in this environment, using a Log message for now.
+        Log.i("UI Message", "Starting Guided Execution for: ${bucket.bucketName}") 
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
         // --- ViewBinding Setup ---
+        // This will resolve Unresolved reference 'ActivityMainBinding' once the redeclaration errors are gone.
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -42,7 +44,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        // Fixes Unresolved reference 'rvLeakageBuckets' and related errors
+        // Fixes Unresolved reference 'rvLeakageBuckets' and related errors once binding is generated
         binding.rvLeakageBuckets.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = leakageAdapter
@@ -53,46 +55,28 @@ class MainActivity : AppCompatActivity() {
 
     private fun observeViewModel() {
         lifecycleScope.launch {
-            // Use repeatOnLifecycle to safely collect flow data only when the activity is started
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collectLatest { state ->
                     
-                    // 1. Update Loading and Error State
-                    // TODO: Implement proper visibility toggles for loading/error views
                     if (state.errorMessage != null) {
                         Log.e("MainActivity", "API Error: ${state.errorMessage}")
-                        showToast(state.errorMessage)
+                        Log.e("MainActivity", state.errorMessage) // Use Log for error messages
                     }
 
-                    // 2. Update Projection Card Data (Fixes Unresolved reference 'tvCurrentLeakage' and 'tvProjectedSalary')
+                    // These references will resolve once ActivityMainBinding is generated
                     updateProjectionCard(state.currentLeakageAmount, state.reclaimedSalaryProjection)
-
-                    // 3. Update Leakage Buckets List
                     leakageAdapter.submitList(state.leakageBuckets)
-                    
-                    // 4. Update Autopilot Status Text
                     binding.tvAutopilotStatus.text = state.autopilotStatusText
                 }
             }
         }
     }
 
-    /**
-     * Helper function to format and display the salary projection data.
-     */
     private fun updateProjectionCard(currentLeakage: Double, projectedSalary: Double) {
         val formatter = NumberFormat.getCurrencyInstance(Locale("en", "IN"))
 
-        // Assuming tvCurrentLeakage and tvProjectedSalary are in activity_main.xml (ViewBinding resolved this)
+        // These references will resolve once ActivityMainBinding is generated
         binding.tvCurrentLeakage.text = formatter.format(currentLeakage)
         binding.tvProjectedSalary.text = formatter.format(projectedSalary)
-    }
-
-    /**
-     * Placeholder for a proper UI messaging system (e.g., Snackbar or custom Dialog).
-     */
-    private fun showToast(message: String) {
-        // Replace with Toast.makeText(this, message, Toast.LENGTH_LONG).show() if needed
-        Log.i("UI Message", message) 
     }
 }
