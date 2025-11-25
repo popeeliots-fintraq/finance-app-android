@@ -10,6 +10,18 @@ plugins {
     // NOTE: Removed 'com.google.devtools.ksp' to avoid potential Kapt conflicts
 }
 
+// CRITICAL FIX: Kapt configuration to resolve NonExistentClass errors in stubs
+kapt {
+    // Forces Kapt to correctly handle error types in stubs, 
+    // resolving the 'NonExistentClass' corruption on constructor parameters.
+    correctErrorTypes true
+    
+    // Optional: Ensure Room arguments are passed correctly (add this if Room config is complex)
+    arguments {
+        arg("room.schemaLocation", "$projectDir/schemas")
+    }
+}
+
 android {
     // Reverting namespace back to the original
     namespace 'com.example.financeapp' 
