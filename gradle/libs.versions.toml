@@ -1,23 +1,27 @@
 [versions]
-
 agp = "8.5.0"
 kotlin = "2.0.0"
 ksp = "2.0.0-1.0.22"
 coreKtx = "1.13.1"
 junit = "4.13.2"
-appcompat = "1.6.1" # Added AppCompat version
+appcompat = "1.6.1"
 material = "1.11.0"
+# --- NEW: Kotlin Coroutines Version ---
+coroutines = "1.8.1"
+# --------------------------------------
 
 [libraries]
-
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" } # Added AppCompat library
+appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+# --- NEW: Kotlin Coroutines Libraries (Mapped to libs.kotlinx.coroutines.*) ---
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+# ----------------------------------------------------------------------------
 
 [plugins]
-
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
