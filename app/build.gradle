@@ -7,14 +7,12 @@ plugins {
     // Hilt setup
     id 'com.google.dagger.hilt.android'
     id 'kotlin-kapt'
-    // KSP 
-    id 'com.google.devtools.ksp'
+    // NOTE: Removed 'com.google.devtools.ksp' to avoid potential Kapt conflicts
 }
 
 android {
-    // CRITICAL FIX: Changing namespace *again* to force full Kapt cache invalidation.
-    // We will revert this to "com.example.financeapp" once the build succeeds.
-    namespace 'com.example.financeapp.fix_kapt_3' 
+    // Reverting namespace back to the original
+    namespace 'com.example.financeapp' 
     compileSdk 34
 
     defaultConfig {
@@ -57,6 +55,11 @@ android {
     }
 }
 
+// Define specific, stable versions to bypass libs.versions.toml lookup issues
+def room_version = "2.6.1"
+def hilt_version = "2.49"
+def hilt_work_compiler_version = "1.1.0" // androidx.hilt compiler is separate
+
 dependencies {
     // Dependencies use direct calls without parentheses in Groovy DSL
     implementation libs.core.ktx
@@ -79,10 +82,10 @@ dependencies {
     testImplementation libs.mockk
     testImplementation libs.robolectric
 
-    // Room Database
-    implementation libs.androidx.room.runtime
-    implementation libs.androidx.room.ktx
-    kapt libs.androidx.room.compiler
+    // Room Database - Using hardcoded versions to stabilize Kapt
+    implementation "androidx.room:room-runtime:$room_version"
+    implementation "androidx.room:room-ktx:$room_version"
+    kapt "androidx.room:room-compiler:$room_version"
 
     // Retrofit & Kotlin Serialization (Network Layer)
     implementation libs.retrofit
@@ -92,11 +95,11 @@ dependencies {
 
     // Work Manager
     implementation libs.androidx.work.runtime.ktx
-    // Hilt integration for Work Manager
+    // Hilt integration for Work Manager - Using hardcoded compiler version
     implementation libs.hilt.work
-    kapt libs.androidx.hilt.compiler
+    kapt "androidx.hilt:hilt-compiler:$hilt_work_compiler_version"
 
-    // Hilt Dependency Injection
-    implementation libs.hilt.android
-    kapt libs.hilt.compiler
+    // Hilt Dependency Injection - Using hardcoded versions to stabilize Kapt
+    implementation "com.google.dagger:hilt-android:$hilt_version"
+    kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
 }
