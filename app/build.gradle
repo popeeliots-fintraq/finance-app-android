@@ -1,97 +1,96 @@
 plugins {
-    alias(libs.plugins.androidApplication)
-    alias(libs.plugins.kotlinAndroid)
-    // Hilt Kapt setup
-    alias(libs.plugins.daggerHiltAndroid)
-    id("kotlin-kapt")
-    // Room KSP (not in use yet, but included for completeness)
-    alias(libs.plugins.googleDevtoolsKsp)
+    // Groovy DSL uses 'id' instead of alias(libs.plugins.xxx)
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    // Hilt setup
+    id 'com.google.dagger.hilt.android'
+    id 'kotlin-kapt'
+    // KSP (assuming the ID is present)
+    id 'com.google.devtools.ksp'
 }
 
 android {
     // CRITICAL FIX: Changing namespace to force full Kapt cache invalidation.
     // We will revert this to "com.example.financeapp" once the build succeeds.
-    namespace = "com.example.financeapp.fix" 
-    compileSdk = 34
+    namespace 'com.example.financeapp.fix'
+    compileSdk 34
 
     defaultConfig {
-        applicationId = "com.example.financeapp"
-        minSdk = 24
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        applicationId "com.example.financeapp"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = '1.8'
     }
-    // Required for data binding (e.g., if we implement Room Dao methods in tests)
+    // Required for data binding 
     buildFeatures {
-        dataBinding = true
+        dataBinding true
     }
     
-    // Configure unit tests for JDK 1.8 compatibility
+    // Configure unit tests
     testOptions {
         unitTests.all {
-            it.jvmArgs("-XX:MaxPermSize=256m") // Optional, but can help with large projects
-            it.useJUnitPlatform() // Use JUnit Platform
+            it.jvmArgs("-XX:MaxPermSize=256m")
+            it.useJUnitPlatform()
         }
     }
 }
 
 dependencies {
-    implementation(libs.core.ktx)
-    implementation(libs.appcompat)
-    implementation(libs.material)
+    // Dependencies use direct calls without parentheses in Groovy DSL
+    implementation libs.core.ktx
+    implementation libs.appcompat
+    implementation libs.material
 
     // Kotlin Coroutines
-    implementation(libs.kotlinx.coroutines.core)
-    implementation(libs.kotlinx.coroutines.android)
+    implementation libs.kotlinx.coroutines.core
+    implementation libs.kotlinx.coroutines.android
 
     // KTX for Coroutine support in ViewModel/Lifecycle
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation libs.androidx.lifecycle.runtime.ktx
+    implementation libs.androidx.lifecycle.viewmodel.ktx
 
     // Testing
-    testImplementation(libs.junit)
-    testImplementation(libs.androidx.test.ext.junit)
-    testImplementation(libs.androidx.test.espresso.core)
-    testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.mockk)
-    testImplementation(libs.robolectric)
+    testImplementation libs.junit
+    testImplementation libs.androidx.test.ext.junit
+    testImplementation libs.androidx.test.espresso.core
+    testImplementation libs.kotlinx.coroutines.test
+    testImplementation libs.mockk
+    testImplementation libs.robolectric
 
     // Room Database
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
-    kapt(libs.androidx.room.compiler) // Kapt for Room
+    implementation libs.androidx.room.runtime
+    implementation libs.androidx.room.ktx
+    kapt libs.androidx.room.compiler
 
     // Retrofit & Moshi (Network Layer)
-    implementation(libs.retrofit)
-    implementation(libs.converter.moshi)
-    implementation(libs.logging.interceptor)
+    implementation libs.retrofit
+    implementation libs.converter.moshi
+    implementation libs.logging.interceptor
 
     // Work Manager
-    implementation(libs.androidx.work.runtime.ktx)
+    implementation libs.androidx.work.runtime.ktx
     // Hilt integration for Work Manager
-    implementation(libs.hilt.work)
-    kapt(libs.androidx.hilt.compiler) // Kapt for Hilt Work
+    implementation libs.hilt.work
+    kapt libs.androidx.hilt.compiler
 
     // Hilt Dependency Injection
-    implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
+    implementation libs.hilt.android
+    kapt libs.hilt.compiler
 }
