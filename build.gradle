@@ -1,15 +1,18 @@
 plugins {
-    // Android Gradle Plugin (AGP) and standard Kotlin plugins remain the same
+    // Android Gradle Plugin (AGP) and standard Kotlin plugins
     id 'com.android.application' version '8.5.0' apply false
     id 'com.android.library' version '8.5.0' apply false
     id 'org.jetbrains.kotlin.android' version '2.0.0' apply false
     id 'org.jetbrains.kotlin.jvm' version '2.0.0' apply false
     id 'org.jetbrains.kotlin.plugin.serialization' version '2.0.0' apply false
     
-    // Hilt stays the same
+    // Hilt
     id 'com.google.dagger.hilt.android' version '2.51.1' apply false
     
-    // CRITICAL FIX: The full ID for the Kotlin Kapt plugin is 'org.jetbrains.kotlin.kapt'.
-    // Using 'kotlin-kapt' without the full ID fails resolution in the root build file on modern Gradle versions.
+    // Kotlin Kapt
     id 'org.jetbrains.kotlin.kapt' version '2.0.0' apply false
+    
+    // !!! CRITICAL FIX: Add the Kotlin Symbol Processing (KSP) plugin declaration
+    // KSP version 2.0.0-1.0.22 is compatible with Kotlin 2.0.0
+    id 'com.google.devtools.ksp' version '2.0.0-1.0.22' apply false
 }
