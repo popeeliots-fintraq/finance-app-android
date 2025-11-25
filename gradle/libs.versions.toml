@@ -1,0 +1,25 @@
+[versions]
+
+Define versions used across the project
+
+agp = "8.5.0"
+kotlin = "2.0.0"
+ksp = "2.0.0-1.0.22"
+coreKtx = "1.13.1"
+junit = "4.13.2"
+
+[libraries]
+
+Define actual library dependencies
+
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+
+[plugins]
+
+Define plugin dependencies (these match your root build.gradle)
+
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
