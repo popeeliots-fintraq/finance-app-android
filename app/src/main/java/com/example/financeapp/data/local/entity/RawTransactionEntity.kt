@@ -4,15 +4,17 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 /**
- * Room Entity for storing raw SMS messages locally before/after ingestion.
+ * Database entity for raw, unparsed SMS transactions. Stored securely via SQLCipher.
  */
 @Entity(tableName = "raw_transactions")
 data class RawTransactionEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
-    val userId: Int,
-    val rawText: String,
+    val userId: String, // Mandatory for multi-user support
     val sender: String,
-    val localTimestamp: Long,
-    val ingestionStatus: String = "PENDING" // PENDING, SENT, FAILED
+    val rawText: String, // The SMS body
+    val ingestionStatus: String, // e.g., PENDING, PROCESSED, ERROR
+    val localTimestamp: Long, // Time when the app received/processed it
+    val smsTimestamp: Long, // Original timestamp from the SMS
+    val uniqueSmsId: String // For deduplication
 )
