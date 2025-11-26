@@ -1,70 +1,69 @@
 package com.example.financeapp.di
 
-import com.example.financeapp.api.ApiService
+import android.content.Context
+import androidx.room.Room
+import com.example.financeapp.BuildConfig 
+import com.example.financeapp.data.local.AppDatabase
+import com.example.financeapp.data.dao.LeakageBucketDao
+import com.example.financeapp.data.dao.RawTransactionDao
+import com.example.financeapp.data.dao.UserSettingDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import kotlinx.serialization.json.Json
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Retrofit
-// Fix: Import for kotlinx.serialization converter factory
-import retrofit2.converter.kotlinx.serialization.asConverterFactory
-import java.util.concurrent.TimeUnit
+import net.sqlcipher.database.SQLiteDatabase // <-- Critical SQLCipher Import
+import net.sqlcipher.database.SupportFactory // <-- Critical SQLCipher Import
 import javax.inject.Singleton
 
-/**
- * Hilt Module for providing networking instances (Retrofit, OkHttpClient).
- * Fixes: Resolved unresolved references for asConverterFactory and removed failing BuildConfig checks.
- */
 @Module
 @InstallIn(SingletonComponent::class)
-object NetworkModule {
-
-    // Placeholder for BASE_URL since BuildConfig is unresolved
-    private const val BASE_URL = "https://your-fintraq-backend.com/"
+object DatabaseModule {
 
     @Provides
-    @Singleton
-    fun provideJson(): Json = Json {
-        ignoreUnknownKeys = true
-        coerceInputValues = true
+    fun provideDatabasePassphrase(): String {
+        // Fallback or a default secure key structure.
+        return if (BuildConfig.DEBUG) "fintraq_dev_key" else BuildConfig.DB_SECRET
     }
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
-        val logging = HttpLoggingInterceptor().apply {
-            // Assume DEBUG mode for logging since BuildConfig is causing issues
-            level = HttpLoggingInterceptor.Level.BODY 
-        }
+    fun provideSupportFactory(passphrase: String): SupportFactory {
+        val phrase = passphrase.toByteArray(Charsets.UTF_8)
+        
+        return SupportFactory(phrase, object : SQLiteDatabase.CustomDelegate() {})
+    }
 
-        return OkHttpClient.Builder()
-            .addInterceptor(logging)
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
+    @Provides
+    @Singleton
+    fun provideAppDatabase(
+        @ApplicationContext context: Context,
+        supportFactory: SupportFactory
+    ): AppDatabase {
+        return Room.databaseBuilder(
+            context,
+            AppDatabase::class.java,
+            AppDatabase.DATABASE_NAME
+        )
+            .openHelperFactory(supportFactory)
+            .allowMainThreadQueries() 
             .build()
     }
 
-    @Provides
-    @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient, json: Json): Retrofit {
-        val contentType = "application/json".toMediaType()
+    // --- DAO Providers ---
 
-        return Retrofit.Builder()
-            .baseUrl(BASE_URL) 
-            .client(okHttpClient)
-            // Fix: Use the correctly imported asConverterFactory
-            .addConverterFactory(json.asConverterFactory(contentType))
-            .build()
+    @Provides
+    fun provideRawTransactionDao(appDatabase: AppDatabase): RawTransactionDao {
+        return appDatabase.rawTransactionDao()
     }
 
     @Provides
-    @Singleton
-    fun provideApiService(retrofit: Retrofit): ApiService {
-        return retrofit.create(ApiService::class.java)
+    fun provideLeakageBucketDao(appDatabase: AppDatabase): LeakageBucketDao {
+        return appDatabase.leakageBucketDao()
+    }
+
+    @Provides
+    fun provideUserSettingDao(appDatabase: AppDatabase): UserSettingDao {
+        return appDatabase.userSettingDao()
     }
 }
