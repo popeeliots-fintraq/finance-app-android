@@ -5,24 +5,26 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.financeapp.databinding.ItemLeakBucketBinding // <-- Critical: Fixes ItemLeakBucketBinding
-import com.example.financeapp.ui.model.LeakageBucket // <-- Critical: Fixes LeakageBucket
+import com.example.financeapp.databinding.ItemLeakBucketBinding
+import com.example.financeapp.ui.model.LeakageBucket
 import java.text.NumberFormat
 import java.util.Locale
 
 /**
  * RecyclerView Adapter for displaying Leakage Buckets using the ListAdapter pattern for efficiency.
+ * Nested classes are defined without the 'inner' keyword to be static in the Java context,
+ * which resolves Kapt/DataBinding compilation issues.
  */
 class LeakageBucketAdapter(
     private val onClick: (LeakageBucket) -> Unit
 ) : ListAdapter<LeakageBucket, LeakageBucketAdapter.LeakageBucketViewHolder>(LeakageBucketDiffCallback()) {
 
-    // Inner class for the ViewHolder
-    inner class LeakageBucketViewHolder(
-        private val binding: ItemLeakBucketBinding // Uses the generated binding class
+    // Removed 'inner' keyword. This class is now static in the Java context.
+    class LeakageBucketViewHolder(
+        private val binding: ItemLeakBucketBinding 
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(bucket: LeakageBucket) {
+        fun bind(bucket: LeakageBucket, onClick: (LeakageBucket) -> Unit) {
             // Set data to the views
             binding.tvBucketName.text = bucket.bucketName
             binding.tvDescription.text = bucket.description
@@ -55,13 +57,13 @@ class LeakageBucketAdapter(
 
     override fun onBindViewHolder(holder: LeakageBucketViewHolder, position: Int) {
         val item = getItem(position)
-        holder.bind(item)
+        // Pass the click lambda to the bind function since the ViewHolder is no longer 'inner'
+        holder.bind(item, onClick) 
     }
 
-    // DiffUtil implementation for efficient list updates
+    // DiffUtil implementation - Also defined as a regular nested class (implicitly static)
     private class LeakageBucketDiffCallback : DiffUtil.ItemCallback<LeakageBucket>() {
         override fun areItemsTheSame(oldItem: LeakageBucket, newItem: LeakageBucket): Boolean {
-            // Assuming bucketName is unique identifier for the UI model
             return oldItem.bucketName == newItem.bucketName
         }
 
