@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import retrofit2.Response // Required for handling Retrofit Response type
+import retrofit2.Response 
 
 // DTO Imports
 import com.example.financeapp.data.model.LeakageOut 
@@ -35,8 +35,6 @@ class LeakageViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
             
             try {
-                // IMPORTANT: Calling the API with the required reportingPeriod query parameter.
-                // Using "current" as a placeholder for the default period.
                 val response: Response<LeakageOut> = apiService.fetchLeakageView(reportingPeriod = "current")
                 
                 if (response.isSuccessful && response.body() != null) {
@@ -50,7 +48,6 @@ class LeakageViewModel @Inject constructor(
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         
-                        // 1. Projection Card Data
                         currentLeakageAmount = currentLeakage,
                         reclaimedSalaryProjection = projectedSalary,
                         
@@ -59,13 +56,14 @@ class LeakageViewModel @Inject constructor(
                             LeakBucketUiModel(
                                 bucketName = networkBucket.category, 
                                 leakageAmount = networkBucket.leak_amount.toDoubleOrNull() ?: 0.0,
-                                insightSummary = networkBucket.insight_summary ?: "Tap for next action."
+                                // Fix: Assuming the property name in the DTO is 'insightSummary' (camelCase) 
+                                // to match the UI Model constructor, as 'insight_summary' was an unresolved reference.
+                                insightSummary = networkBucket.insightSummary ?: "Tap for next action."
                             )
                         },
                         autopilotStatusText = "Leakage Data Loaded for Period: ${leakageOut.reporting_period}"
                     )
                 } else {
-                    // Handle API non-2xx response error (e.g., 404, 500)
                      _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         errorMessage = "API Error: ${response.code()} ${response.message()}"
