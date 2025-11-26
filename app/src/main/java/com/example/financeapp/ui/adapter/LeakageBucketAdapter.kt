@@ -5,71 +5,67 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.financeapp.data.model.LeakageBucket
-import com.example.financeapp.databinding.ItemLeakBucketBinding // Import for DataBinding class
+import com.example.financeapp.databinding.ItemLeakBucketBinding // <-- Critical: Fixes ItemLeakBucketBinding
+import com.example.financeapp.ui.model.LeakageBucket // <-- Critical: Fixes LeakageBucket
 import java.text.NumberFormat
 import java.util.Locale
 
 /**
- * Adapter for displaying LeakageBuckets in a RecyclerView.
- * Uses ListAdapter for efficient item updates.
- *
- * @param onBucketClicked Lambda function executed when a bucket item is clicked.
+ * RecyclerView Adapter for displaying Leakage Buckets using the ListAdapter pattern for efficiency.
  */
 class LeakageBucketAdapter(
-    private val onBucketClicked: (LeakageBucket) -> Unit
+    private val onClick: (LeakageBucket) -> Unit
 ) : ListAdapter<LeakageBucket, LeakageBucketAdapter.LeakageBucketViewHolder>(LeakageBucketDiffCallback()) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LeakageBucketViewHolder {
-        // Inflate the binding layout for the item view
-        val binding = ItemLeakBucketBinding.inflate(
-            LayoutInflater.from(parent.context),
-            parent,
-            false
-        )
-        return LeakageBucketViewHolder(binding)
-    }
+    // Inner class for the ViewHolder
+    inner class LeakageBucketViewHolder(
+        private val binding: ItemLeakBucketBinding // Uses the generated binding class
+    ) : RecyclerView.ViewHolder(binding.root) {
 
-    override fun onBindViewHolder(holder: LeakageBucketViewHolder, position: Int) {
-        val bucket = getItem(position)
-        holder.bind(bucket, onBucketClicked)
-    }
-
-    /**
-     * ViewHolder class that holds the views and binds the data.
-     */
-    class LeakageBucketViewHolder(private val binding: ItemLeakBucketBinding) :
-        RecyclerView.ViewHolder(binding.root) {
-
-        fun bind(bucket: LeakageBucket, onBucketClicked: (LeakageBucket) -> Unit) {
-            // Set data for the binding variables in the layout
-            binding.leakageBucket = bucket
-
-            // Format the amount for display
-            val formatter = NumberFormat.getCurrencyInstance(Locale("en", "IN"))
-            binding.tvBucketAmount.text = formatter.format(bucket.currentLeakageAmount)
-
-            // Set the click listener for the entire item view
-            binding.root.setOnClickListener {
-                onBucketClicked(bucket)
-            }
+        fun bind(bucket: LeakageBucket) {
+            // Set data to the views
+            binding.tvBucketName.text = bucket.bucketName
+            binding.tvDescription.text = bucket.description
             
-            // This ensures the data is immediately bound to the views
-            binding.executePendingBindings()
+            // Format amounts using Indian Locale as context suggests
+            val formatter = NumberFormat.getCurrencyInstance(Locale("en", "IN"))
+            binding.tvCurrentAmount.text = formatter.format(bucket.currentAmount)
+            binding.tvTargetAmount.text = formatter.format(bucket.targetAmount)
+            
+            // Set click listener
+            binding.root.setOnClickListener {
+                onClick(bucket)
+            }
+        }
+
+        companion object {
+            fun from(parent: ViewGroup): LeakageBucketViewHolder {
+                // Use the generated Binding class to inflate the layout
+                val layoutInflater = LayoutInflater.from(parent.context)
+                val binding = ItemLeakBucketBinding.inflate(layoutInflater, parent, false)
+                return LeakageBucketViewHolder(binding)
+            }
         }
     }
 
-    /**
-     * DiffCallback implementation for calculating the difference between two lists.
-     */
+    // Override methods from ListAdapter
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LeakageBucketViewHolder {
+        return LeakageBucketViewHolder.from(parent)
+    }
+
+    override fun onBindViewHolder(holder: LeakageBucketViewHolder, position: Int) {
+        val item = getItem(position)
+        holder.bind(item)
+    }
+
+    // DiffUtil implementation for efficient list updates
     private class LeakageBucketDiffCallback : DiffUtil.ItemCallback<LeakageBucket>() {
         override fun areItemsTheSame(oldItem: LeakageBucket, newItem: LeakageBucket): Boolean {
-            // LeakageBucket name is used as the unique identifier
+            // Assuming bucketName is unique identifier for the UI model
             return oldItem.bucketName == newItem.bucketName
         }
 
         override fun areContentsTheSame(oldItem: LeakageBucket, newItem: LeakageBucket): Boolean {
-            // Checks if all data fields are the same
             return oldItem == newItem
         }
     }
