@@ -8,6 +8,9 @@ plugins {
     id 'com.google.dagger.hilt.android'
     id 'kotlin-kapt'
     // NOTE: Removed 'com.google.devtools.ksp' to avoid potential Kapt conflicts
+    
+    // CRITICAL FIX 1: Add KSP plugin for Room to avoid Kapt conflicts
+    id 'com.google.devtools.ksp'
 }
 
 // CRITICAL FIX: Kapt configuration to resolve NonExistentClass errors in stubs
@@ -52,6 +55,18 @@ android {
         // FIX: Explicitly setting language/API versions to stabilize KAPT
         languageVersion = '1.9' 
         apiVersion = '1.9'
+        // CRITICAL FIX 3: Ensure KSP-generated source is visible to Kapt (Hilt)
+        freeCompilerArgs += [
+            "-Xallow-result-return-type", 
+            "-Xexplicit-api=strict"
+        ]
+        sourceSets {
+            main {
+                kotlin {
+                    srcDir "build/generated/ksp/debug/kotlin"
+                }
+            }
+        }
     }
     // Required for data binding 
     buildFeatures {
@@ -98,7 +113,8 @@ dependencies {
     // Room Database - Using hardcoded versions to stabilize Kapt
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
-    kapt "androidx.room:room-compiler:$room_version"
+    // CRITICAL FIX 2: Switch Room compiler from kapt to ksp
+    ksp "androidx.room:room-compiler:$room_version"
 
     // !!! CRITICAL FIX FOR SQLCIPHER / SupportFactory !!!
     implementation "net.zetetic:android-database-sqlcipher:4.4.0"
