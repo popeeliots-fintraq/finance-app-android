@@ -7,7 +7,6 @@ plugins {
     // Hilt setup
     id 'com.google.dagger.hilt.android'
     id 'kotlin-kapt'
-    // NOTE: Removed 'com.google.devtools.ksp' to avoid potential Kapt conflicts
     
     // CRITICAL FIX 1: Add KSP plugin for Room to avoid Kapt conflicts
     id 'com.google.devtools.ksp'
@@ -50,24 +49,26 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    
+    // CRITICAL FIX: Move KSP source directory mapping here, inside android.sourceSets
+    sourceSets {
+        main {
+            java.srcDirs += "build/generated/ksp/debug/java" // KSP output path
+            // This ensures Kapt can see the Room-generated classes (like TransactionDao_Impl)
+        }
+    }
+    
     kotlinOptions {
         jvmTarget = '1.8'
         // FIX: Explicitly setting language/API versions to stabilize KAPT
         languageVersion = '1.9' 
         apiVersion = '1.9'
-        // CRITICAL FIX 3: Ensure KSP-generated source is visible to Kapt (Hilt)
+        // CRITICAL FIX 3: Removed unsupported flag: -Xallow-result-return-type
         freeCompilerArgs += [
-            "-Xallow-result-return-type", 
             "-Xexplicit-api=strict"
         ]
-        sourceSets {
-            main {
-                kotlin {
-                    srcDir "build/generated/ksp/debug/kotlin"
-                }
-            }
-        }
     }
+    
     // Required for data binding 
     buildFeatures {
         dataBinding true
