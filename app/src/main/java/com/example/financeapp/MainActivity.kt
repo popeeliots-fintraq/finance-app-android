@@ -2,7 +2,7 @@ package com.example.financeapp
 
 import android.os.Bundle
 import android.util.Log
-import androidx.activity.viewModels // This import is required for by viewModels()
+import androidx.activity.viewModels // <-- Essential import for viewModels delegate
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         
         // --- ViewBinding Setup ---
-        // This will resolve Unresolved reference 'ActivityMainBinding' once the redeclaration errors are gone.
+        // The binding class is automatically generated if dataBinding or viewBinding is enabled
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -44,7 +44,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        // Fixes Unresolved reference 'rvLeakageBuckets' and related errors once binding is generated
         binding.rvLeakageBuckets.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = leakageAdapter
@@ -63,7 +62,6 @@ class MainActivity : AppCompatActivity() {
                         Log.e("MainActivity", state.errorMessage) // Use Log for error messages
                     }
 
-                    // These references will resolve once ActivityMainBinding is generated
                     updateProjectionCard(state.currentLeakageAmount, state.reclaimedSalaryProjection)
                     leakageAdapter.submitList(state.leakageBuckets)
                     binding.tvAutopilotStatus.text = state.autopilotStatusText
@@ -75,7 +73,6 @@ class MainActivity : AppCompatActivity() {
     private fun updateProjectionCard(currentLeakage: Double, projectedSalary: Double) {
         val formatter = NumberFormat.getCurrencyInstance(Locale("en", "IN"))
 
-        // These references will resolve once ActivityMainBinding is generated
         binding.tvCurrentLeakage.text = formatter.format(currentLeakage)
         binding.tvProjectedSalary.text = formatter.format(projectedSalary)
     }
