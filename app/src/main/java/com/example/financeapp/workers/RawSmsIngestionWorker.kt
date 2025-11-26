@@ -9,45 +9,42 @@ import com.example.financeapp.data.dao.RawTransactionDao
 import com.example.financeapp.data.local.entity.RawTransactionEntity
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import java.util.UUID
 
 /**
  * A background worker responsible for ingesting raw SMS data received from the Broadcast Receiver
  * into the local encrypted database.
- * This is the first step in the V2 frictionless flow (Data Capturing).
  */
 @HiltWorker
 class RawSmsIngestionWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted workerParams: WorkerParameters,
     private val rawTransactionDao: RawTransactionDao,
-    // Add repository dependencies here once defined, for potential API interaction later.
 ) : CoroutineWorker(context, workerParams) {
 
     override suspend fun doWork(): Result {
-        Log.d(SmsWorkerConstants.LOG_TAG, "RawSmsIngestionWorker started.")
+        Log.d(SmsWorkerConstants.LOG_TAG, "RawSmsIngestionWorker started.") 
 
         // 1. Retrieve data passed from the Broadcast Receiver
         val sender = inputData.getString(SmsWorkerConstants.KEY_SMS_SENDER)
         val body = inputData.getString(SmsWorkerConstants.KEY_SMS_BODY)
         val timestamp = inputData.getLong(SmsWorkerConstants.KEY_SMS_TIMESTAMP, 0L)
 
-        // Basic validation
         if (sender.isNullOrBlank() || body.isNullOrBlank() || timestamp == 0L) {
-            Log.e(SmsWorkerConstants.LOG_TAG, "Invalid input data received.")
+            Log.e(SmsWorkerConstants.LOG_TAG, "Invalid input data received.") 
             return Result.failure()
         }
 
         try {
-            // 2. Create the Entity
+            // 2. Create the Entity - Note the use of 'rawText' and 'userId' to match the entity
             val entity = RawTransactionEntity(
-                id = 0L, // Room auto-generates this ID
+                id = 0L, 
+                userId = "default_user_id", // Placeholder for user ID
                 sender = sender,
-                smsBody = body,
-                ingestionStatus = "PENDING", // Ready to be sent to the backend
+                rawText = body, 
+                ingestionStatus = "PENDING", 
                 localTimestamp = System.currentTimeMillis(),
-                smsTimestamp = timestamp, // Original timestamp from the SMS
-                uniqueSmsId = UUID.randomUUID().toString() // Unique ID for deduplication
+                smsTimestamp = timestamp, 
+                uniqueSmsId = java.util.UUID.randomUUID().toString()
             )
 
             // 3. Save to the local encrypted database
@@ -62,7 +59,6 @@ class RawSmsIngestionWorker @AssistedInject constructor(
             }
         } catch (e: Exception) {
             Log.e(SmsWorkerConstants.LOG_TAG, "Database error during SMS ingestion: ${e.message}", e)
-            // Use retry in case of transient database/storage issues
             return Result.retry()
         }
     }
