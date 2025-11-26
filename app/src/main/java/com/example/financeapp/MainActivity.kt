@@ -2,7 +2,7 @@ package com.example.financeapp
 
 import android.os.Bundle
 import android.util.Log
-import androidx.activity.viewModels
+import androidx.activity.viewModels // This import is required for by viewModels()
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
