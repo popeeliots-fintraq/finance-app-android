@@ -1,69 +1,65 @@
 package com.example.financeapp.di
 
-import android.content.Context
-import androidx.room.Room
-import com.example.financeapp.BuildConfig 
-import com.example.financeapp.data.local.AppDatabase
-import com.example.financeapp.data.dao.LeakageBucketDao
-import com.example.financeapp.data.dao.RawTransactionDao
-import com.example.financeapp.data.dao.UserSettingDao
+import com.example.financeapp.BuildConfig
+import com.example.financeapp.api.ApiService
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import net.sqlcipher.database.SQLiteDatabase // <-- Critical SQLCipher Import
-import net.sqlcipher.database.SupportFactory // <-- Critical SQLCipher Import
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.moshi.MoshiConverterFactory
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
+/**
+ * Hilt module to provide the singleton instances for network communication (Retrofit and OkHttpClient).
+ * This manages the connection to the Fin-Traq V2 backend API.
+ */
 @Module
 @InstallIn(SingletonComponent::class)
-object DatabaseModule {
-
-    @Provides
-    fun provideDatabasePassphrase(): String {
-        // Fallback or a default secure key structure.
-        return if (BuildConfig.DEBUG) "fintraq_dev_key" else BuildConfig.DB_SECRET
-    }
+object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideSupportFactory(passphrase: String): SupportFactory {
-        val phrase = passphrase.toByteArray(Charsets.UTF_8)
-        
-        return SupportFactory(phrase, object : SQLiteDatabase.CustomDelegate() {})
-    }
-
-    @Provides
-    @Singleton
-    fun provideAppDatabase(
-        @ApplicationContext context: Context,
-        supportFactory: SupportFactory
-    ): AppDatabase {
-        return Room.databaseBuilder(
-            context,
-            AppDatabase::class.java,
-            AppDatabase.DATABASE_NAME
-        )
-            .openHelperFactory(supportFactory)
-            .allowMainThreadQueries() 
+    fun provideMoshi(): Moshi {
+        return Moshi.Builder()
+            .addLast(KotlinJsonAdapterFactory())
             .build()
     }
 
-    // --- DAO Providers ---
-
     @Provides
-    fun provideRawTransactionDao(appDatabase: AppDatabase): RawTransactionDao {
-        return appDatabase.rawTransactionDao()
+    @Singleton
+    fun provideOkHttpClient(): OkHttpClient {
+        // Logging interceptor for debugging network calls
+        val loggingInterceptor = HttpLoggingInterceptor().apply {
+            level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
+        }
+
+        return OkHttpClient.Builder()
+            .addInterceptor(loggingInterceptor)
+            .connectTimeout(30, TimeUnit.SECONDS) // Standard timeout
+            .readTimeout(30, TimeUnit.SECONDS)
+            .build()
     }
 
     @Provides
-    fun provideLeakageBucketDao(appDatabase: AppDatabase): LeakageBucketDao {
-        return appDatabase.leakageBucketDao()
+    @Singleton
+    fun provideRetrofit(okHttpClient: OkHttpClient, moshi: Moshi): Retrofit {
+        return Retrofit.Builder()
+            // TODO: Replace with your actual V2 backend URL
+            .baseUrl("https://fintraq.backend.example.com/") 
+            .client(okHttpClient)
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .build()
     }
 
     @Provides
-    fun provideUserSettingDao(appDatabase: AppDatabase): UserSettingDao {
-        return appDatabase.userSettingDao()
+    @Singleton
+    fun provideApiService(retrofit: Retrofit): ApiService {
+        return retrofit.create(ApiService::class.java)
     }
 }
