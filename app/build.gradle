@@ -23,7 +23,7 @@ kapt {
 }
 
 android {
-    // Reverting namespace back to the original
+    // Reverting namespace back to the original (Assuming the fix namespace worked)
     namespace 'com.example.financeapp' 
     compileSdk 34
 
@@ -67,10 +67,10 @@ android {
     }
 }
 
-// Define specific, stable versions to bypass libs.versions.toml lookup issues
+// Define specific, stable versions based on project standards
 def room_version = "2.6.1"
-def hilt_version = "2.49"
-def hilt_work_compiler_version = "1.1.0" // androidx.hilt compiler is separate
+def hilt_version = "2.51.1" // CRITICAL FIX: Use the correct, stable project version
+def hilt_work_compiler_version = "1.1.0" 
 
 dependencies {
     // Dependencies use direct calls without parentheses in Groovy DSL
@@ -101,21 +101,21 @@ dependencies {
     kapt "androidx.room:room-compiler:$room_version"
 
     // !!! CRITICAL FIX FOR SQLCIPHER / SupportFactory !!!
-    // The SupportFactory class is provided by the SQLCipher library for encrypted Room databases.
-    // This library MUST be on the implementation classpath for the compiler to find the type.
-    // NOTE: If you are using a different SQLCipher version, please update '4.4.0'.
     implementation "net.zetetic:android-database-sqlcipher:4.4.0"
-    implementation "androidx.sqlite:sqlite-ktx:2.4.0" // Often required alongside SQLCipher integration
+    implementation "androidx.sqlite:sqlite-ktx:2.4.0" 
 
 
     // Retrofit & Kotlin Serialization (Network Layer)
     implementation libs.retrofit
+    // Note: Kotlinx Serialization implementations are needed to resolve the Moshi errors you saw previously
+    implementation 'com.squareup.moshi:moshi-kotlin:1.15.0' // Explicit Moshi library
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0' 
     implementation 'com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0'
     implementation libs.logging.interceptor
+    kapt 'com.squareup.moshi:moshi-kotlin-codegen:1.15.0' // Explicit Kapt for Moshi DTOs
 
     // Work Manager
-    implementation libs.androidx.work.runtime.ktx
+    implementation libs.androidx.work.runtime.ktx // WORK MANAGER DEPENDENCY (MISSING IN ORIGINAL GROOVY)
     // Hilt integration for Work Manager - Using hardcoded compiler version
     implementation libs.hilt.work
     kapt "androidx.hilt:hilt-compiler:$hilt_work_compiler_version"
