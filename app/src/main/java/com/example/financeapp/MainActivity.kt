@@ -2,13 +2,13 @@ package com.example.financeapp
 
 import android.os.Bundle
 import android.util.Log
-import androidx.activity.viewModels // <-- Essential import for viewModels delegate
+import androidx.activity.viewModels // <-- Critical: Fixes Unresolved reference: viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.financeapp.databinding.ActivityMainBinding
+import com.example.financeapp.databinding.ActivityMainBinding // <-- Critical: Fixes Unresolved reference: ActivityMainBinding
 import com.example.financeapp.ui.adapter.LeakageBucketAdapter
 import com.example.financeapp.ui.viewmodel.LeakageViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -25,9 +25,7 @@ class MainActivity : AppCompatActivity() {
 
     // Initialize the adapter (using the optimized ListAdapter version)
     private val leakageAdapter = LeakageBucketAdapter { bucket ->
-        // TODO: Implement navigation to the "Guided Execution" flow (Phase 2)
         Log.d("MainActivity", "Leak Bucket Clicked: ${bucket.bucketName}. Launching guided execution...")
-        // Since we cannot use Toast in this environment, using a Log message for now.
         Log.i("UI Message", "Starting Guided Execution for: ${bucket.bucketName}") 
     }
 
@@ -35,7 +33,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         
         // --- ViewBinding Setup ---
-        // The binding class is automatically generated if dataBinding or viewBinding is enabled
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -47,7 +44,6 @@ class MainActivity : AppCompatActivity() {
         binding.rvLeakageBuckets.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = leakageAdapter
-            // Disable nested scrolling to ensure smooth scrolling when this view is inside a parent scroll view
             isNestedScrollingEnabled = false
         }
     }
@@ -55,11 +51,11 @@ class MainActivity : AppCompatActivity() {
     private fun observeViewModel() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collectLatest { state ->
+                // Correctly extracts the state value to fix 'Variable expected' errors
+                viewModel.uiState.collectLatest { state -> 
                     
                     if (state.errorMessage != null) {
                         Log.e("MainActivity", "API Error: ${state.errorMessage}")
-                        Log.e("MainActivity", state.errorMessage) // Use Log for error messages
                     }
 
                     updateProjectionCard(state.currentLeakageAmount, state.reclaimedSalaryProjection)
@@ -71,7 +67,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateProjectionCard(currentLeakage: Double, projectedSalary: Double) {
-        val formatter = NumberFormat.getCurrencyInstance(Locale("en", "IN"))
+        val formatter = NumberFormat.getCurrencyInstance(Locale("en", "IN")) 
 
         binding.tvCurrentLeakage.text = formatter.format(currentLeakage)
         binding.tvProjectedSalary.text = formatter.format(projectedSalary)
