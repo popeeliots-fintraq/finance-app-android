@@ -74,6 +74,7 @@ def hilt_work_compiler_version = "1.1.0" // androidx.hilt compiler is separate
 
 dependencies {
     // Dependencies use direct calls without parentheses in Groovy DSL
+    // Core Android/Kotlin components (assuming libs refers to versions in buildSrc or libs.versions.toml)
     implementation libs.core.ktx
     implementation libs.appcompat
     implementation libs.material
