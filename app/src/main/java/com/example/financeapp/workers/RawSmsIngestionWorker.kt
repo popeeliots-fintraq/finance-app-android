@@ -1,51 +1,59 @@
 package com.example.financeapp.workers
 
 import android.content.Context
+import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import androidx.work.workDataOf
+import com.example.financeapp.api.ApiService
+import com.example.financeapp.data.model.RawSmsIn
+import com.example.financeapp.data.model.RawSmsOut
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
+import retrofit2.Response
 
 /**
- * The initial worker triggered by the SMS Broadcast Receiver.
- * Its job is to enqueue the specialized RawSmsIngestionWorker to handle the API call
- * in a robust manner.
+ * Worker responsible for taking the raw SMS data and sending it to the backend ingestion service.
+ * HiltWorker is used to inject dependencies (like ApiService).
  */
-class SmsProcessingWorker(
-    appContext: Context,
-    workerParams: WorkerParameters
+@HiltWorker
+class RawSmsIngestionWorker @AssistedInject constructor(
+    @Assisted appContext: Context,
+    @Assisted workerParams: WorkerParameters,
+    private val apiService: ApiService
 ) : CoroutineWorker(appContext, workerParams) {
 
     override suspend fun doWork(): Result {
+        // Retrieve data from InputData using centralized constants
         val rawText = inputData.getString(KEY_RAW_SMS_TEXT)
         val timestamp = inputData.getLong(KEY_SMS_TIMESTAMP, 0L)
-        val userId = inputData.getString(KEY_USER_ID)
+        val userIdString = inputData.getString(KEY_USER_ID)
+        val userId = userIdString?.toIntOrNull()
 
-        if (rawText.isNullOrEmpty() || timestamp == 0L || userId.isNullOrEmpty()) {
+        if (rawText.isNullOrEmpty() || timestamp == 0L || userId == null) {
+            // Log for debugging: missing data
             return Result.failure()
         }
 
-        // Build the request for the ingestion worker
-        val ingestionWorkRequest = OneTimeWorkRequestBuilder<RawSmsIngestionWorker>()
-            .setInputData(
-                workDataOf(
-                    KEY_RAW_SMS_TEXT to rawText,
-                    KEY_SMS_TIMESTAMP to timestamp,
-                    KEY_USER_ID to userId
-                )
-            )
-            .addTag("raw-sms-ingestion")
-            .build()
-
-        // Enqueue the ingestion worker, replacing any existing queued work with the same name
-        WorkManager.getInstance(applicationContext).enqueueUniqueWork(
-            "raw-sms-ingestion-unique",
-            ExistingWorkPolicy.REPLACE,
-            ingestionWorkRequest
+        val smsIn = RawSmsIn(
+            userId = userId,
+            rawText = rawText,
+            sourceType = "ANDROID_SMS_LISTENER",
+            localTimestamp = timestamp
         )
 
-        return Result.success()
+        return try {
+            val response: Response<RawSmsOut> = apiService.ingestRawSms(smsIn)
+
+            if (response.isSuccessful) {
+                // Log for debugging: successful ingestion
+                Result.success()
+            } else {
+                // Log non-successful response error
+                Result.retry()
+            }
+        } catch (e: Exception) {
+            // Log network or serialization error
+            Result.retry()
+        }
     }
 }
