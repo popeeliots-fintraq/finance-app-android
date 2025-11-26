@@ -6,6 +6,12 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import net.sqlcipher.database.SQLiteDatabase
 import net.sqlcipher.database.SupportFactory
+// CRITICAL IMPORTS: Assuming these entities and DAOs are defined elsewhere in the project
+import com.example.financeapp.data.dao.LeakBucketDao
+import com.example.financeapp.data.dao.SalaryBucketDao
+import com.example.financeapp.data.dao.TransactionDao
+import com.example.financeapp.BuildConfig 
+// Assuming LeakBucket, SalaryBucket, and TransactionEntity are defined within this package or explicitly imported
 
 /**
  * Room Database for the encrypted storage of all Fin-Traq data.
@@ -47,6 +53,7 @@ abstract class AppDatabase : RoomDatabase() {
                 SQLiteDatabase.loadLibs(context)
 
                 // 2. Create the encryption factory using the passphrase
+                // We use the passphrase parameter here, as the Hilt module will handle the BuildConfig injection
                 val factory = SupportFactory(
                     SQLiteDatabase.getBytes(passphrase.toCharArray())
                 )
