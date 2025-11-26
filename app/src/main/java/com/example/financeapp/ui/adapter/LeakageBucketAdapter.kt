@@ -5,29 +5,23 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.financeapp.R
-import com.example.financeapp.databinding.ItemLeakBucketBinding
-import com.example.financeapp.ui.model.LeakBucketUiModel
+import com.example.financeapp.data.model.LeakageBucket
+import com.example.financeapp.databinding.ItemLeakBucketBinding // Import for DataBinding class
 import java.text.NumberFormat
 import java.util.Locale
 
 /**
- * Adapter for displaying Leak Bucket items using ListAdapter and DiffUtil for efficient updates.
+ * Adapter for displaying LeakageBuckets in a RecyclerView.
+ * Uses ListAdapter for efficient item updates.
  *
- * NOTE: This adapter assumes you have created the layout file:
- * 'app/src/main/res/layout/item_leak_bucket.xml'
+ * @param onBucketClicked Lambda function executed when a bucket item is clicked.
  */
 class LeakageBucketAdapter(
-    private val onClick: (LeakBucketUiModel) -> Unit // Click handler for "Guided Execution"
-) : ListAdapter<LeakBucketUiModel, LeakageBucketAdapter.LeakageBucketViewHolder>(LeakBucketDiffCallback()) {
-
-    // Currency formatter initialized once for performance
-    // Adjust Locale based on the target currency (e.g., "en", "IN" for Indian Rupee)
-    private val currencyFormatter = NumberFormat.getCurrencyInstance(Locale("en", "IN"))
-
-    // The ListAdapter handles 'submitList' automatically and uses DiffUtil internally.
+    private val onBucketClicked: (LeakageBucket) -> Unit
+) : ListAdapter<LeakageBucket, LeakageBucketAdapter.LeakageBucketViewHolder>(LeakageBucketDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LeakageBucketViewHolder {
+        // Inflate the binding layout for the item view
         val binding = ItemLeakBucketBinding.inflate(
             LayoutInflater.from(parent.context),
             parent,
@@ -37,49 +31,45 @@ class LeakageBucketAdapter(
     }
 
     override fun onBindViewHolder(holder: LeakageBucketViewHolder, position: Int) {
-        val bucket = getItem(position) // Get item from the internal list managed by ListAdapter
-        holder.bind(bucket, currencyFormatter, onClick)
+        val bucket = getItem(position)
+        holder.bind(bucket, onBucketClicked)
     }
 
     /**
-     * ViewHolder for the LeakBucket item.
+     * ViewHolder class that holds the views and binds the data.
      */
     class LeakageBucketViewHolder(private val binding: ItemLeakBucketBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(
-            bucket: LeakBucketUiModel,
-            formatter: NumberFormat,
-            onClick: (LeakBucketUiModel) -> Unit
-        ) {
-            // 1. Bind Bucket Name
-            binding.tvBucketName.text = bucket.bucketName
+        fun bind(bucket: LeakageBucket, onBucketClicked: (LeakageBucket) -> Unit) {
+            // Set data for the binding variables in the layout
+            binding.leakageBucket = bucket
 
-            // 2. Bind Leakage Amount, formatted as currency
-            binding.tvLeakAmount.text = formatter.format(bucket.leakageAmount)
+            // Format the amount for display
+            val formatter = NumberFormat.getCurrencyInstance(Locale("en", "IN"))
+            binding.tvBucketAmount.text = formatter.format(bucket.currentLeakageAmount)
 
-            // 3. Set Insight text
-            // This summary can be dynamically updated when the Insight Card text is available from the API.
-            binding.tvInsightSummary.text = "Tap for insight and next action."
-
-            // 4. Set click listener for guided execution (The core Fin-Traq feature)
-            binding.root.setOnClickListener { onClick(bucket) }
+            // Set the click listener for the entire item view
+            binding.root.setOnClickListener {
+                onBucketClicked(bucket)
+            }
+            
+            // This ensures the data is immediately bound to the views
+            binding.executePendingBindings()
         }
     }
 
     /**
-     * DiffUtil.ItemCallback to calculate the difference between two non-null items in a list.
-     * This ensures only changed items are re-bound, improving performance.
+     * DiffCallback implementation for calculating the difference between two lists.
      */
-    private class LeakBucketDiffCallback : DiffUtil.ItemCallback<LeakBucketUiModel>() {
-        override fun areItemsTheSame(oldItem: LeakBucketUiModel, newItem: LeakBucketUiModel): Boolean {
-            // Check if the unique identifier (e.g., bucket ID) is the same.
-            // Assuming LeakBucketUiModel has an 'id' or 'bucketName' that uniquely identifies it.
+    private class LeakageBucketDiffCallback : DiffUtil.ItemCallback<LeakageBucket>() {
+        override fun areItemsTheSame(oldItem: LeakageBucket, newItem: LeakageBucket): Boolean {
+            // LeakageBucket name is used as the unique identifier
             return oldItem.bucketName == newItem.bucketName
         }
 
-        override fun areContentsTheSame(oldItem: LeakBucketUiModel, newItem: LeakBucketUiModel): Boolean {
-            // Check if data contents are the same. Data classes often have a good default equals implementation.
+        override fun areContentsTheSame(oldItem: LeakageBucket, newItem: LeakageBucket): Boolean {
+            // Checks if all data fields are the same
             return oldItem == newItem
         }
     }
