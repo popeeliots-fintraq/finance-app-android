@@ -140,7 +140,25 @@ tasks.register('forceCleanKspDebugOutput', Delete) {
     delete file("${buildDir}/generated/ksp/debug")
 }
 
-// 2. Ensure the main KSP task for the debug variant depends on this clean task.
+// 2. Ensure the main KSP task for the debug variant depen// --- START OF KSP CLEANUP FIX (MUST REPLACE PREVIOUS FIX) ---
+
+// Define a custom task to forcefully delete the corrupted KSP output directory.
+tasks.register('forceCleanKspDebugOutput', Delete) {
+    description = 'Forcefully deletes the corrupted KSP output directory for the debug variant.'
+    // Target the directory where the conflicting Hilt/Dagger files are generated.
+    delete file("${buildDir}/generated/ksp/debug")
+}
+
+// Find the Kotlin compilation task for the debug variant (which triggers KSP)
+// and set a dependency on our cleanup task, ensuring the dependency is set 
+// safely only when the task is registered by the KSP plugin.
+tasks.configureEach { task ->
+    if (task.name == 'kspDebugKotlin') {
+        task.dependsOn 'forceCleanKspDebugOutput'
+    }
+}
+
+// --- END OF KSP CLEANUP FIX ---ds on this clean task.
 // This guarantees that the folder is empty every time kspDebugKotlin runs.
 tasks.named('kspDebugKotlin') {
     dependsOn 'forceCleanKspDebugOutput'
