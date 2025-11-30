@@ -55,11 +55,11 @@ android {
 
 def room_version = "2.6.1"
 def hilt_version = "2.51.1"
-def hilt_work_compiler_version = "1.1.0"
+def hilt_work_compiler_version = "1.2.0" // Updated to match libs.versions.toml hiltExtVersion
 
 /**
  * --------------------------------------------------------
- *  SINGLE CLEAN KSP BLOCK (FIXES HILT/ROOM COLLISIONS)
+ * SINGLE CLEAN KSP BLOCK (FIXES HILT/ROOM COLLISIONS)
  * --------------------------------------------------------
  */
 ksp {
@@ -93,9 +93,9 @@ dependencies {
     testImplementation libs.robolectric
 
     // Room (KSP)
-    implementation "androidx.room:room-runtime:$room_version"
-    implementation "androidx.room:room-ktx:$room_version"
-    ksp "androidx.room:room-compiler:$room_version"
+    implementation libs.androidx.room.runtime
+    implementation libs.androidx.room.ktx
+    ksp libs.androidx.room.compiler
 
     // SQLCipher secure DB
     implementation "net.zetetic:android-database-sqlcipher:4.4.0"
@@ -103,20 +103,22 @@ dependencies {
 
     // Networking
     implementation libs.retrofit
-    implementation "com.squareup.moshi:moshi-kotlin:1.15.0"
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0"
     implementation "com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0"
     implementation libs.logging.interceptor
-    ksp "com.squareup.moshi:moshi-kotlin-codegen:1.15.0"
+    
+    // Moshi & KSP CodeGen (Using correct catalog definition)
+    implementation "com.squareup.moshi:moshi-kotlin:1.15.1" // Using the version from libs.versions.toml
+    ksp "com.squareup.moshi:moshi-kotlin-codegen:1.15.1" // Using the version from libs.versions.toml
 
     // Work Manager
     implementation libs.androidx.work.runtime.ktx
 
     // Hilt + Work Manager
     implementation libs.hilt.work
-    ksp "androidx.hilt:hilt-compiler:$hilt_work_compiler_version"
-
+    ksp libs.androidx.hilt.compiler // Use the catalog reference
+    
     // Hilt
-    implementation "com.google.dagger:hilt-android:$hilt_version"
-    ksp "com.google.dagger:hilt-android-compiler:$hilt_version"
+    implementation libs.hilt.android
+    ksp libs.hilt.compiler // Use the catalog reference
 }
