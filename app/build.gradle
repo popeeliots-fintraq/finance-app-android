@@ -6,23 +6,20 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.serialization' // Required for @Serializable DTOs
     // Hilt setup
     id 'com.google.dagger.hilt.android'
-    id 'kotlin-kapt'
     
-    // CRITICAL FIX 1: Add KSP plugin for Room to avoid Kapt conflicts
+    // CRITICAL FIX: Retain KSP plugin
     id 'com.google.devtools.ksp'
+
+    // REMOVED: id 'kotlin-kapt' // Kapt is no longer needed, using KSP instead
 }
 
-// CRITICAL FIX: Kapt configuration to resolve NonExistentClass errors in stubs
-kapt {
-    // Forces Kapt to correctly handle error types in stubs, 
-    // resolving the 'NonExistentClass' corruption on constructor parameters.
-    correctErrorTypes true
-    
-    // Optional: Ensure Room arguments are passed correctly (add this if Room config is complex)
-    arguments {
-        arg("room.schemaLocation", "$projectDir/schemas")
-    }
-}
+// REMOVED: The entire kapt configuration block is removed as KSP handles processing.
+// kapt {
+//     correctErrorTypes true
+//     arguments {
+//         arg("room.schemaLocation", "$projectDir/schemas")
+//     }
+// }
 
 android {
     // Reverting namespace back to the original (Assuming the fix namespace worked)
@@ -50,12 +47,12 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
     
-    // CRITICAL FIX: Move KSP source directory mapping here, inside android.sourceSets
+    // REMOVED: The explicit KSP source directory mapping is generally not needed 
+    // when using KSP for everything, as the Gradle plugin handles the classpath.
     sourceSets {
-        main {
-            java.srcDirs += "build/generated/ksp/debug/java" // KSP output path
-            // This ensures Kapt can see the Room-generated classes (like TransactionDao_Impl)
-        }
+        // main {
+        //     java.srcDirs += "build/generated/ksp/debug/java"
+        // }
     }
     
     kotlinOptions {
@@ -85,7 +82,7 @@ android {
 
 // Define specific, stable versions based on project standards
 def room_version = "2.6.1"
-def hilt_version = "2.51.1" // CRITICAL FIX: Use the correct, stable project version
+def hilt_version = "2.51.1" 
 def hilt_work_compiler_version = "1.1.0" 
 
 dependencies {
@@ -111,33 +108,33 @@ dependencies {
     testImplementation libs.mockk
     testImplementation libs.robolectric
 
-    // Room Database - Using hardcoded versions to stabilize Kapt
+    // Room Database - Already using KSP
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
-    // CRITICAL FIX 2: Switch Room compiler from kapt to ksp
     ksp "androidx.room:room-compiler:$room_version"
 
     // !!! CRITICAL FIX FOR SQLCIPHER / SupportFactory !!!
     implementation "net.zetetic:android-database-sqlcipher:4.4.0"
     implementation "androidx.sqlite:sqlite-ktx:2.4.0" 
 
-
     // Retrofit & Kotlin Serialization (Network Layer)
     implementation libs.retrofit
-    // Note: Kotlinx Serialization implementations are needed to resolve the Moshi errors you saw previously
-    implementation 'com.squareup.moshi:moshi-kotlin:1.15.0' // Explicit Moshi library
+    implementation 'com.squareup.moshi:moshi-kotlin:1.15.0' 
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0' 
     implementation 'com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0'
     implementation libs.logging.interceptor
-    kapt 'com.squareup.moshi:moshi-kotlin-codegen:1.15.0' // Explicit Kapt for Moshi DTOs
+    // CRITICAL FIX: Switch Moshi from kapt to ksp
+    ksp 'com.squareup.moshi:moshi-kotlin-codegen:1.15.0' 
 
     // Work Manager
-    implementation libs.androidx.work.runtime.ktx // WORK MANAGER DEPENDENCY (MISSING IN ORIGINAL GROOVY)
-    // Hilt integration for Work Manager - Using hardcoded compiler version
+    implementation libs.androidx.work.runtime.ktx 
+    // Hilt integration for Work Manager
     implementation libs.hilt.work
-    kapt "androidx.hilt:hilt-compiler:$hilt_work_compiler_version"
+    // CRITICAL FIX: Switch Hilt Work compiler from kapt to ksp
+    ksp "androidx.hilt:hilt-compiler:$hilt_work_compiler_version" 
 
-    // Hilt Dependency Injection - Using hardcoded versions to stabilize Kapt
+    // Hilt Dependency Injection 
     implementation "com.google.dagger:hilt-android:$hilt_version"
-    kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
+    // CRITICAL FIX: Switch Hilt compiler from kapt to ksp
+    ksp "com.google.dagger:hilt-android-compiler:$hilt_version" 
 }
