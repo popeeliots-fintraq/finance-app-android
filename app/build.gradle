@@ -130,37 +130,29 @@ dependencies {
     // Switched Hilt compiler from kapt to ksp
     ksp "com.google.dagger:hilt-android-compiler:$hilt_version" 
 
-    // NOTE: Insert this block at the bottom of your existing app/build.gradle file (module level).
+    // --- START OF KSP CLEANUP FIX (MUST REPLACE ALL PREVIOUS FIXES) ---
 
-// 1. Define a custom task to forcefully delete the corrupted KSP output directory.
-// This addresses the FileAlreadyExistsException by clearing the bad cache before compilation.
-tasks.register('forceCleanKspDebugOutput', Delete) {
-    description = 'Forcefully deletes the corrupted KSP output directory for the debug variant.'
-    // The path where the conflicting file was found: /app/build/generated/ksp/debug/
-    delete file("${buildDir}/generated/ksp/debug")
-}
-
-// 2. Ensure the main KSP task for the debug variant depen// --- START OF KSP CLEANUP FIX (MUST REPLACE PREVIOUS FIX) ---
-
-// Define a custom task to forcefully delete the corrupted KSP output directory.
-tasks.register('forceCleanKspDebugOutput', Delete) {
-    description = 'Forcefully deletes the corrupted KSP output directory for the debug variant.'
-    // Target the directory where the conflicting Hilt/Dagger files are generated.
-    delete file("${buildDir}/generated/ksp/debug")
-}
-
-// Find the Kotlin compilation task for the debug variant (which triggers KSP)
-// and set a dependency on our cleanup task, ensuring the dependency is set 
-// safely only when the task is registered by the KSP plugin.
-tasks.configureEach { task ->
-    if (task.name == 'kspDebugKotlin') {
-        task.dependsOn 'forceCleanKspDebugOutput'
+// Define the task only if it does not already exist (idempotent task creation)
+def taskName = 'forceCleanKspDebugOutput'
+if (!project.tasks.findByName(taskName)) {
+    tasks.register(taskName, Delete) {
+        description = 'Forcefully deletes the corrupted KSP output directory for the debug variant.'
+        // Target the directory where the conflicting Hilt/Dagger files are generated.
+        delete file("${buildDir}/generated/ksp/debug")
     }
 }
 
-// --- END OF KSP CLEANUP FIX ---ds on this clean task.
-// This guarantees that the folder is empty every time kspDebugKotlin runs.
-tasks.named('kspDebugKotlin') {
-    dependsOn 'forceCleanKspDebugOutput'
+// Safely configure the dependency AFTER the project has been fully evaluated 
+// and all plugins (like KSP) have created their tasks.
+project.afterEvaluate {
+    def kspTask = tasks.findByName('kspDebugKotlin')
+    if (kspTask) {
+        println "INFO: Linking task '$taskName' to run before 'kspDebugKotlin'."
+        kspTask.dependsOn(taskName)
+    } else {
+        println "WARN: 'kspDebugKotlin' task not found, skipping dependency configuration."
+    }
 }
 }
+
+// --- END OF KSP CLEANUP FIX ---
