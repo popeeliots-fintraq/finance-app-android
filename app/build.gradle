@@ -77,6 +77,14 @@ def room_version = "2.6.1"
 def hilt_version = "2.51.1" 
 def hilt_work_compiler_version = "1.1.0" 
 
+ksp {
+    // Explicitly disable KSP incremental processing globally.
+    // This forces the processor to run in a clean, non-incremental manner, 
+    // which resolves internal conflicts where Hilt tries to write the same 
+    // aggregation file in multiple execution rounds.
+    arg("ksp.incremental", "false")
+}
+
 dependencies {
     // Dependencies use direct calls without parentheses in Groovy DSL
     // Core Android/Kotlin components (assuming libs refers to versions in buildSrc or libs.versions.toml)
