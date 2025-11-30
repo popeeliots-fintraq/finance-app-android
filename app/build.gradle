@@ -1,26 +1,14 @@
 plugins {
-    // Groovy DSL uses 'id' instead of alias(libs.plugins.xxx)
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-parcelize'
-    id 'org.jetbrains.kotlin.plugin.serialization' // Required for @Serializable DTOs
-    // Hilt setup
+    id 'org.jetbrains.kotlin.plugin.serialization'
     id 'com.google.dagger.hilt.android'
-    
-    // CRITICAL FIX: Retain KSP plugin
     id 'com.google.devtools.ksp'
 }
 
-// CRITICAL FIX: Add KSP configuration block to resolve the Room schema warning.
-// This helps stabilize the KSP processing environment.
-ksp {
-    arg("room.schemaLocation", "$projectDir/schemas")
-}
-
-
 android {
-    // Reverting namespace back to the original (Assuming the fix namespace worked)
-    namespace 'com.example.financeapp' 
+    namespace 'com.example.financeapp'
     compileSdk 34
 
     defaultConfig {
@@ -29,7 +17,6 @@ android {
         targetSdk 34
         versionCode 1
         versionName "1.0"
-
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -39,62 +26,61 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    
-    // The explicit KSP source directory mapping is generally not needed 
-    // when using KSP for everything, so we keep it removed for stability.
-    
+
     kotlinOptions {
         jvmTarget = '1.8'
-        // FIX: Explicitly setting language/API versions to stabilize KAPT
-        languageVersion = '1.9' 
+        languageVersion = '1.9'
         apiVersion = '1.9'
-        // CRITICAL FIX 3: Removed unsupported flag: -Xallow-result-return-type
         freeCompilerArgs += [
-            "-Xexplicit-api=strict"
+                "-Xexplicit-api=strict"
         ]
     }
-    
-    // Required for data binding 
+
     buildFeatures {
         dataBinding true
     }
-    
-    // Configure unit tests
+
     testOptions {
         unitTests.all {
-            it.jvmArgs("-XX:MaxPermSize=256m")
             it.useJUnitPlatform()
+            it.jvmArgs("-XX:MaxPermSize=256m")
         }
     }
 }
 
-// Define specific, stable versions based on project standards
 def room_version = "2.6.1"
-def hilt_version = "2.51.1" 
-def hilt_work_compiler_version = "1.1.0" 
+def hilt_version = "2.51.1"
+def hilt_work_compiler_version = "1.1.0"
 
+/**
+ * --------------------------------------------------------
+ *  SINGLE CLEAN KSP BLOCK (FIXES HILT/ROOM COLLISIONS)
+ * --------------------------------------------------------
+ */
 ksp {
-    // This is the correct, known fix for Hilt's internal FileAlreadyExistsException 
-    // caused by conflicting rounds of annotation processing.
-    arg("ksp.incremental", "false")
+    arg("room.schemaLocation", "$projectDir/schemas")
+    arg("ksp.incremental", "false") // most stable for GitHub Actions
+    arg("dagger.hilt.disableModulesHaveInstallInCheck", "true")
+    arg("dagger.fastInit", "enabled")
 }
 
 dependencies {
-    // Dependencies use direct calls without parentheses in Groovy DSL
-    // Core Android/Kotlin components (assuming libs refers to versions in buildSrc or libs.versions.toml)
+
+    // Core
     implementation libs.core.ktx
     implementation libs.appcompat
     implementation libs.material
 
-    // Kotlin Coroutines
+    // Coroutines
     implementation libs.kotlinx.coroutines.core
     implementation libs.kotlinx.coroutines.android
 
-    // KTX for Coroutine support in ViewModel/Lifecycle
+    // Lifecycle
     implementation libs.androidx.lifecycle.runtime.ktx
     implementation libs.androidx.lifecycle.viewmodel.ktx
 
@@ -106,34 +92,31 @@ dependencies {
     testImplementation libs.mockk
     testImplementation libs.robolectric
 
-    // Room Database - Already using KSP
+    // Room (KSP)
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
     ksp "androidx.room:room-compiler:$room_version"
 
-    // !!! CRITICAL FIX FOR SQLCIPHER / SupportFactory !!!
+    // SQLCipher secure DB
     implementation "net.zetetic:android-database-sqlcipher:4.4.0"
-    implementation "androidx.sqlite:sqlite-ktx:2.4.0" 
+    implementation "androidx.sqlite:sqlite-ktx:2.4.0"
 
-    // Retrofit & Kotlin Serialization (Network Layer)
+    // Networking
     implementation libs.retrofit
-    implementation 'com.squareup.moshi:moshi-kotlin:1.15.0' 
-    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0' 
-    implementation 'com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0'
+    implementation "com.squareup.moshi:moshi-kotlin:1.15.0"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0"
+    implementation "com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0"
     implementation libs.logging.interceptor
-    // Switched Moshi from kapt to ksp
-    ksp 'com.squareup.moshi:moshi-kotlin-codegen:1.15.0' 
+    ksp "com.squareup.moshi:moshi-kotlin-codegen:1.15.0"
 
     // Work Manager
-    implementation libs.androidx.work.runtime.ktx 
-    // Hilt integration for Work Manager
+    implementation libs.androidx.work.runtime.ktx
+
+    // Hilt + Work Manager
     implementation libs.hilt.work
-    // Switched Hilt Work compiler from kapt to ksp
-    ksp "androidx.hilt:hilt-compiler:$hilt_work_compiler_version" 
+    ksp "androidx.hilt:hilt-compiler:$hilt_work_compiler_version"
 
-    // Hilt Dependency Injection 
+    // Hilt
     implementation "com.google.dagger:hilt-android:$hilt_version"
-    // Switched Hilt compiler from kapt to ksp
-    ksp "com.google.dagger:hilt-android-compiler:$hilt_version" 
-
-   }
+    ksp "com.google.dagger:hilt-android-compiler:$hilt_version"
+}
