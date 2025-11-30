@@ -132,27 +132,31 @@ dependencies {
 
     // --- START OF KSP CLEANUP FIX (MUST REPLACE ALL PREVIOUS FIXES) ---
 
-// Define the task only if it does not already exist (idempotent task creation)
-def taskName = 'forceCleanKspDebugOutput'
-if (!project.tasks.findByName(taskName)) {
-    tasks.register(taskName, Delete) {
-        description = 'Forcefully deletes the corrupted KSP output directory for the debug variant.'
-        // Target the directory where the conflicting Hilt/Dagger files are generated.
-        delete file("${buildDir}/generated/ksp/debug")
-    }
-}
-
-// Safely configure the dependency AFTER the project has been fully evaluated 
-// and all plugins (like KSP) have created their tasks.
+// This block ensures the KSP generated directory is forcefully deleted 
+// right before the 'kspDebugKotlin' task runs, resolving the Hilt/KSP file duplication error.
 project.afterEvaluate {
     def kspTask = tasks.findByName('kspDebugKotlin')
     if (kspTask) {
-        println "INFO: Linking task '$taskName' to run before 'kspDebugKotlin'."
-        kspTask.dependsOn(taskName)
+        println "INFO: Configuring forced cleanup for KSP debug output."
+        
+        // Add an action that runs BEFORE the main KSP task execution.
+        // This 'doFirst' action guarantees the cleanup executes every time.
+        kspTask.doFirst {
+            def kspDir = file("${buildDir}/generated/ksp/debug")
+            if (kspDir.exists()) {
+                println "CLEANUP: Forcefully deleting corrupted KSP output directory: ${kspDir}"
+                // Use deleteDir() to forcibly remove the entire directory structure
+                kspDir.deleteDir() 
+            } else {
+                println "CLEANUP: KSP output directory not found, proceeding."
+            }
+        }
     } else {
-        println "WARN: 'kspDebugKotlin' task not found, skipping dependency configuration."
+        println "WARN: 'kspDebugKotlin' task not found. KSP is likely not used for this variant, skipping cleanup configuration."
     }
 }
+
+// --- END OF KSP CLEANUP FIX ---
 }
 
 // --- END OF KSP CLEANUP FIX ---
