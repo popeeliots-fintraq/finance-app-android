@@ -9,17 +9,14 @@ plugins {
     
     // CRITICAL FIX: Retain KSP plugin
     id 'com.google.devtools.ksp'
-
-    // REMOVED: id 'kotlin-kapt' // Kapt is no longer needed, using KSP instead
 }
 
-// REMOVED: The entire kapt configuration block is removed as KSP handles processing.
-// kapt {
-//     correctErrorTypes true
-//     arguments {
-//         arg("room.schemaLocation", "$projectDir/schemas")
-//     }
-// }
+// CRITICAL FIX: Add KSP configuration block to resolve the Room schema warning.
+// This helps stabilize the KSP processing environment.
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 
 android {
     // Reverting namespace back to the original (Assuming the fix namespace worked)
@@ -47,13 +44,8 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
     
-    // REMOVED: The explicit KSP source directory mapping is generally not needed 
-    // when using KSP for everything, as the Gradle plugin handles the classpath.
-    sourceSets {
-        // main {
-        //     java.srcDirs += "build/generated/ksp/debug/java"
-        // }
-    }
+    // The explicit KSP source directory mapping is generally not needed 
+    // when using KSP for everything, so we keep it removed for stability.
     
     kotlinOptions {
         jvmTarget = '1.8'
@@ -123,18 +115,18 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0' 
     implementation 'com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0'
     implementation libs.logging.interceptor
-    // CRITICAL FIX: Switch Moshi from kapt to ksp
+    // Switched Moshi from kapt to ksp
     ksp 'com.squareup.moshi:moshi-kotlin-codegen:1.15.0' 
 
     // Work Manager
     implementation libs.androidx.work.runtime.ktx 
     // Hilt integration for Work Manager
     implementation libs.hilt.work
-    // CRITICAL FIX: Switch Hilt Work compiler from kapt to ksp
+    // Switched Hilt Work compiler from kapt to ksp
     ksp "androidx.hilt:hilt-compiler:$hilt_work_compiler_version" 
 
     // Hilt Dependency Injection 
     implementation "com.google.dagger:hilt-android:$hilt_version"
-    // CRITICAL FIX: Switch Hilt compiler from kapt to ksp
+    // Switched Hilt compiler from kapt to ksp
     ksp "com.google.dagger:hilt-android-compiler:$hilt_version" 
 }
