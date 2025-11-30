@@ -78,10 +78,8 @@ def hilt_version = "2.51.1"
 def hilt_work_compiler_version = "1.1.0" 
 
 ksp {
-    // Explicitly disable KSP incremental processing globally.
-    // This forces the processor to run in a clean, non-incremental manner, 
-    // which resolves internal conflicts where Hilt tries to write the same 
-    // aggregation file in multiple execution rounds.
+    // This is the correct, known fix for Hilt's internal FileAlreadyExistsException 
+    // caused by conflicting rounds of annotation processing.
     arg("ksp.incremental", "false")
 }
 
@@ -138,33 +136,4 @@ dependencies {
     // Switched Hilt compiler from kapt to ksp
     ksp "com.google.dagger:hilt-android-compiler:$hilt_version" 
 
-    // --- START OF KSP CLEANUP FIX (MUST REPLACE ALL PREVIOUS FIXES) ---
-
-// This block ensures the KSP generated directory is forcefully deleted 
-// right before the 'kspDebugKotlin' task runs, resolving the Hilt/KSP file duplication error.
-project.afterEvaluate {
-    def kspTask = tasks.findByName('kspDebugKotlin')
-    if (kspTask) {
-        println "INFO: Configuring forced cleanup for KSP debug output."
-        
-        // Add an action that runs BEFORE the main KSP task execution.
-        // This 'doFirst' action guarantees the cleanup executes every time.
-        kspTask.doFirst {
-            def kspDir = file("${buildDir}/generated/ksp/debug")
-            if (kspDir.exists()) {
-                println "CLEANUP: Forcefully deleting corrupted KSP output directory: ${kspDir}"
-                // Use deleteDir() to forcibly remove the entire directory structure
-                kspDir.deleteDir() 
-            } else {
-                println "CLEANUP: KSP output directory not found, proceeding."
-            }
-        }
-    } else {
-        println "WARN: 'kspDebugKotlin' task not found. KSP is likely not used for this variant, skipping cleanup configuration."
-    }
-}
-
-// --- END OF KSP CLEANUP FIX ---
-}
-
-// --- END OF KSP CLEANUP FIX ---
+   }
