@@ -28,12 +28,12 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '17'
         languageVersion = '1.9'
         apiVersion = '1.9'
         freeCompilerArgs += [
@@ -47,8 +47,7 @@ android {
 
     testOptions {
         unitTests.all {
-            it.useJUnitPlatform()
-            it.jvmArgs("-XX:MaxPermSize=256m")
+            useJUnitPlatform()
         }
     }
 }
@@ -78,8 +77,6 @@ dependencies {
 
     // Testing
     testImplementation libs.junit
-    testImplementation libs.androidx.test.ext.junit
-    testImplementation libs.androidx.test.espresso.core
     testImplementation libs.kotlinx.coroutines.test
     testImplementation libs.mockk
     testImplementation libs.robolectric
@@ -89,7 +86,7 @@ dependencies {
     implementation "androidx.room:room-ktx:$room_version"
     ksp "androidx.room:room-compiler:$room_version"
 
-    // SQLCipher
+    // SQLCipher + SQLite
     implementation "net.zetetic:android-database-sqlcipher:4.4.0"
     implementation "androidx.sqlite:sqlite-ktx:2.4.0"
 
@@ -106,7 +103,7 @@ dependencies {
     // Work Manager
     implementation libs.androidx.work.runtime.ktx
 
-    // Hilt + KSP
+    // Hilt + KSP (CLEAN — NO DUPLICATES!)
     implementation "com.google.dagger:hilt-android:$hilt_version"
     ksp "com.google.dagger:hilt-android-compiler:$hilt_version"
 
