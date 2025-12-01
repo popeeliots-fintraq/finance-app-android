@@ -1,6 +1,6 @@
 package com.example.financeapp.di
 
-import com.example.financeapp.ApiService
+import com.example.financeapp.api.ApiService
 import com.example.financeapp.data.dao.SmsDao
 import com.example.financeapp.data.repository.FinanceRepository
 import dagger.Module
