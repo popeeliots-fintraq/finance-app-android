@@ -9,7 +9,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import net.sqlcipher.database.SQLiteDatabase
 import net.sqlcipher.database.SupportFactory
 import javax.inject.Singleton
 
@@ -17,17 +16,12 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
 
-    // Instead of BuildConfig.DB_PASSPHRASE (which does NOT exist)
     private const val DATABASE_PASSPHRASE = "fintraq_secure_key_123"
 
     @Provides
     @Singleton
-    fun provideDatabasePassphrase(): String = DATABASE_PASSPHRASE
-
-    @Provides
-    @Singleton
-    fun provideSupportFactory(passphrase: String): SupportFactory {
-        val bytes = SQLiteDatabase.getBytes(passphrase.toCharArray())
+    fun provideSupportFactory(): SupportFactory {
+        val bytes = net.sqlcipher.database.SQLiteDatabase.getBytes(DATABASE_PASSPHRASE.toCharArray())
         return SupportFactory(bytes)
     }
 
