@@ -35,18 +35,25 @@ object DatabaseModule {
         @ApplicationContext context: Context,
         supportFactory: SupportFactory
     ): AppDatabase {
-        return Room.databaseBuilder(
-            context,
-            AppDatabase::class.java,
-            "fintraq_database"
-        )
+        return Room.databaseBuilder(context, AppDatabase::class.java, "fintraq_database")
             .fallbackToDestructiveMigration()
             .openHelperFactory(supportFactory)
             .build()
     }
 
-    @Provides fun provideSmsDao(db: AppDatabase): SmsDao = db.smsDao()
-    @Provides fun provideTransactionDao(db: AppDatabase): TransactionDao = db.transactionDao()
-    @Provides fun provideSalaryBucketDao(db: AppDatabase): SalaryBucketDao = db.salaryBucketDao()
-    @Provides fun provideLeakBucketDao(db: AppDatabase): LeakBucketDao = db.leakBucketDao()
+    @Provides
+    @Singleton
+    fun provideSmsDao(db: AppDatabase): SmsDao = db.smsDao()
+
+    @Provides
+    @Singleton
+    fun provideTransactionDao(db: AppDatabase): TransactionDao = db.transactionDao()
+
+    @Provides
+    @Singleton
+    fun provideSalaryBucketDao(db: AppDatabase): SalaryBucketDao = db.salaryBucketDao()
+
+    @Provides
+    @Singleton
+    fun provideLeakBucketDao(db: AppDatabase): LeakBucketDao = db.leakBucketDao()
 }
