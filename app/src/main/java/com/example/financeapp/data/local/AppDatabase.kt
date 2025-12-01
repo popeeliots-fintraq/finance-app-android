@@ -2,18 +2,14 @@ package com.example.financeapp.data.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import net.sqlcipher.database.SQLiteDatabase
-import net.sqlcipher.database.SupportFactory
-
-import com.fintraq.app.data.dao.LeakBucketDao
-import com.fintraq.app.data.dao.SalaryBucketDao
-import com.fintraq.app.data.dao.TransactionDao
-import com.fintraq.app.data.dao.SmsDao
-
-import com.fintraq.app.data.model.LeakBucket
-import com.fintraq.app.data.model.SalaryBucket
-import com.fintraq.app.data.model.TransactionEntity
-import com.fintraq.app.data.model.SmsEntity
+import com.example.financeapp.data.dao.LeakBucketDao
+import com.example.financeapp.data.dao.SalaryBucketDao
+import com.example.financeapp.data.dao.TransactionDao
+import com.example.financeapp.data.dao.SmsDao
+import com.example.financeapp.data.model.LeakBucket
+import com.example.financeapp.data.model.SalaryBucket
+import com.example.financeapp.data.model.TransactionEntity
+import com.example.financeapp.data.model.SmsEntity
 
 /**
  * Central encrypted Room database for Fin-Traq.
