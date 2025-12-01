@@ -18,10 +18,5 @@ object RepositoryModule {
     fun provideFinanceRepository(
         apiService: ApiService,
         smsDao: SmsDao
-    ): FinanceRepository {
-        return FinanceRepository(
-            apiService = apiService,
-            smsDao = smsDao
-        )
-    }
+    ): FinanceRepository = FinanceRepository(apiService, smsDao)
 }
