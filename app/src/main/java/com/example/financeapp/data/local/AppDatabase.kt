@@ -2,14 +2,8 @@ package com.example.financeapp.data.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import com.example.financeapp.data.dao.LeakBucketDao
-import com.example.financeapp.data.dao.SalaryBucketDao
-import com.example.financeapp.data.dao.TransactionDao
-import com.example.financeapp.data.dao.SmsDao
-import com.example.financeapp.data.model.LeakBucket
-import com.example.financeapp.data.model.SalaryBucket
-import com.example.financeapp.data.model.TransactionEntity
-import com.example.financeapp.data.model.SmsEntity
+import com.example.financeapp.data.dao.*
+import com.example.financeapp.data.model.*
 
 /**
  * Central encrypted Room database for Fin-Traq.
@@ -31,4 +25,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun salaryBucketDao(): SalaryBucketDao
     abstract fun transactionDao(): TransactionDao
     abstract fun smsDao(): SmsDao
+    abstract fun rawTransactionDao(): RawTransactionDao
 }
