@@ -4,7 +4,6 @@ plugins {
     id 'com.google.dagger.hilt.android'
     id 'com.google.devtools.ksp' // Kotlin Symbol Processing for Room/Moshi/Hilt
     id 'org.jetbrains.kotlin.plugin.serialization' // For Kotlinx Serialization
-    id 'org.jetbrains.kotlin.plugin.compose' // REQUIRED for Kotlin 2.0+ and Compose
 }
 
 android {
