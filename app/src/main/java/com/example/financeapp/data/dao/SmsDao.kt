@@ -5,7 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.example.financeapp.data.model.SmsEntity // ⬅️ CRITICAL: Changed import to SmsEntity
+import com.example.financeapp.data.local.entity.SmsEntity // ⬅️ CRITICAL: Changed import to SmsEntity
 
 /**
  * Data Access Object for SmsEntity management.
