@@ -2,9 +2,12 @@ package com.example.financeapp.di
 
 import android.content.Context
 import androidx.room.Room
-import com.fintraq.app.BuildConfig
-import com.fintraq.app.data.local.AppDatabase
-import com.fintraq.app.data.dao.*
+import com.example.financeapp.BuildConfig
+import com.example.financeapp.data.local.AppDatabase
+import com.example.financeapp.data.dao.SmsDao
+import com.example.financeapp.data.dao.TransactionDao
+import com.example.financeapp.data.dao.SalaryBucketDao
+import com.example.financeapp.data.dao.LeakBucketDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -35,25 +38,18 @@ object DatabaseModule {
         @ApplicationContext context: Context,
         supportFactory: SupportFactory
     ): AppDatabase {
-        return Room.databaseBuilder(context, AppDatabase::class.java, "fintraq_database")
+        return Room.databaseBuilder(
+            context,
+            AppDatabase::class.java,
+            "fintraq_database"
+        )
             .fallbackToDestructiveMigration()
             .openHelperFactory(supportFactory)
             .build()
     }
 
-    @Provides
-    @Singleton
-    fun provideSmsDao(db: AppDatabase): SmsDao = db.smsDao()
-
-    @Provides
-    @Singleton
-    fun provideTransactionDao(db: AppDatabase): TransactionDao = db.transactionDao()
-
-    @Provides
-    @Singleton
-    fun provideSalaryBucketDao(db: AppDatabase): SalaryBucketDao = db.salaryBucketDao()
-
-    @Provides
-    @Singleton
-    fun provideLeakBucketDao(db: AppDatabase): LeakBucketDao = db.leakBucketDao()
+    @Provides fun provideSmsDao(db: AppDatabase): SmsDao = db.smsDao()
+    @Provides fun provideTransactionDao(db: AppDatabase): TransactionDao = db.transactionDao()
+    @Provides fun provideSalaryBucketDao(db: AppDatabase): SalaryBucketDao = db.salaryBucketDao()
+    @Provides fun provideLeakBucketDao(db: AppDatabase): LeakBucketDao = db.leakBucketDao()
 }
