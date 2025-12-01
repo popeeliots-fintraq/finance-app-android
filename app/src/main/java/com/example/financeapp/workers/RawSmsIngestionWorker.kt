@@ -14,6 +14,7 @@ import dagger.assisted.AssistedInject
 class RawSmsIngestionWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted workerParams: WorkerParameters,
+    private val apiService: ApiService,
     private val rawTransactionDao: RawTransactionDao,
 ) : CoroutineWorker(context, workerParams) {
 
