@@ -9,33 +9,27 @@ material = "1.11.0"
 coroutines = "1.8.1"
 lifecycle = "2.7.0"
 
-Testing
-
 androidxTestExt = "1.1.5"
 espressoCore = "3.5.1"
 mockkVersion = "1.13.10"
 robolectricVersion = "4.12.2"
 
-Data Persistence (Room)
 
 roomVersion = "2.6.1"
 
-Networking (Retrofit/Moshi/OkHttp)
 
 retrofitVersion = "2.9.0"
 moshiVersion = "1.15.1"
 okHttpVersion = "4.12.0"
 
-Kotlin Serialization
 
 serializationJsonVersion = "1.6.0"
 retrofitSerializationConverterVersion = "1.0.0"
 
-WorkManager
+
 
 workVersion = "2.9.0"
 
-Dependency Injection (Hilt)
 
 hiltAndroidVersion = "2.51.1"
 hiltExtVersion = "1.2.0" # For Hilt Extensions (WorkManager)
