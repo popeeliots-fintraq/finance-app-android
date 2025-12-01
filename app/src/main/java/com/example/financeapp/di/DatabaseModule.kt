@@ -20,8 +20,7 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideDatabasePassphrase(): String =
-        BuildConfig.DB_PASSPHRASE
+    fun provideDatabasePassphrase(): String = BuildConfig.DB_PASSPHRASE
 
     @Provides
     @Singleton
@@ -35,16 +34,14 @@ object DatabaseModule {
     fun provideDatabase(
         @ApplicationContext context: Context,
         supportFactory: SupportFactory
-    ): AppDatabase {
-        return Room.databaseBuilder(
-            context,
-            AppDatabase::class.java,
-            "fintraq_database"
-        )
-            .fallbackToDestructiveMigration()
-            .openHelperFactory(supportFactory)
-            .build()
-    }
+    ): AppDatabase = Room.databaseBuilder(
+        context,
+        AppDatabase::class.java,
+        "fintraq_database"
+    )
+        .fallbackToDestructiveMigration()
+        .openHelperFactory(supportFactory)
+        .build()
 
     @Provides fun provideSmsDao(db: AppDatabase): SmsDao = db.smsDao()
     @Provides fun provideTransactionDao(db: AppDatabase): TransactionDao = db.transactionDao()
