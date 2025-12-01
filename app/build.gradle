@@ -1,4 +1,4 @@
-plugins {
+    plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-parcelize'
@@ -52,8 +52,7 @@ android {
     }
 }
 
-def room_version = "2.6.1"
-def hilt_version = "2.51.1"
+// REMOVED redundant def room_version and def hilt_version
 
 ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
@@ -62,9 +61,8 @@ ksp {
 
 dependencies {
 
-    // Core Android KTX
-    // Changed implementation libs.core.ktx to modern notation for androidx core ktx
-    implementation libs.androidx.core.ktx // Assuming 'androidx.core.ktx' in libs.versions.toml
+    // Core Android KTX (Now correctly accessed via the catalog)
+    implementation libs.androidx.core.ktx 
     implementation libs.appcompat
     implementation libs.material
 
@@ -76,35 +74,35 @@ dependencies {
     implementation libs.androidx.lifecycle.runtime.ktx
     implementation libs.androidx.lifecycle.viewmodel.ktx
 
-    // Room Database
-    implementation "androidx.room:room-runtime:$room_version"
-    implementation "androidx.room:room-ktx:$room_version"
-    ksp "androidx.room:room-compiler:$room_version"
+    // Room Database (Now using the catalog for all components)
+    implementation libs.androidx.room.runtime
+    implementation libs.androidx.room.ktx
+    ksp libs.androidx.room.compiler
 
-    // SQLCipher + SQLite
-    implementation "net.zetetic:android-database-sqlcipher:4.4.0"
-    implementation "androidx.sqlite:sqlite-ktx:2.4.0"
+    // SQLCipher + SQLite (Using catalog for SQLite, SQLCipher is a non-standard entry)
+    implementation libs.sqlcipher
+    implementation libs.androidx.sqlite.ktx
 
-    // Networking (Retrofit + Kotlin Serialization)
+    // Networking (Retrofit + Kotlin Serialization - Now using the catalog)
     implementation libs.retrofit
-    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0'
-    implementation 'com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0'
+    implementation libs.kotlinx.serialization.json
+    implementation libs.retrofit.serialization.converter
     implementation libs.logging.interceptor
 
-    // Networking (Moshi for alternative JSON parsing or specific uses)
-    implementation 'com.squareup.moshi:moshi-kotlin:1.15.0'
-    ksp 'com.squareup.moshi:moshi-kotlin-codegen:1.15.0'
+    // Networking (Moshi - Now using the catalog)
+    implementation libs.moshi.kotlin
+    ksp libs.moshi.kotlin.codegen
 
-    // Dependency Injection (Hilt)
-    implementation "com.google.dagger:hilt-android:$hilt_version"
-    ksp "com.google.dagger:hilt-android-compiler:$hilt_version"
+    // Dependency Injection (Hilt - Now using the catalog)
+    implementation libs.hilt.android
+    ksp libs.hilt.compiler
 
-    // Work Manager
+    // Work Manager (Now using the catalog for all components)
     implementation libs.androidx.work.runtime.ktx
 
-    // Hilt Work Manager Integration
+    // Hilt Work Manager Integration (Now using the catalog)
     implementation libs.hilt.work
-    ksp "androidx.hilt:hilt-compiler:1.1.0"
+    ksp libs.androidx.hilt.compiler
 
     // Testing
     testImplementation libs.junit
