@@ -1,8 +1,10 @@
+// settings.gradle (Groovy DSL)
+
 pluginManagement {
     repositories {
+        gradlePluginPortal()
         google()
         mavenCentral()
-        gradlePluginPortal()
     }
 }
 
@@ -15,4 +17,6 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "finance-app-android"
+
+// Include app module (add other modules if needed)
 include(":app")
