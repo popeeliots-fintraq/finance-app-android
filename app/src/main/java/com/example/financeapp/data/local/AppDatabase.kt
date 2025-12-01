@@ -16,8 +16,8 @@ import com.example.financeapp.data.model.SmsEntity
  */
 @Database(
     entities = [
-        LeakBucketEntity::class,
-        SalaryBucketEntity::class,
+        LeakBucket::class,
+        SalaryBucket::class,
         TransactionEntity::class,
         SmsEntity::class,
         RawTransactionEntity::class
