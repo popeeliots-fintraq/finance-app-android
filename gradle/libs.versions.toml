@@ -19,6 +19,9 @@ roomVersion = "2.6.1"
 retrofitVersion = "2.9.0"
 moshiVersion = "1.15.1"
 okHttpVersion = "4.12.0"
+# Kotlin Serialization
+serializationJsonVersion = "1.6.0"
+retrofitSerializationConverterVersion = "1.0.0"
 # WorkManager
 workVersion = "2.9.0"
 # Dependency Injection (Hilt)
@@ -27,64 +30,50 @@ hiltExtVersion = "1.2.0" # For Hilt Extensions (WorkManager)
 
 [libraries]
 # Android Core & UI
+# FIX 1: Renamed from 'core-ktx' to ensure correct accessor: libs.androidx.core.ktx
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+# SQLCipher - FIX 2: Renamed to ensure clear accessor: libs.sqlite.sqlcipher
+sqlite-sqlcipher = { group = "net.zetetic", name = "android-database-sqlcipher", version = "4.4.0" }
+androidx-sqlite-ktx = { group = "androidx.sqlite", name = "sqlite-ktx", version = "2.4.0" }
+
 
 # Kotlin Coroutines
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serializationJsonVersion" }
 
 # AndroidX Lifecycle
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
 androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
 
-# Testing Dependencies (Fixes missing 'test' property)
+# Testing Dependencies
 junit = { group = "junit", name = "junit", version.ref = "junit" }
-# Maps to libs.androidx.test.ext.junit
 androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxTestExt" }
-# Maps to libs.androidx.test.espresso.core
 androidx-test-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
-# Maps to libs.kotlinx.coroutines.test
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
-# Maps to libs.mockk
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockkVersion" }
-# Maps to libs.robolectric
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectricVersion" }
 
 # Room Database
-# Maps to libs.androidx.room.runtime, libs.androidx.room.ktx, libs.androidx.room.compiler
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "roomVersion" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomVersion" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomVersion" }
 
 # Retrofit & Moshi
-# Maps to libs.retrofit
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofitVersion" }
-# Maps to libs.converter.moshi
 converter-moshi = { group = "com.squareup.retrofit2", name = "converter-moshi", version.ref = "retrofitVersion" }
-# Maps to libs.logging.interceptor
+retrofit-serialization-converter = { group = "com.jakewharton.retrofit", name = "retrofit2-kotlinx-serialization-converter", version.ref = "retrofitSerializationConverterVersion" }
 logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okHttpVersion" }
+moshi-kotlin = { group = "com.squareup.moshi", name = "moshi-kotlin", version.ref = "moshiVersion" }
+moshi-kotlin-codegen = { group = "com.squareup.moshi", name = "moshi-kotlin-codegen", version.ref = "moshiVersion" }
 
 # Work Manager & Hilt Extensions
-# Maps to libs.androidx.work.runtime.ktx
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workVersion" }
-# Maps to libs.hilt.work
 hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltExtVersion" }
-# Maps to libs.androidx.hilt.compiler
 androidx-hilt-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hiltExtVersion" }
 
 # Hilt Dependency Injection
-# Maps to libs.hilt.android
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hiltAndroidVersion" }
-# Maps to libs.hilt.compiler
-hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hiltAndroidVersion" }
-
-
-[plugins]
-android-application = { id = "com.android.application", version.ref = "agp" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-# Hilt plugin
-hilt-android-plugin = { id = "com.google.dagger.hilt.android", version.ref = "hiltAndroidVersion" }
+hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hiltAndroidVersion" }
