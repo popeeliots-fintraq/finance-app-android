@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.financeapp.databinding.ItemLeakBucketBinding
-import com.example.financeapp.ui.model.LeakageBucket
+import com.example.financeapp.ui.viewmodel.LeakageBucket
 import java.text.NumberFormat
 import java.util.Locale
 
