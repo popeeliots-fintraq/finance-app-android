@@ -1,10 +1,10 @@
-package com.example.financeapp.di
+package com.fintraq.app.di
 
 import android.content.Context
 import androidx.room.Room
-import com.example.financeapp.BuildConfig
-import com.example.financeapp.data.local.AppDatabase
-import com.example.financeapp.data.dao.*
+import com.fintraq.app.BuildConfig
+import com.fintraq.app.data.local.AppDatabase
+import com.fintraq.app.data.dao.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
