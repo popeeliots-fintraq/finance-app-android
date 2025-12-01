@@ -1,114 +1,100 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'kotlin-parcelize'
-    id 'org.jetbrains.kotlin.plugin.serialization'
     id 'com.google.dagger.hilt.android'
-    id 'com.google.devtools.ksp'
+    id 'com.google.devtools.ksp' // Kotlin Symbol Processing for Room/Moshi/Hilt
+    id 'org.jetbrains.kotlin.plugin.serialization' // For Kotlinx Serialization
 }
 
 android {
-    namespace 'com.example.financeapp'
+    namespace 'com.fintraq.app'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.example.financeapp"
+        applicationId "com.fintraq.app"
         minSdk 24
         targetSdk 34
         versionCode 1
         versionName "1.0"
+
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables {
+            useSupportLibrary true
+        }
     }
 
     buildTypes {
         release {
-            minifyEnabled false 
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
-
     kotlinOptions {
-        jvmTarget = '17'
-        languageVersion = '1.9'
-        apiVersion = '1.9'
-        freeCompilerArgs += [
-                "-Xexplicit-api=strict"
-        ]
+        jvmTarget = '1.8'
     }
-
     buildFeatures {
-        dataBinding true
+        compose true
     }
-
-    testOptions {
-        unitTests.all {
-            useJUnitPlatform()
+    composeOptions {
+        kotlinCompilerExtensionVersion = "2.0.0"
+    }
+    packaging {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
 }
 
-ksp {
-    arg("room.schemaLocation", "$projectDir/schemas")
-    arg("ksp.incremental", "false")
+dependencies {
+    // Standard Android & Kotlin
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.appcompat)
+    implementation(libs.material)
+
+    // Data Persistence (Room and Bundles)
+    // FIX: Accessing the bundle using the 'bundles' accessor
+    implementation(libs.bundles.database) 
+    ksp(libs.androidx.room.compiler) // KSP for Room Annotation Processor
+
+    // SQLite SQLCipher for encryption (If used)
+    implementation(libs.sqlite.sqlcipher) 
+    implementation(libs.androidx.sqlite.ktx)
+
+    // Networking & Serialization (Bundles)
+    implementation(libs.bundles.networking) 
+    ksp(libs.moshi.kotlin.codegen) // KSP for Moshi Code Generator
+    implementation(libs.kotlinx.serialization.json)
+
+    // Kotlin Coroutines (Bundles)
+    implementation(libs.bundles.kotlin.coroutines)
+
+    // Android Lifecycle (Bundles)
+    implementation(libs.bundles.androidx.lifecycle)
+
+    // Work Manager (Bundles)
+    implementation(libs.bundles.work.manager) 
+    ksp(libs.androidx.hilt.compiler) // KSP for Hilt/WorkManager Annotation Processor
+
+    // Hilt Dependency Injection (Bundles)
+    implementation(libs.bundles.di.hilt) 
+    ksp(libs.hilt.compiler) // KSP for Hilt Compiler
+
+    // Testing Dependencies
+    testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.kotlinx.coroutines.test)
+
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.espresso.core)
+    androidTestImplementation(libs.mockk)
 }
 
-dependencies {
-
-    // Core Android KTX (Now correctly accessed via the catalog)
-    implementation libs.androidx.core.ktx 
-    implementation libs.appcompat
-    implementation libs.material
-
-    // Coroutines
-    implementation libs.kotlinx.coroutines.core
-    implementation libs.kotlinx.coroutines.android
-
-    // Lifecycle
-    implementation libs.androidx.lifecycle.runtime.ktx
-    implementation libs.androidx.lifecycle.viewmodel.ktx
-
-    // Room Database 
-    implementation libs.androidx.room.runtime
-    implementation libs.androidx.room.ktx
-    ksp libs.androidx.room.compiler
-
-    // SQLCipher + SQLite 
-    implementation libs.database.sqlcipher
-    implementation libs.androidx.sqlite.ktx
-
-    // Networking (Retrofit + Kotlin Serialization)
-    implementation libs.retrofit
-    implementation libs.kotlinx.serialization.json
-    implementation libs.retrofit.serialization.converter
-    implementation libs.logging.interceptor
-
-    // Networking (Moshi)
-    implementation libs.moshi.kotlin
-    ksp libs.moshi.kotlin.codegen
-
-    // Dependency Injection (Hilt)
-    implementation libs.hilt.android
-    ksp libs.hilt.compiler
-
-    // Work Manager
-    implementation libs.androidx.work.runtime.ktx
-
-    // Hilt Work Manager Integration 
-    implementation libs.hilt.work
-    ksp libs.androidx.hilt.compiler
-
-    // Testing
-    testImplementation libs.junit
-    testImplementation libs.kotlinx.coroutines.test
-    testImplementation libs.mockk
-    testImplementation libs.robolectric
-    
-    // Hilt Testing Dependencies (New Addition for unit tests)
-    testImplementation libs.hilt.android.testing
-    kspTest libs.hilt.compiler
+// Hilt Configuration
+hilt {
+    enableAggregatingTask = true
 }
