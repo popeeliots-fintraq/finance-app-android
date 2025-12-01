@@ -7,19 +7,16 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import retrofit2.Response 
+import retrofit2.Response
 
 // DTO Imports
-import com.example.financeapp.data.model.LeakageOut 
-// UI Model Imports
-import com.example.financeapp.ui.model.LeakageUiState
-import com.example.financeapp.ui.model.LeakBucketUiModel
-// API Interface Path
-import com.example.financeapp.api.ApiService 
+import com.example.financeapp.data.model.LeakageOut
 
+// API Interface Path
+import com.example.financeapp.api.ApiService
 
 @HiltViewModel
-class LeakageViewModel @Inject constructor( 
+class LeakageViewModel @Inject constructor(
     private val apiService: ApiService
 ) : ViewModel() {
 
@@ -33,38 +30,31 @@ class LeakageViewModel @Inject constructor(
     private fun fetchLeakageView() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
-            
+
             try {
                 val response: Response<LeakageOut> = apiService.fetchLeakageView(reportingPeriod = "current")
-                
+
                 if (response.isSuccessful && response.body() != null) {
                     val leakageOut = response.body()!!
 
-                    // Safely parse String amounts to Double
                     val currentLeakage = leakageOut.total_reclaimable_salary.toDoubleOrNull() ?: 0.0
                     val projectedSalary = leakageOut.if_leak_fixed_new_salary.toDoubleOrNull() ?: 0.0
-                    
-                    // --- Transformation Logic ---
+
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        
                         currentLeakageAmount = currentLeakage,
                         reclaimedSalaryProjection = projectedSalary,
-                        
-                        // 2. Leakage Bucket List Data (Mapping DTO to UI Model)
                         leakageBuckets = leakageOut.leakage_buckets.map { networkBucket ->
                             LeakBucketUiModel(
-                                bucketName = networkBucket.category, 
+                                bucketName = networkBucket.category,
                                 leakageAmount = networkBucket.leak_amount.toDoubleOrNull() ?: 0.0,
-                                // Fix: Assuming the property name in the DTO is 'insightSummary' (camelCase) 
-                                // to match the UI Model constructor, as 'insight_summary' was an unresolved reference.
                                 insightSummary = networkBucket.insightSummary ?: "Tap for next action."
                             )
                         },
                         autopilotStatusText = "Leakage Data Loaded for Period: ${leakageOut.reporting_period}"
                     )
                 } else {
-                     _uiState.value = _uiState.value.copy(
+                    _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         errorMessage = "API Error: ${response.code()} ${response.message()}"
                     )
