@@ -1,22 +1,24 @@
-// Root-level build.gradle (Groovy DSL)
-
+// Top-level build.gradle file
 buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
     dependencies {
-        // Android Gradle Plugin
         classpath "com.android.tools.build:gradle:8.2.0"
-
-        // Kotlin Gradle Plugin
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24"
-
-        // Hilt/Dagger Plugin
         classpath "com.google.dagger:hilt-android-gradle-plugin:2.48"
-
-        // Kotlin Symbol Processing (KSP)
         classpath "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:1.9.24-1.0.20"
     }
 }
 
-// Clean task
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
