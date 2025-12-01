@@ -9,13 +9,10 @@ material = "1.11.0"
 coroutines = "1.8.1"
 lifecycle = "2.7.0"
 
-
-
 androidxTestExt = "1.1.5"
 espressoCore = "3.5.1"
 mockkVersion = "1.13.10"
 robolectricVersion = "4.12.2"
-
 
 roomVersion = "2.6.1"
 
@@ -24,27 +21,19 @@ retrofitVersion = "2.9.0"
 moshiVersion = "1.15.1"
 okHttpVersion = "4.12.0"
 
-
-
 serializationJsonVersion = "1.6.0"
 retrofitSerializationConverterVersion = "1.0.0"
 
-
-
 workVersion = "2.9.0"
-
-
 
 hiltAndroidVersion = "2.51.1"
 hiltExtVersion = "1.2.0" # For Hilt Extensions (WorkManager)
 
 [libraries]
 
-
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
-
 
 sqlite-sqlcipher = { group = "net.zetetic", name = "android-database-sqlcipher", version = "4.4.0" }
 
@@ -52,15 +41,12 @@ version.ref = "roomVersion"
 
 androidx-sqlite-ktx = { group = "androidx.sqlite", name = "sqlite-ktx", version.ref = "roomVersion" }
 
-
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serializationJsonVersion" }
 
-
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
 androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
-
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxTestExt" }
@@ -69,11 +55,9 @@ kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockkVersion" }
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectricVersion" }
 
-
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "roomVersion" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomVersion" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomVersion" }
-
 
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofitVersion" }
 converter-moshi = { group = "com.squareup.retrofit2", name = "converter-moshi", version.ref = "retrofitVersion" }
@@ -82,15 +66,14 @@ logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-intercep
 moshi-kotlin = { group = "com.squareup.moshi", name = "moshi-kotlin", version.ref = "moshiVersion" }
 moshi-kotlin-codegen = { group = "com.squareup.moshi", name = "moshi-kotlin-codegen", version.ref = "moshiVersion" }
 
-
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workVersion" }
 hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltExtVersion" }
 androidx-hilt-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hiltExtVersion" }
 
-
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hiltAndroidVersion" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hiltAndroidVersion" }
 
+[bundles]
 
 database = [
 "androidx-room-runtime",
@@ -111,7 +94,10 @@ networking = [
 "logging-interceptor",
 "moshi-kotlin"
 ]
-hilt = [
+
+Renamed from 'hilt' to 'di-hilt' to avoid conflict with the hilt-android library alias
+
+di-hilt = [
 "hilt-android"
 ]
 work-manager = [
