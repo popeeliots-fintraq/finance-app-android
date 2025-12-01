@@ -27,7 +27,7 @@ hiltExtVersion = "1.2.0" # For Hilt Extensions (WorkManager)
 
 [libraries]
 # Android Core & UI
-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 
