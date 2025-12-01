@@ -48,7 +48,7 @@ material = { group = "com.google.android.material", name = "material", version.r
 
 sqlite-sqlcipher = { group = "net.zetetic", name = "android-database-sqlcipher", version = "4.4.0" }
 
-Using version.ref = "roomVersion" for consistency with Room
+version.ref = "roomVersion"
 
 androidx-sqlite-ktx = { group = "androidx.sqlite", name = "sqlite-ktx", version.ref = "roomVersion" }
 
