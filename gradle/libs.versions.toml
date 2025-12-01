@@ -95,8 +95,6 @@ networking = [
 "moshi-kotlin"
 ]
 
-Renamed from 'hilt' to 'di-hilt' to avoid conflict with the hilt-android library alias
-
 di-hilt = [
 "hilt-android"
 ]
