@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.example.financeapp.data.api.ApiService
 import com.example.financeapp.data.dao.RawTransactionDao
 import com.example.financeapp.data.local.entity.RawTransactionEntity
 import dagger.assisted.Assisted
@@ -15,44 +16,42 @@ class RawSmsIngestionWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted workerParams: WorkerParameters,
     private val apiService: ApiService,
-    private val rawTransactionDao: RawTransactionDao,
+    private val rawTransactionDao: RawTransactionDao
 ) : CoroutineWorker(context, workerParams) {
 
     override suspend fun doWork(): Result {
-        Log.d(SmsWorkerConstants.LOG_TAG, "RawSmsIngestionWorker started.") 
+        Log.d("RawSmsIngestionWorker", "Worker started.")
 
-        val sender = inputData.getString(SmsWorkerConstants.KEY_SMS_SENDER)
-        val body = inputData.getString(SmsWorkerConstants.KEY_SMS_BODY)
-        val timestamp = inputData.getLong(SmsWorkerConstants.KEY_SMS_TIMESTAMP, 0L)
+        val sender = inputData.getString("sms_sender")
+        val body = inputData.getString("sms_body")
+        val timestamp = inputData.getLong("sms_timestamp", 0L)
 
         if (sender.isNullOrBlank() || body.isNullOrBlank() || timestamp == 0L) {
-            Log.e(SmsWorkerConstants.LOG_TAG, "Invalid input data received.") 
+            Log.e("RawSmsIngestionWorker", "Invalid input data received.")
             return Result.failure()
         }
 
         return try {
             val entity = RawTransactionEntity(
-                id = 0L, 
-                userId = "default_user_id", 
+                id = 0L,
+                userId = "default_user_id",
                 sender = sender,
-                rawText = body, 
-                ingestionStatus = "PENDING", 
+                rawText = body,
+                ingestionStatus = "PENDING",
                 localTimestamp = System.currentTimeMillis(),
-                smsTimestamp = timestamp, 
+                smsTimestamp = timestamp,
                 uniqueSmsId = java.util.UUID.randomUUID().toString()
             )
-
             val rowId = rawTransactionDao.insertRawTransaction(entity)
-
             if (rowId > 0) {
-                Log.i(SmsWorkerConstants.LOG_TAG, "Raw SMS successfully saved to DB. Row ID: $rowId")
+                Log.i("RawSmsIngestionWorker", "Raw SMS saved. Row ID: $rowId")
                 Result.success()
             } else {
-                Log.e(SmsWorkerConstants.LOG_TAG, "Failed to insert raw SMS into DB.")
+                Log.e("RawSmsIngestionWorker", "Failed to insert raw SMS into DB.")
                 Result.retry()
             }
         } catch (e: Exception) {
-            Log.e(SmsWorkerConstants.LOG_TAG, "Database error during SMS ingestion: ${e.message}", e)
+            Log.e("RawSmsIngestionWorker", "DB error: ${e.message}", e)
             Result.retry()
         }
     }
