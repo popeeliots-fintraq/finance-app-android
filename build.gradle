@@ -1,37 +1,29 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+// All plugin IDs and versions are now strictly referenced via the libs.versions.toml catalog.
+// This file only declares plugins available to modules using 'apply false'.
+
 plugins {
-    // Android Gradle Plugin (AGP) and standard Kotlin plugins
-    id 'com.android.application' version '8.5.0' apply false
-    id 'com.android.library' version '8.5.0' apply false
-    id 'org.jetbrains.kotlin.android' version '2.0.0' apply false
-    id 'org.jetbrains.kotlin.jvm' version '2.0.0' apply false
-    id 'org.jetbrains.kotlin.plugin.serialization' version '2.0.0' apply false
-    
-    // Hilt
-    id 'com.google.dagger.hilt.android' version '2.51.1' apply false
-    
-    // Kotlin Kapt
-    id 'org.jetbrains.kotlin.kapt' version '2.0.0' apply false
-    
-    // !!! CRITICAL FIX: Add the Kotlin Symbol Processing (KSP) plugin declaration
-    // KSP version 2.0.0-1.0.22 is compatible with Kotlin 2.0.0
-    id 'com.google.devtools.ksp' version '2.0.0-1.0.22' apply false
-
-
-    // Android Gradle Plugin (AGP)
+    // Android Gradle Plugin (AGP) for Application
     alias(libs.plugins.android.application) apply false
+    
+    // Android Gradle Plugin (AGP) for Libraries
     alias(libs.plugins.android.library) apply false
     
-    // Kotlin/JVM and Android Kotlin
+    // Kotlin Android (and JVM, implicitly handled by 2.0.0+ AGP)
     alias(libs.plugins.kotlin.android) apply false
+    
+    // Kotlin Serialization
     alias(libs.plugins.kotlin.serialization) apply false
     
-    // Kotlin Symbol Processing (KSP)
+    // Kotlin Symbol Processing (KSP) - Used for annotation processors like Room, Moshi, Hilt
     alias(libs.plugins.ksp) apply false
 
     // Dagger Hilt
     alias(libs.plugins.di.hilt) apply false
 
-    // Jetpack Compose Compiler (The missing plugin)
-    // NOTE: This uses the 'org.jetbrains.kotlin.plugin.compose' ID defined in the catalog.
+    // Jetpack Compose Compiler
     alias(libs.plugins.compose.compiler) apply false 
 }
+
+// NOTE: No further configuration (like allprojects, repositories, or the problematic 'android {}' block) 
+// is needed or allowed in the root build.gradle file.
