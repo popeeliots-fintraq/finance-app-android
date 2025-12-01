@@ -2,8 +2,8 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'com.google.dagger.hilt.android'
-    id 'com.google.devtools.ksp' // Kotlin Symbol Processing for Room/Moshi/Hilt
-    id 'org.jetbrains.kotlin.plugin.serialization' // For Kotlinx Serialization
+    id 'com.google.devtools.ksp'
+    id 'org.jetbrains.kotlin.plugin.serialization'
 }
 
 android {
@@ -18,6 +18,7 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
         vectorDrawables {
             useSupportLibrary true
         }
@@ -29,20 +30,24 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
     kotlinOptions {
         jvmTarget = '1.8'
     }
+
     buildFeatures {
         compose true
     }
+
     composeOptions {
-        // This line is often redundant when using the plugin, but keeping it for safety
-        kotlinCompilerExtensionVersion = "2.0.0" 
+        kotlinCompilerExtensionVersion = "2.0.0"
     }
+
     packaging {
         resources {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
@@ -51,39 +56,48 @@ android {
 }
 
 dependencies {
-    // Standard Android & Kotlin
+
+    // --- Core Android ---
     implementation(libs.androidx.core.ktx)
     implementation(libs.appcompat)
     implementation(libs.material)
 
-    // Data Persistence (Room and Bundles)
-    implementation(libs.bundles.database) 
-    ksp(libs.androidx.room.compiler) 
+    // --- ROOM + KSP (NO KAPT) ---
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
 
-    // SQLite SQLCipher for encryption (If used)
-    implementation(libs.sqlite.sqlcipher) 
+    // --- SQLCipher (Encrypted DB) ---
+    implementation(libs.sqlite.sqlcipher)
     implementation(libs.androidx.sqlite.ktx)
 
-    // Networking & Serialization (Bundles)
-    implementation(libs.bundles.networking) 
-    ksp(libs.moshi.kotlin.codegen) 
+    // --- Networking / Serialization ---
+    implementation(libs.okhttp)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.moshi)
+    implementation(libs.moshi.kotlin)
+    ksp(libs.moshi.kotlin.codegen)
     implementation(libs.kotlinx.serialization.json)
 
-    // Kotlin Coroutines (Bundles)
-    implementation(libs.bundles.kotlin.coroutines)
+    // --- Coroutines ---
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
 
-    // Android Lifecycle (Bundles)
-    implementation(libs.bundles.androidx.lifecycle)
+    // --- Lifecycle ---
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.livedata.ktx)
 
-    // Work Manager (Bundles)
-    implementation(libs.bundles.work.manager) 
-    ksp(libs.androidx.hilt.compiler) 
+    // --- Work Manager ---
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.hilt.work)
+    ksp(libs.androidx.hilt.compiler)
 
-    // Hilt Dependency Injection (Bundles)
-    implementation(libs.bundles.di.hilt) 
-    ksp(libs.hilt.compiler) 
+    // --- Hilt ---
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
 
-    // Testing Dependencies
+    // --- Testing ---
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
     testImplementation(libs.robolectric)
@@ -94,7 +108,6 @@ dependencies {
     androidTestImplementation(libs.mockk)
 }
 
-// Hilt Configuration
 hilt {
     enableAggregatingTask = true
 }
