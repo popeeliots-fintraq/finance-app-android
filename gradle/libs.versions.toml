@@ -1,102 +1,84 @@
 [versions]
-agp = "8.5.0"
-kotlin = "2.0.0"
-ksp = "2.0.0-1.0.22"
-composeCompiler = "2.0.0" # Added for Kotlin 2.0+ support
-coreKtx = "1.13.1"
-junit = "4.13.2"
-appcompat = "1.6.1"
-material = "1.11.0"
-coroutines = "1.8.1"
-lifecycle = "2.7.0"
-androidxTestExt = "1.1.5"
-espressoCore = "3.5.1"
-mockkVersion = "1.13.10"
-robolectricVersion = "4.12.2"
+agpVersion = "8.5.2"
+kotlinVersion = "1.9.24"
+coreKtxVersion = "1.13.1"
+lifecycleKtxVersion = "2.8.4"
+activityKtxVersion = "1.9.1"
+appcompatVersion = "1.7.0"
+materialVersion = "1.12.0"
+constraintlayoutVersion = "2.1.4"
 roomVersion = "2.6.1"
-retrofitVersion = "2.9.0"
+coroutinesVersion = "1.7.3"
+kspVersion = "1.9.24-1.0.20"
+hiltVersion = "2.49"
+serializationVersion = "1.6.3"
+retrofitVersion = "2.11.0"
 moshiVersion = "1.15.1"
 okHttpVersion = "4.12.0"
-serializationJsonVersion = "1.6.0"
-retrofitSerializationConverterVersion = "1.0.0"
-workVersion = "2.9.0"
-hiltAndroidVersion = "2.51.1"
-hiltExtVersion = "1.2.0"
+junitVersion = "4.13.2"
+androidxJunitVersion = "1.2.1"
+espressoVersion = "3.6.1"
+securityCryptoVersion = "1.1.0-alpha06"
+sqlcipherVersion = "4.5.5"
 
 [libraries]
+core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtxVersion" }
+lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleKtxVersion" }
+activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activityKtxVersion" }
+appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompatVersion" }
+material = { group = "com.google.android.material", name = "material", version.ref = "materialVersion" }
+constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayoutVersion" }
 
-androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "roomVersion" }
+room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomVersion" }
+room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomVersion" }
 
-sqlite-sqlcipher = { group = "net.zetetic", name = "android-database-sqlcipher", version = "4.4.0" }
-androidx-sqlite-ktx = { group = "androidx.sqlite", name = "sqlite-ktx", version.ref = "roomVersion" }
-androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "roomVersion" }
-androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomVersion" }
-androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomVersion" }
+coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutinesVersion" }
+coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutinesVersion" }
 
+retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofitVersion" }
+converter-moshi = { module = "com.squareup.retrofit2:converter-moshi", version.ref = "retrofitVersion" }
+moshi-kotlin = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshiVersion" }
+retrofit-serialization-converter = { module = "com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter", version.ref = "serializationVersion" }
 
-kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
-kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serializationJsonVersion" }
-
-androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
-androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
-
-
-retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofitVersion" }
-converter-moshi = { group = "com.squareup.retrofit2", name = "converter-moshi", version.ref = "retrofitVersion" }
-retrofit-serialization-converter = { group = "com.jakewharton.retrofit", name = "retrofit2-kotlinx-serialization-converter", version.ref = "retrofitSerializationConverterVersion" }
+# 🔥 FIXED — ADDED OKHTTP
+okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okHttpVersion" }
 logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okHttpVersion" }
-moshi-kotlin = { group = "com.squareup.moshi", name = "moshi-kotlin", version.ref = "moshiVersion" }
-moshi-kotlin-codegen = { group = "com.squareup.moshi", name = "moshi-kotlin-codegen", version.ref = "moshiVersion" }
 
+security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCryptoVersion" }
+sqlcipher = { module = "net.zetetic:sqlcipher-android", version.ref = "sqlcipherVersion" }
 
-androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workVersion" }
-hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltExtVersion" }
-androidx-hilt-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hiltExtVersion" }
+hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltVersion" }
+hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hiltVersion" }
 
+serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serializationVersion" }
 
-hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hiltAndroidVersion" }
-hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hiltAndroidVersion" }
-
-
-junit = { group = "junit", name = "junit", version.ref = "junit" }
-androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxTestExt" }
-androidx-test-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
-kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
-mockk = { group = "io.mockk", name = "mockk", version.ref = "mockkVersion" }
-robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectricVersion" }
+junit = { group = "junit", name = "junit", version.ref = "junitVersion" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxJunitVersion" }
+espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoVersion" }
 
 [bundles]
-database = [
-"androidx-room-runtime",
-"androidx-room-ktx"
+room = [
+    "room-runtime",
+    "room-ktx"
 ]
-kotlin-coroutines = [
-"kotlinx-coroutines-core",
-"kotlinx-coroutines-android"
+
+coroutines = [
+    "coroutines-core",
+    "coroutines-android"
 ]
-androidx-lifecycle = [
-"androidx-lifecycle-runtime-ktx",
-"androidx-lifecycle-viewmodel-ktx"
-]
+
+# 🔥 FIXED BUNDLE — includes okhttp
 networking = [
-"retrofit",
-"converter-moshi",
-"retrofit-serialization-converter",
-"logging-interceptor",
-"moshi-kotlin"
-]
-di-hilt = [
-"hilt-android"
-]
-work-manager = [
-"androidx-work-runtime-ktx",
-"hilt-work",
-"androidx-hilt-compiler"
+    "okhttp",
+    "logging-interceptor",
+    "retrofit",
+    "converter-moshi",
+    "retrofit-serialization-converter",
+    "moshi-kotlin"
 ]
 
-[plugins]
+hilt = [
+    "hilt-android"
+]
 
-compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "composeCompiler" }
