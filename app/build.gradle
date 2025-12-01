@@ -18,16 +18,15 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-
-        vectorDrawables {
-            useSupportLibrary true
-        }
+        vectorDrawables { useSupportLibrary true }
     }
 
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile(
+                'proguard-android-optimize.txt'
+            ), 'proguard-rules.pro'
         }
     }
 
@@ -45,53 +44,45 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "2.0.0"
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
 
     packaging {
-        resources {
-            excludes += '/META-INF/{AL2.0,LGPL2.1}'
-        }
+        resources.excludes += '/META-INF/{AL2.0,LGPL2.1}'
     }
 }
 
 dependencies {
 
     // --- Core Android ---
-    implementation(libs.androidx.core.ktx)
+    implementation(libs.core.ktx)
     implementation(libs.appcompat)
     implementation(libs.material)
 
-    // --- ROOM + KSP (NO KAPT) ---
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
-    ksp(libs.androidx.room.compiler)
+    // --- ROOM (KSP) ---
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
 
     // --- SQLCipher (Encrypted DB) ---
-    implementation(libs.sqlite.sqlcipher)
-    implementation(libs.androidx.sqlite.ktx)
+    implementation(libs.sqlcipher)
 
-    // --- Networking / Serialization ---
+    // --- Networking + JSON ---
     implementation(libs.okhttp)
+    implementation(libs.logging.interceptor)
     implementation(libs.retrofit)
-    implementation(libs.retrofit.moshi)
+    implementation(libs.converter.moshi)
+    implementation(libs.retrofit.serialization.converter)
     implementation(libs.moshi.kotlin)
-    ksp(libs.moshi.kotlin.codegen)
-    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.serialization.json)
 
     // --- Coroutines ---
-    implementation(libs.kotlinx.coroutines.core)
-    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.coroutines.core)
+    implementation(libs.coroutines.android)
 
     // --- Lifecycle ---
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.lifecycle.viewmodel.ktx)
-    implementation(libs.androidx.lifecycle.livedata.ktx)
-
-    // --- Work Manager ---
-    implementation(libs.androidx.work.runtime.ktx)
-    implementation(libs.androidx.hilt.work)
-    ksp(libs.androidx.hilt.compiler)
+    implementation(libs.lifecycle.runtime.ktx)
+    implementation(libs.activity.ktx)
 
     // --- Hilt ---
     implementation(libs.hilt.android)
@@ -99,13 +90,8 @@ dependencies {
 
     // --- Testing ---
     testImplementation(libs.junit)
-    testImplementation(libs.mockk)
-    testImplementation(libs.robolectric)
-    testImplementation(libs.kotlinx.coroutines.test)
-
-    androidTestImplementation(libs.androidx.test.ext.junit)
-    androidTestImplementation(libs.androidx.test.espresso.core)
-    androidTestImplementation(libs.mockk)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.espresso.core)
 }
 
 hilt {
