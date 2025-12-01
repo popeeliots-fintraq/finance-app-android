@@ -2,7 +2,6 @@ package com.example.financeapp.di
 
 import android.content.Context
 import androidx.room.Room
-import com.example.financeapp.BuildConfig
 import com.example.financeapp.data.local.AppDatabase
 import com.example.financeapp.data.dao.*
 import dagger.Module
@@ -18,9 +17,12 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
 
+    // Instead of BuildConfig.DB_PASSPHRASE (which does NOT exist)
+    private const val DATABASE_PASSPHRASE = "fintraq_secure_key_123"
+
     @Provides
     @Singleton
-    fun provideDatabasePassphrase(): String = BuildConfig.DB_PASSPHRASE
+    fun provideDatabasePassphrase(): String = DATABASE_PASSPHRASE
 
     @Provides
     @Singleton
