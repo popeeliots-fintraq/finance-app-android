@@ -1,3 +1,14 @@
+package com.fintraq.app.di
+
+import com.fintraq.app.data.api.ApiService
+import com.fintraq.app.data.dao.SmsDao
+import com.fintraq.app.data.repository.FinanceRepository
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
+
 @Module
 @InstallIn(SingletonComponent::class)
 object RepositoryModule {
@@ -11,7 +22,6 @@ object RepositoryModule {
         return FinanceRepository(
             apiService = apiService,
             smsDao = smsDao
-            // remove transactionDao, categoryDao, budgetDao until they exist
         )
     }
 }
