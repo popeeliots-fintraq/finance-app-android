@@ -1,4 +1,4 @@
-package com.fintraq.app.di
+package com.example.financeapp.di
 
 import com.fintraq.app.data.api.ApiService
 import com.fintraq.app.data.dao.SmsDao
