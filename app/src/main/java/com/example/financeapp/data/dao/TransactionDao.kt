@@ -1,4 +1,4 @@
-package com.example.financeapp.data.local
+package com.example.financeapp.data.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
