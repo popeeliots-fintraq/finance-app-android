@@ -7,7 +7,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.financeapp.api.ApiService
 import com.example.financeapp.data.dao.RawTransactionDao
-import com.example.financeapp.data.local.entity.RawTransactionEntity
+import com.example.financeapp.data.model.RawTransactionEntity
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -42,7 +42,9 @@ class RawSmsIngestionWorker @AssistedInject constructor(
                 smsTimestamp = timestamp,
                 uniqueSmsId = java.util.UUID.randomUUID().toString()
             )
+
             val rowId = rawTransactionDao.insertRawTransaction(entity)
+
             if (rowId > 0) {
                 Log.i("RawSmsIngestionWorker", "Raw SMS saved. Row ID: $rowId")
                 Result.success()
@@ -50,6 +52,7 @@ class RawSmsIngestionWorker @AssistedInject constructor(
                 Log.e("RawSmsIngestionWorker", "Failed to insert raw SMS into DB.")
                 Result.retry()
             }
+
         } catch (e: Exception) {
             Log.e("RawSmsIngestionWorker", "DB error: ${e.message}", e)
             Result.retry()
