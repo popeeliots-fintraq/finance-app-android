@@ -1,6 +1,6 @@
 package com.example.financeapp.di
 
-import com.example.financeapp.data.api.ApiService
+import com.example.financeapp.api.ApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
