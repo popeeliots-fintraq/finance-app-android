@@ -14,10 +14,6 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
-/**
- * Hilt module providing singleton instances for network communication.
- * Includes Retrofit, OkHttpClient, Moshi, and ApiService.
- */
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
@@ -34,7 +30,6 @@ object NetworkModule {
     @Singleton
     fun provideOkHttpClient(): OkHttpClient {
         val loggingInterceptor = HttpLoggingInterceptor().apply {
-            // Log full body in debug, none in release
             level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY 
                     else HttpLoggingInterceptor.Level.NONE
         }
@@ -51,7 +46,7 @@ object NetworkModule {
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient, moshi: Moshi): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("https://fintraq.backend.example.com/") // Replace with actual backend URL
+            .baseUrl("https://fintraq.backend.example.com/") // Replace with your actual backend URL
             .client(okHttpClient)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
