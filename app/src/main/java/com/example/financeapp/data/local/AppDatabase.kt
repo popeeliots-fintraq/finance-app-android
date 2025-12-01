@@ -16,12 +16,13 @@ import com.example.financeapp.data.model.SmsEntity
  */
 @Database(
     entities = [
-        LeakBucket::class,
-        SalaryBucket::class,
+        LeakBucketEntity::class,
+        SalaryBucketEntity::class,
         TransactionEntity::class,
-        SmsEntity::class
+        SmsEntity::class,
+        RawTransactionEntity::class
     ],
-    version = 3,
+    version = 1,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
