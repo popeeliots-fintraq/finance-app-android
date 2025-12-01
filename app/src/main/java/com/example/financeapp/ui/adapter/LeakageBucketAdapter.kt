@@ -6,35 +6,30 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.financeapp.databinding.ItemLeakBucketBinding
-import com.example.financeapp.ui.viewmodel.LeakageBucket
+import com.example.financeapp.ui.viewmodel.LeakBucketUiModel
 import java.text.NumberFormat
 import java.util.Locale
 
-/**
- * RecyclerView Adapter for displaying Leakage Buckets using the ListAdapter pattern for efficiency.
- * Nested classes are defined without the 'inner' keyword to be static in the Java context,
- * which resolves Kapt/DataBinding compilation issues.
- */
 class LeakageBucketAdapter(
-    private val onClick: (LeakageBucket) -> Unit
-) : ListAdapter<LeakageBucket, LeakageBucketAdapter.LeakageBucketViewHolder>(LeakageBucketDiffCallback()) {
+    private val onClick: (LeakBucketUiModel) -> Unit
+) : ListAdapter<LeakBucketUiModel, LeakageBucketAdapter.LeakageBucketViewHolder>(
+    LeakageBucketDiffCallback()
+) {
 
-    // Removed 'inner' keyword. This class is now static in the Java context.
     class LeakageBucketViewHolder(
-        private val binding: ItemLeakBucketBinding 
+        private val binding: ItemLeakBucketBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(bucket: LeakageBucket, onClick: (LeakageBucket) -> Unit) {
-            // Set data to the views
+        fun bind(
+            bucket: LeakBucketUiModel,
+            onClick: (LeakBucketUiModel) -> Unit
+        ) {
             binding.tvBucketName.text = bucket.bucketName
-            binding.tvDescription.text = bucket.description
-            
-            // Format amounts using Indian Locale as context suggests
+            binding.tvInsight.text = bucket.insightSummary
+
             val formatter = NumberFormat.getCurrencyInstance(Locale("en", "IN"))
-            binding.tvCurrentAmount.text = formatter.format(bucket.currentAmount)
-            binding.tvTargetAmount.text = formatter.format(bucket.targetAmount)
-            
-            // Set click listener
+            binding.tvLeakAmount.text = formatter.format(bucket.leakageAmount)
+
             binding.root.setOnClickListener {
                 onClick(bucket)
             }
@@ -42,7 +37,6 @@ class LeakageBucketAdapter(
 
         companion object {
             fun from(parent: ViewGroup): LeakageBucketViewHolder {
-                // Use the generated Binding class to inflate the layout
                 val layoutInflater = LayoutInflater.from(parent.context)
                 val binding = ItemLeakBucketBinding.inflate(layoutInflater, parent, false)
                 return LeakageBucketViewHolder(binding)
@@ -50,24 +44,20 @@ class LeakageBucketAdapter(
         }
     }
 
-    // Override methods from ListAdapter
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LeakageBucketViewHolder {
         return LeakageBucketViewHolder.from(parent)
     }
 
     override fun onBindViewHolder(holder: LeakageBucketViewHolder, position: Int) {
-        val item = getItem(position)
-        // Pass the click lambda to the bind function since the ViewHolder is no longer 'inner'
-        holder.bind(item, onClick) 
+        holder.bind(getItem(position), onClick)
     }
 
-    // DiffUtil implementation - Also defined as a regular nested class (implicitly static)
-    private class LeakageBucketDiffCallback : DiffUtil.ItemCallback<LeakageBucket>() {
-        override fun areItemsTheSame(oldItem: LeakageBucket, newItem: LeakageBucket): Boolean {
+    private class LeakageBucketDiffCallback : DiffUtil.ItemCallback<LeakBucketUiModel>() {
+        override fun areItemsTheSame(oldItem: LeakBucketUiModel, newItem: LeakBucketUiModel): Boolean {
             return oldItem.bucketName == newItem.bucketName
         }
 
-        override fun areContentsTheSame(oldItem: LeakageBucket, newItem: LeakageBucket): Boolean {
+        override fun areContentsTheSame(oldItem: LeakBucketUiModel, newItem: LeakBucketUiModel): Boolean {
             return oldItem == newItem
         }
     }
