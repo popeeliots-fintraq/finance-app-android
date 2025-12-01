@@ -1,7 +1,3 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-// All plugin IDs and versions are now strictly referenced via the libs.versions.toml catalog.
-// This file only declares plugins available to modules using 'apply false'.
-
 plugins {
     // Android Gradle Plugin (AGP) for Application
     alias(libs.plugins.android.application) apply false
@@ -9,13 +5,13 @@ plugins {
     // Android Gradle Plugin (AGP) for Libraries
     alias(libs.plugins.android.library) apply false
     
-    // Kotlin Android (and JVM, implicitly handled by 2.0.0+ AGP)
+    // Kotlin Android 
     alias(libs.plugins.kotlin.android) apply false
     
     // Kotlin Serialization
     alias(libs.plugins.kotlin.serialization) apply false
     
-    // Kotlin Symbol Processing (KSP) - Used for annotation processors like Room, Moshi, Hilt
+    // Kotlin Symbol Processing (KSP)
     alias(libs.plugins.ksp) apply false
 
     // Dagger Hilt
@@ -24,6 +20,3 @@ plugins {
     // Jetpack Compose Compiler
     alias(libs.plugins.compose.compiler) apply false 
 }
-
-// NOTE: No further configuration (like allprojects, repositories, or the problematic 'android {}' block) 
-// is needed or allowed in the root build.gradle file.
