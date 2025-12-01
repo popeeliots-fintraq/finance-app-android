@@ -13,7 +13,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object ApiModule {
 
-    private const val BASE_URL = "https://yourapi.com/" // Replace with actual base URL
+    private const val BASE_URL = "https://yourapi.com/" // Replace with your real base URL
 
     @Provides
     @Singleton
