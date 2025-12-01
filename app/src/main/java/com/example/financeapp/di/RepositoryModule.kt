@@ -1,8 +1,8 @@
 package com.example.financeapp.di
 
-import com.fintraq.app.data.api.ApiService
-import com.fintraq.app.data.dao.SmsDao
-import com.fintraq.app.data.repository.FinanceRepository
+import com.example.financeapp.data.api.ApiService
+import com.example.financeapp.data.dao.SmsDao
+import com.example.financeapp.data.repository.FinanceRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,6 +19,9 @@ object RepositoryModule {
         apiService: ApiService,
         smsDao: SmsDao
     ): FinanceRepository {
-        return FinanceRepository(apiService, smsDao)
+        return FinanceRepository(
+            apiService = apiService,
+            smsDao = smsDao
+        )
     }
 }
