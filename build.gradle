@@ -1,22 +1,19 @@
 plugins {
-    // Android Gradle Plugin (AGP) for Application
-    alias(libs.plugins.android.application) apply false
+    // 1. Android Application Plugin (Required for the ':app' module)
+    id 'com.android.application' version '8.2.0' apply false
     
-    // Android Gradle Plugin (AGP) for Libraries
-    alias(libs.plugins.android.library) apply false
+    // 2. Android Library Plugin (If you have library modules like ':data' or ':domain')
+    id 'com.android.library' version '8.2.0' apply false
     
-    // Kotlin Android 
-    alias(libs.plugins.kotlin.android) apply false
+    // 3. Kotlin Android Plugin
+    id 'org.jetbrains.kotlin.android' version '1.9.22' apply false
     
-    // Kotlin Serialization
-    alias(libs.plugins.kotlin.serialization) apply false
+    // 4. Kotlin Serialization Plugin
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.9.22' apply false
     
-    // Kotlin Symbol Processing (KSP)
-    alias(libs.plugins.ksp) apply false
+    // 5. Hilt/Dagger Plugin
+    id 'com.google.dagger.hilt.android' version '2.48.1' apply false
 
-    // Dagger Hilt
-    alias(libs.plugins.di.hilt) apply false
-
-    // Jetpack Compose Compiler
-    alias(libs.plugins.compose.compiler) apply false 
+    // 6. Kotlin Symbol Processing (KSP) Plugin
+    id 'com.google.devtools.ksp' version '1.9.22-1.0.17' apply false
 }
