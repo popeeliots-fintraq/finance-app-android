@@ -4,10 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.example.financeapp.BuildConfig
 import com.example.financeapp.data.local.AppDatabase
-import com.example.financeapp.data.dao.SmsDao
-import com.example.financeapp.data.dao.TransactionDao
-import com.example.financeapp.data.dao.SalaryBucketDao
-import com.example.financeapp.data.dao.LeakBucketDao
+import com.example.financeapp.data.dao.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,6 +19,7 @@ import javax.inject.Singleton
 object DatabaseModule {
 
     @Provides
+    @Singleton
     fun provideDatabasePassphrase(): String =
         BuildConfig.DB_PASSPHRASE
 
@@ -52,4 +50,5 @@ object DatabaseModule {
     @Provides fun provideTransactionDao(db: AppDatabase): TransactionDao = db.transactionDao()
     @Provides fun provideSalaryBucketDao(db: AppDatabase): SalaryBucketDao = db.salaryBucketDao()
     @Provides fun provideLeakBucketDao(db: AppDatabase): LeakBucketDao = db.leakBucketDao()
+    @Provides fun provideRawTransactionDao(db: AppDatabase): RawTransactionDao = db.rawTransactionDao()
 }
