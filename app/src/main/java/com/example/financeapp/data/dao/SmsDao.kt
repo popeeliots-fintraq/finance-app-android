@@ -5,30 +5,34 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.example.financeapp.data.model.LocalSmsRecord
+import com.example.financeapp.data.model.SmsEntity // ⬅️ CRITICAL: Changed import to SmsEntity
 
 /**
- * Data Access Object for LocalSmsRecord management.
+ * Data Access Object for SmsEntity management.
  */
 @Dao
 interface SmsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(record: LocalSmsRecord): Long
+    // ⬅️ CRITICAL: Using SmsEntity here
+    suspend fun insert(record: SmsEntity): Long 
 
-    @Query("SELECT * FROM local_sms_records WHERE localId = :localId")
-    suspend fun getLocalSmsRecordById(localId: Long): LocalSmsRecord?
+    // ⬅️ CRITICAL: Using SmsEntity in queries
+    @Query("SELECT * FROM sms_entity WHERE localId = :localId")
+    suspend fun getLocalSmsRecordById(localId: Long): SmsEntity?
 
-    @Query("SELECT * FROM local_sms_records ORDER BY timestamp DESC")
-    fun getAllRecords(): kotlinx.coroutines.flow.Flow<List<LocalSmsRecord>>
+    @Query("SELECT * FROM sms_entity ORDER BY timestamp DESC")
+    fun getAllRecords(): kotlinx.coroutines.flow.Flow<List<SmsEntity>>
 
     // Method used by SmsProcessingWorker
     suspend fun updateIngestionStatus(localId: Long, processed: Boolean, backendId: String?) {
         updateRecordStatus(localId, processed, backendId)
     }
 
-    @Query("UPDATE local_sms_records SET processed = :processed, backendRefId = :backendId WHERE localId = :localId")
+    // This query is now pointing to the correct table name (default Room naming)
+    @Query("UPDATE sms_entity SET processed = :processed, backendRefId = :backendId WHERE localId = :localId")
     suspend fun updateRecordStatus(localId: Long, processed: Boolean, backendId: String?)
 
     @Update
-    suspend fun updateRecord(record: LocalSmsRecord)
+    // ⬅️ CRITICAL: Using SmsEntity here
+    suspend fun updateRecord(record: SmsEntity)
 }
