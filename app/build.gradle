@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace 'com.fintraq.app'
+    namespace 'com.example.financeapp'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.fintraq.app"
+        applicationId "com.example.financeapp"
         minSdk 24
         targetSdk 34
         versionCode 1
