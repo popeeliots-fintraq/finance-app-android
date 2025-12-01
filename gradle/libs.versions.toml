@@ -9,6 +9,8 @@ material = "1.11.0"
 coroutines = "1.8.1"
 lifecycle = "2.7.0"
 
+
+
 androidxTestExt = "1.1.5"
 espressoCore = "3.5.1"
 mockkVersion = "1.13.10"
@@ -23,6 +25,7 @@ moshiVersion = "1.15.1"
 okHttpVersion = "4.12.0"
 
 
+
 serializationJsonVersion = "1.6.0"
 retrofitSerializationConverterVersion = "1.0.0"
 
@@ -31,13 +34,11 @@ retrofitSerializationConverterVersion = "1.0.0"
 workVersion = "2.9.0"
 
 
+
 hiltAndroidVersion = "2.51.1"
 hiltExtVersion = "1.2.0" # For Hilt Extensions (WorkManager)
 
 [libraries]
-
-
-
 
 
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -45,10 +46,11 @@ appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "a
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 
 
-
 sqlite-sqlcipher = { group = "net.zetetic", name = "android-database-sqlcipher", version = "4.4.0" }
-androidx-sqlite-ktx = { group = "androidx.sqlite", name = "sqlite-ktx", version.ref = "roomVersion" }
 
+Using version.ref = "roomVersion" for consistency with Room
+
+androidx-sqlite-ktx = { group = "androidx.sqlite", name = "sqlite-ktx", version.ref = "roomVersion" }
 
 
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
@@ -68,11 +70,9 @@ mockk = { group = "io.mockk", name = "mockk", version.ref = "mockkVersion" }
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectricVersion" }
 
 
-
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "roomVersion" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomVersion" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomVersion" }
-
 
 
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofitVersion" }
@@ -90,9 +90,6 @@ androidx-hilt-compiler = { group = "androidx.hilt", name = "hilt-compiler", vers
 
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hiltAndroidVersion" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hiltAndroidVersion" }
-
-[bundles]
-
 
 
 database = [
