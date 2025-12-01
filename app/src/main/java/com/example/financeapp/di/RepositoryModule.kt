@@ -19,9 +19,6 @@ object RepositoryModule {
         apiService: ApiService,
         smsDao: SmsDao
     ): FinanceRepository {
-        return FinanceRepository(
-            apiService = apiService,
-            smsDao = smsDao
-        )
+        return FinanceRepository(apiService, smsDao)
     }
 }
