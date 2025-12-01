@@ -1,4 +1,4 @@
-package com.example.financeapp.ui.model
+package com.example.financeapp.ui.viewmodel
 
 // NOTE: LeakBucketUiModel is defined in LeakBucketUiModel.kt and should not be duplicated here.
 
