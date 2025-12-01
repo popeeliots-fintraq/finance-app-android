@@ -12,10 +12,11 @@ import com.example.financeapp.data.dao.SalaryBucketDao
 import com.example.financeapp.data.dao.TransactionDao
 import com.example.financeapp.data.dao.SmsDao
 
+// Ensure all these entity names match the usage in your DAO files
 import com.example.financeapp.data.model.LeakBucket
 import com.example.financeapp.data.model.SalaryBucket
 import com.example.financeapp.data.model.TransactionEntity
-import com.example.financeapp.data.model.SmsEntity
+import com.example.financeapp.data.model.SmsEntity // Using SmsEntity consistently
 
 /**
  * Central encrypted Room database for Fin-Traq.
@@ -25,9 +26,9 @@ import com.example.financeapp.data.model.SmsEntity
         LeakBucket::class,
         SalaryBucket::class,
         TransactionEntity::class,
-        SmsEntity::class    // ✅ CRITICAL: ADDED
+        SmsEntity::class
     ],
-    version = 3,  // bumped after schema correction
+    version = 3,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -35,8 +36,9 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun leakBucketDao(): LeakBucketDao
     abstract fun salaryBucketDao(): SalaryBucketDao
     abstract fun transactionDao(): TransactionDao
-    abstract fun smsDao(): SmsDao   // ✅ CRITICAL: ADDED
+    abstract fun smsDao(): SmsDao
 
+    // The companion object is not strictly used by Hilt but is kept for utility
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null
@@ -47,6 +49,7 @@ abstract class AppDatabase : RoomDatabase() {
         ): AppDatabase {
             return INSTANCE ?: synchronized(this) {
 
+                // Load SQLCipher native libraries
                 SQLiteDatabase.loadLibs(context)
 
                 val factory = SupportFactory(
