@@ -1,4 +1,4 @@
-    plugins {
+plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-parcelize'
@@ -52,8 +52,6 @@ android {
     }
 }
 
-// REMOVED redundant def room_version and def hilt_version
-
 ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
     arg("ksp.incremental", "false")
@@ -79,8 +77,8 @@ dependencies {
     implementation libs.androidx.room.ktx
     ksp libs.androidx.room.compiler
 
-    // SQLCipher + SQLite (Using catalog for SQLite, SQLCipher is a non-standard entry)
-    implementation libs.sqlcipher
+    // SQLCipher + SQLite (CRITICAL FIX: Using the new unambiguous accessor)
+    implementation libs.sqlite.sqlcipher
     implementation libs.androidx.sqlite.ktx
 
     // Networking (Retrofit + Kotlin Serialization - Now using the catalog)
