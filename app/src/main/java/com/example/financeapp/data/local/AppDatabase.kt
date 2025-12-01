@@ -1,4 +1,4 @@
-package com.fintraq.app.data.local
+package com.example.financeapp.data.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
