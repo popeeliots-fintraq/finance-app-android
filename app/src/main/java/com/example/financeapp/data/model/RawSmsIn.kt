@@ -1,26 +1,26 @@
 package com.example.financeapp.data.model
 
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerialName 
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
-/**
- * Data Transfer Object (DTO) for sending raw SMS content to the backend.
- * This DTO is aligned with the backend's RawTransaction Pydantic schema and uses Kotlinx Serialization.
- */
-@Serializable // Mandatory for Kotlinx Serialization
+// Note: Removed the old Kotlin Serialization import: 
+// import kotlinx.serialization.Serializable
+// import kotlinx.serialization.SerialName
+
+@JsonClass(generateAdapter = true)
 data class RawSmsIn(
-    // Auth is handled via Header, but include user_id in the body for audit/service layer
-    @SerialName("user_id")
-    val userId: Int,
-    
-    @SerialName("raw_text")
-    val rawText: String, 
+    @Json(name = "sms_text")
+    val smsText: String,
 
-    @SerialName("source_type")
-    val sourceType: String, // e.g., "ANDROID_SMS_LISTENER"
+    @Json(name = "sender_id")
+    val senderId: String,
 
-    // Use a Long to capture the local timestamp before sending
-    @SerialName("local_timestamp")
-    val localTimestamp: Long
+    @Json(name = "timestamp")
+    val timestamp: String, // Use a proper date/time type if possible, e.g., Instant
+
+    @Json(name = "user_id")
+    val userId: String
 )
-// Removed the duplicate definition of RawSmsOut
+// If you need it to be Serializable for Parceling/passing between components, 
+// you would implement the standard Java/Kotlin Serializable interface:
+// : java.io.Serializable
