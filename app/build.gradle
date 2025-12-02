@@ -68,6 +68,10 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
 
+    // --- WORK MANAGER (FIX for HiltWorker error) ---
+    implementation 'androidx.work:work-runtime-ktx:2.9.0' // Core WorkManager dependency
+    // Note: Hilt-Work dependency is already present in HILT section
+
     // --- SECURE SQLCIPHER (Critical) ---
     implementation("net.zetetic:android-database-sqlcipher:4.5.4")
     implementation("androidx.sqlite:sqlite-ktx:2.4.0")
@@ -75,7 +79,7 @@ dependencies {
     // HILT (Dependency Injection)
     implementation 'com.google.dagger:hilt-android:2.51.1'
     ksp 'com.google.dagger:hilt-compiler:2.51.1'
-    implementation 'androidx.hilt:hilt-work:1.2.0'
+    implementation 'androidx.hilt:hilt-work:1.2.0' // Required for @HiltWorker support
     ksp 'androidx.hilt:hilt-compiler:1.2.0'
 
     // ROOM (Database)
@@ -91,10 +95,6 @@ dependencies {
     // KOTLIN SERIALIZATION (Fixes serialization/Json errors)
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3'
     implementation 'com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0'
-    // Note: Removed Moshi dependencies as you are migrating to Kotlin Serialization:
-    // implementation "com.squareup.moshi:moshi:1.15.0"
-    // implementation "com.squareup.moshi:moshi-kotlin:1.15.0"
-    // ksp "com.squareup.moshi:moshi-kotlin-codegen:1.15.0"
 
     // NAVIGATION (Only runtime dependencies, plugin removed)
     implementation 'androidx.navigation:navigation-fragment-ktx:2.7.7'
