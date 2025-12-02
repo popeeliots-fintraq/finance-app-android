@@ -6,12 +6,13 @@ import com.example.financeapp.data.dao.RawTransactionDao
 import com.example.financeapp.data.dao.SalaryBucketDao
 import com.example.financeapp.data.dao.SmsDao
 import com.example.financeapp.data.model.LeakageOut
+import com.example.financeapp.data.model.LeakageBucketNetwork
 import javax.inject.Inject
+import kotlinx.coroutines.delay
 
 /**
  * The main repository handling all finance-related data operations,
  * including API calls and local database interactions.
- * This class combines all previously separate repository responsibilities.
  */
 class FinanceRepository @Inject constructor(
     private val apiService: ApiService,
@@ -20,27 +21,23 @@ class FinanceRepository @Inject constructor(
     private val salaryBucketDao: SalaryBucketDao, 
     private val leakBucketDao: LeakBucketDao
 ) {
-
-    // --- Core Functionality ---
-
-    /**
-     * Stubs the missing function required by LeakageViewModel.
-     * In a real application, this would fetch the processed leakage data,
-     * likely performing local DB lookups and categorization/calculation logic.
-     */
+    // FIX: Stubbed function required by LeakageViewModel
     suspend fun getLeakageView(): LeakageOut {
-        // For compilation, we return a mocked LeakageOut object.
+        // Simulate network latency
+        delay(500) 
+        
+        // Mocked LeakageOut data structure
         return LeakageOut(
-            totalReclaimableSalary = 1500.00,
-            ifLeakFixedNewSalary = 45000.00,
-            reportingPeriod = "Nov 1 - Nov 30",
+            totalReclaimableSalary = 1800.00,
+            ifLeakFixedNewSalary = 48000.00,
+            reportingPeriod = "1 Nov 2025 - 30 Nov 2025",
             leakageBuckets = listOf(
-                com.example.financeapp.data.model.LeakageBucketNetwork("Dining Out", 500.00),
-                com.example.financeapp.data.model.LeakageBucketNetwork("Subscriptions", 250.00),
-                com.example.financeapp.data.model.LeakageBucketNetwork("Impulse Shopping", 750.00)
+                LeakageBucketNetwork("DINE101", "Dining Out", 800.00, "High frequency, high value"),
+                LeakageBucketNetwork("SUB202", "Unused Subscriptions", 450.00, "Three unused streaming services"),
+                LeakageBucketNetwork("SHOP303", "Impulse Shopping", 550.00, "Late night e-commerce purchases")
             )
         )
     }
 
-    // Add other repository functions here (e.g., fetchSms, processRawTransactions, etc.)
+    // You would include other repository functions here...
 }
