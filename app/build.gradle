@@ -1,9 +1,9 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'kotlin-kapt' // Kept as requested
+    // id 'kotlin-kapt' // << REMOVED: This is the source of the stub generation conflict
     id 'com.google.dagger.hilt.android'
-    id 'com.google.devtools.ksp'
+    id 'com.google.devtools.ksp' // << KSP is now the sole code generation tool
 }
 
 android {
@@ -46,33 +46,31 @@ android {
 
 dependencies {
     // AndroidX
-    implementation "androidx.core:core-ktx:1.13.1" // Updated to modern stable
+    implementation "androidx.core:core-ktx:1.13.1"
     implementation "androidx.appcompat:appcompat:1.7.0"
     implementation "com.google.android.material:material:1.12.0"
-    implementation "androidx.constraintlayout:constraintlayout:2.1.4" // Stable 2.1.x
+    implementation "androidx.constraintlayout:constraintlayout:2.1.4"
 
-    // --- SECURE SQLCIPHER (Critical Fix) ---
-    // This dependency was missing and caused the AppDatabase error.
+    // --- SECURE SQLCIPHER (Critical) ---
     implementation("net.zetetic:android-database-sqlcipher:4.5.4")
     implementation("androidx.sqlite:sqlite-ktx:2.4.0")
-    
-    // Room
+
+    // Room (Using KSP)
     implementation ("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
-    ksp ("androidx.room:room-compiler:2.6.1") // Using KSP
+    // Note: If you previously used 'kapt("androidx.room:room-compiler:...")', it has been
+    // fully replaced by 'ksp'.
+    ksp ("androidx.room:room-compiler:2.6.1")
 
-    // Hilt
-    implementation "com.google.dagger:hilt-android:2.48.1" // Updated minor version for stability
+    // Hilt (Using KSP)
+    implementation "com.google.dagger:hilt-android:2.48.1"
     implementation "androidx.hilt:hilt-work:1.2.0"
-    
-    // Hilt Compilers (Using KSP for everything that can use it)
+    // Note: If you previously used 'kapt("com.google.dagger:hilt-compiler:...")', it has been
+    // fully replaced by 'ksp'.
     ksp "com.google.dagger:hilt-compiler:2.48.1"
     ksp "androidx.hilt:hilt-compiler:1.2.0"
 
-    // Kotlin Coroutines
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3"
-
-    // Retrofit + Moshi
+    // Retrofit + Moshi (Using KSP)
     implementation "com.squareup.retrofit2:retrofit:2.9.0"
     implementation "com.squareup.retrofit2:converter-moshi:2.9.0"
     implementation "com.squareup.okhttp3:okhttp:4.11.0"
@@ -89,10 +87,4 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:1.1.5"
     androidTestImplementation "androidx.test.espresso:espresso-core:3.5.1"
 }
-
-// --- KAPT FIX ---
-kapt {
-    // This prevents the 'incompatible types: Object cannot be converted to Annotation' error
-    // by handling stubs more carefully, allowing KAPT and KSP to coexist.
-    correctErrorTypes = true
-}
+// The 'kapt {}' configuration block is removed as the plugin is no longer applied.
