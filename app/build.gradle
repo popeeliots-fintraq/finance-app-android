@@ -3,8 +3,8 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     // 1. Keep KSP (Kotlin Symbol Processing) for Hilt, Room, etc.
     id 'com.google.devtools.ksp'
-    // 2. ADD the Kotlin Serialization plugin
-    id 'org.jetbrains.kotlin.plugin.serialization'
+    // 2. We no longer need the Kotlin Serialization plugin, as we are using Moshi
+    // id 'org.jetbrains.kotlin.plugin.serialization' 
     // 3. Keep Hilt plugin
     id 'com.google.dagger.hilt.android'
     // 4. Removed 'androidx.navigation.safeargs.kotlin' which caused the error
@@ -91,9 +91,12 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
 
-    // KOTLIN SERIALIZATION (Fixes serialization/Json errors)
-    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3'
-    implementation 'com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0'
+    // >>> MOSHI (JSON Serialization) FIX <<<
+    // This provides the classes (Moshi, Moshi.Builder) needed by ApiModule.kt
+    implementation 'com.squareup.moshi:moshi:1.15.1'
+    implementation 'com.squareup.moshi:moshi-kotlin:1.15.1'
+    ksp 'com.squareup.moshi:moshi-kotlin-codegen:1.15.1'
+    implementation 'com.squareup.retrofit2:converter-moshi:2.9.0' // Retrofit adapter for Moshi
 
     // NAVIGATION (Only runtime dependencies, plugin removed)
     implementation 'androidx.navigation:navigation-fragment-ktx:2.7.7'
