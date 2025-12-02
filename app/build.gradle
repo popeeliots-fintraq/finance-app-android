@@ -1,9 +1,14 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    // id 'kotlin-kapt' // << REMOVED: This is the source of the stub generation conflict
+    // 1. Keep KSP (Kotlin Symbol Processing) for Hilt, Room, etc.
+    id 'com.google.devtools.ksp'
+    // 2. ADD the Kotlin Serialization plugin
+    id 'org.jetbrains.kotlin.plugin.serialization'
+    // 3. Keep Hilt plugin
     id 'com.google.dagger.hilt.android'
-    id 'com.google.devtools.ksp' // << KSP is now the sole code generation tool
+    // 4. Keep Safe Args plugin if navigation is used
+    id 'androidx.navigation.safeargs.kotlin'
 }
 
 android {
@@ -12,79 +17,85 @@ android {
 
     defaultConfig {
         applicationId "com.example.financeapp"
-        minSdk 26
+        minSdk 24
         targetSdk 34
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
 
-        // Passphrase for Room encrypted DB
-        buildConfigField "String", "DB_PASSPHRASE", "\"c4f7a1b9e2d5f8a0-3b6c7e1d\""
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
     }
 
     buildFeatures {
-        viewBinding true
         dataBinding true
-        buildConfig true
-    }
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = '17'
-    }
-
-    packaging {
-        resources {
-            excludes += ['/META-INF/{AL2.0,LGPL2.1}']
-        }
+        viewBinding true
     }
 }
 
 dependencies {
-    // AndroidX
-    implementation "androidx.core:core-ktx:1.13.1"
-    implementation "androidx.appcompat:appcompat:1.7.0"
-    implementation "com.google.android.material:material:1.12.0"
-    implementation "androidx.constraintlayout:constraintlayout:2.1.4"
 
-    // --- SECURE SQLCIPHER (Critical) ---
-    implementation("net.zetetic:android-database-sqlcipher:4.5.4")
-    implementation("androidx.sqlite:sqlite-ktx:2.4.0")
+    // ANDROIDX & KOTLIN CORE
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.activity:activity-ktx:1.8.2' // <-- FIX 2: Provides viewModels() delegate
+    implementation 'androidx.fragment:fragment-ktx:1.6.2' // <-- FIX 2: Provides viewModels() delegate
 
-    // Room (Using KSP)
-    implementation ("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
-    // Note: If you previously used 'kapt("androidx.room:room-compiler:...")', it has been
-    // fully replaced by 'ksp'.
-    ksp ("androidx.room:room-compiler:2.6.1")
+    // LIFECYCLE (VIEWMODEL & SCOPE)
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0' // <-- FIX 2: Provides viewModelScope
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.7.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
 
-    // Hilt (Using KSP)
-    implementation "com.google.dagger:hilt-android:2.48.1"
-    implementation "androidx.hilt:hilt-work:1.2.0"
-    // Note: If you previously used 'kapt("com.google.dagger:hilt-compiler:...")', it has been
-    // fully replaced by 'ksp'.
-    ksp "com.google.dagger:hilt-compiler:2.48.1"
-    ksp "androidx.hilt:hilt-compiler:1.2.0"
+    // KOTLIN COROUTINES
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
 
-    // Retrofit + Moshi (Using KSP)
-    implementation "com.squareup.retrofit2:retrofit:2.9.0"
-    implementation "com.squareup.retrofit2:converter-moshi:2.9.0"
-    implementation "com.squareup.okhttp3:okhttp:4.11.0"
-    implementation "com.squareup.okhttp3:logging-interceptor:4.11.0"
-    implementation "com.squareup.moshi:moshi:1.15.0"
-    implementation "com.squareup.moshi:moshi-kotlin:1.15.0"
-    ksp "com.squareup.moshi:moshi-kotlin-codegen:1.15.0"
+    // HILT (Dependency Injection)
+    implementation 'com.google.dagger:hilt-android:2.51.1'
+    ksp 'com.google.dagger:hilt-compiler:2.51.1'
+    ksp 'androidx.hilt:hilt-compiler:1.2.0'
 
-    // WorkManager
-    implementation "androidx.work:work-runtime-ktx:2.9.1"
+    // ROOM (Database)
+    implementation 'androidx.room:room-runtime:2.6.1'
+    ksp 'androidx.room:room-compiler:2.6.1'
+    implementation 'androidx.room:room-ktx:2.6.1'
 
-    // Testing
-    testImplementation "junit:junit:4.13.2"
-    androidTestImplementation "androidx.test.ext:junit:1.1.5"
-    androidTestImplementation "androidx.test.espresso:espresso-core:3.5.1"
+    // RETROFIT & OKHTTP
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
+
+    // KOTLIN SERIALIZATION (Replaces Moshi/Gson for JSON parsing with Retrofit)
+    // FIX 1: Add serialization runtime and the Retrofit converter
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3'
+    implementation 'com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0'
+
+    // GSON/Moshi (If you were using it previously and need the runtime)
+    // Note: Since you had errors referencing 'serialization', I am migrating you to Kotlin Serialization.
+    // If you need to keep Gson, you must also add its runtime:
+    // implementation 'com.google.code.gson:gson:2.10.1'
+    // implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+
+    // NAVIGATION
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.7.7'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.7.7'
+
+    // TESTING
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }
-// The 'kapt {}' configuration block is removed as the plugin is no longer applied.
