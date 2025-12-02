@@ -6,8 +6,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.financeapp.data.model.LeakageBucketNetwork
-import com.example.financeapp.databinding.ItemLeakBucketBinding // CHANGED: Now uses ItemLeakBucketBinding
-import java.util.Locale
+import com.example.financeapp.databinding.ItemLeakBucketBinding
+import com.example.financeapp.ui.viewmodel.LeakBucketUiModel
 
 /**
  * ListAdapter implementation for the Leakage Buckets list.
@@ -16,38 +16,35 @@ class LeakageBucketAdapter(
     private val clickListener: (LeakageBucketNetwork) -> Unit
 ) : ListAdapter<LeakageBucketNetwork, LeakageBucketAdapter.LeakageBucketViewHolder>(LeakageBucketDiffCallback()) {
 
+    // Mapper function to convert Network Model to UI Model
+    private fun LeakageBucketNetwork.toUiModel(): LeakBucketUiModel {
+        return LeakBucketUiModel(
+            bucketName = this.bucketName,
+            leakageAmount = this.totalLeakageAmount,
+            insightSummary = this.insight ?: "Tap to see more details."
+        )
+    }
+
     // View Holder using Data Binding
     class LeakageBucketViewHolder(
-        private val binding: ItemLeakBucketBinding // CHANGED: Using your generated binding class
+        private val binding: ItemLeakBucketBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(bucket: LeakageBucketNetwork, clickListener: (LeakageBucketNetwork) -> Unit) {
+        fun bind(uiModel: LeakBucketUiModel, clickListener: (LeakageBucketNetwork) -> Unit, networkModel: LeakageBucketNetwork) {
             // Set data directly to the Data Binding variable in the layout
-            // NOTE: Since your XML is expecting 'LeakBucketUiModel', we must manually set the TextViews
-            // until the UI Model is created, or change the XML's <data> type.
-            
-            // For now, setting data manually using the IDs from your XML
-            binding.tvBucketName.text = bucket.bucketName
-            
-            // Format the leakage amount as currency (matching your XML ID tvBucketAmount)
-            binding.tvBucketAmount.text = String.format(Locale.US, "$ %,.2f", bucket.totalLeakageAmount)
-            
-            // Use the insight field for the summary (matching your XML ID tvInsightSummary)
-            binding.tvInsightSummary.text = bucket.insight ?: "No specific insight available."
+            binding.bucket = uiModel
+            binding.executePendingBindings() // Crucial for Data Binding to run immediately
 
-            // Important: executePendingBindings is needed when setting data manually
-            binding.executePendingBindings() 
-
-            // Set the click listener
+            // Set the click listener, passing the original network model for handling
             binding.root.setOnClickListener {
-                clickListener(bucket)
+                clickListener(networkModel)
             }
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LeakageBucketViewHolder {
         // Inflate the layout using Data Binding's inflate method
-        val binding = ItemLeakBucketBinding.inflate( // CHANGED: Using ItemLeakBucketBinding.inflate
+        val binding = ItemLeakBucketBinding.inflate(
             LayoutInflater.from(parent.context),
             parent,
             false
@@ -56,7 +53,9 @@ class LeakageBucketAdapter(
     }
 
     override fun onBindViewHolder(holder: LeakageBucketViewHolder, position: Int) {
-        holder.bind(getItem(position), clickListener)
+        val networkModel = getItem(position)
+        val uiModel = networkModel.toUiModel()
+        holder.bind(uiModel, clickListener, networkModel)
     }
 
     private class LeakageBucketDiffCallback : DiffUtil.ItemCallback<LeakageBucketNetwork>() {
