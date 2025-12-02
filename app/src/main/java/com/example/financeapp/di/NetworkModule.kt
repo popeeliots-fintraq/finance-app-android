@@ -1,36 +1,49 @@
 package com.example.financeapp.di
 
 import com.example.financeapp.api.ApiService
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import com.example.financeapp.BuildConfig // Added to resolve BuildConfig reference
+import com.jakewharton.retrofit.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
+/**
+ * Dagger Hilt module to provide application-wide network dependencies.
+ * This has been refactored to use Kotlinx Serialization instead of Moshi.
+ */
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
+    /**
+     * Provides the Kotlinx Serialization Json instance.
+     * Configuration includes ignoring unknown keys for robustness.
+     */
     @Provides
     @Singleton
-    fun provideMoshi(): Moshi {
-        return Moshi.Builder()
-            .add(KotlinJsonAdapterFactory())
-            .build()
+    fun provideJson(): Json {
+        return Json {
+            // Allows parsing JSON fields that may be missing in the Kotlin data class
+            ignoreUnknownKeys = true
+            // Allows for flexible JSON structures (e.g., if numbers are quoted as strings)
+            isLenient = true
+        }
     }
 
     @Provides
     @Singleton
     fun provideOkHttpClient(): OkHttpClient {
         val loggingInterceptor = HttpLoggingInterceptor().apply {
-            level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY 
+            // Check against BuildConfig.DEBUG for dynamic logging level
+            level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY
                     else HttpLoggingInterceptor.Level.NONE
         }
 
@@ -44,11 +57,17 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient, moshi: Moshi): Retrofit {
+    // Parameter changed from Moshi to Json
+    fun provideRetrofit(okHttpClient: OkHttpClient, json: Json): Retrofit {
+        // Define the media type for the converter factory
+        val contentType = "application/json".toMediaType()
+
         return Retrofit.Builder()
-            .baseUrl("https://fintraq.backend.example.com/") // Replace with your actual backend URL
+            // Preserving your original backend URL
+            .baseUrl("https://fintraq.backend.example.com/") 
             .client(okHttpClient)
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            // Using Kotlinx Serialization converter factory
+            .addConverterFactory(json.asConverterFactory(contentType))
             .build()
     }
 
