@@ -16,12 +16,15 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
 
+    // <<< HERE IS YOUR PASSPHRASE >>>
     private const val DATABASE_PASSPHRASE = "fintraq_secure_key_123"
 
     @Provides
     @Singleton
     fun provideSupportFactory(): SupportFactory {
-        val bytes = net.sqlcipher.database.SQLiteDatabase.getBytes(DATABASE_PASSPHRASE.toCharArray())
+        val bytes = net.sqlcipher.database.SQLiteDatabase.getBytes(
+            DATABASE_PASSPHRASE.toCharArray()
+        )
         return SupportFactory(bytes)
     }
 
