@@ -1,43 +1,34 @@
 package com.example.financeapp.data.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
-import androidx.room.Update
-// Explicitly importing both entities from the same package for Kapt stability
-import com.example.financeapp.data.local.SalaryBucket 
-import com.example.financeapp.data.local.LeakBucket
+import androidx.room.*
+import com.example.financeapp.data.local.entity.LeakBucket
+import com.example.financeapp.data.local.entity.SalaryBucket
 
-// DAO for the source of funds
 @Dao
 interface SalaryBucketDao {
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(bucket: SalaryBucket)
 
     @Update
     suspend fun update(bucket: SalaryBucket)
 
-    // Using lowercase table name 'salary_buckets'
-    @Query("SELECT * FROM salary_buckets") 
+    @Query("SELECT * FROM salary_buckets")
     suspend fun getAllBuckets(): List<SalaryBucket>
 }
 
-// DAO for the destination of funds (the leaks)
 @Dao
 interface LeakBucketDao {
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(bucket: LeakBucket)
 
     @Update
     suspend fun update(bucket: LeakBucket)
 
-    // Using lowercase table name 'leak_buckets'
-    @Query("SELECT * FROM leak_buckets") 
+    @Query("SELECT * FROM leak_buckets")
     suspend fun getAllBuckets(): List<LeakBucket>
-    
-    // A key query for Fintraq's vision!
-    // Using lowercase table name 'leak_buckets'
-    @Query("SELECT * FROM leak_buckets WHERE bucketName = :name") 
+
+    @Query("SELECT * FROM leak_buckets WHERE bucketName = :name")
     suspend fun getBucketByName(name: String): LeakBucket?
 }
