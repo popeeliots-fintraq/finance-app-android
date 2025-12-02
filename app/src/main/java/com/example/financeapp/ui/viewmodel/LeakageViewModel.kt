@@ -2,7 +2,7 @@ package com.example.financeapp.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.financeapp.data.repository.LeakageRepository
+import com.example.financeapp.data.repository.FinanceRepository // FIX: Changed import from LeakageRepository
 import com.example.financeapp.data.model.LeakageOut
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,7 +12,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LeakageViewModel @Inject constructor(
-    private val leakageRepository: LeakageRepository
+    // FIX: Inject the FinanceRepository, which is now the available/provided repository
+    private val financeRepository: FinanceRepository 
 ) : ViewModel() {
 
     private val _leakageViewState = MutableStateFlow<LeakageViewState>(LeakageViewState.Loading)
@@ -26,8 +27,8 @@ class LeakageViewModel @Inject constructor(
         viewModelScope.launch {
             _leakageViewState.value = LeakageViewState.Loading
             try {
-                // Assuming a suspend function is defined in LeakageRepository
-                val leakageOut = leakageRepository.getLeakageView() 
+                // Use the financeRepository instance
+                val leakageOut = financeRepository.getLeakageView() 
                 _leakageViewState.value = LeakageViewState.Success(leakageOut)
             } catch (e: Exception) {
                 _leakageViewState.value = LeakageViewState.Error("Failed to load leakage data: ${e.message}")
@@ -35,18 +36,13 @@ class LeakageViewModel @Inject constructor(
         }
     }
 
-    // --- Data Access and Transformation (Addressing Compilation Errors) ---
+    // --- Data Access and Transformation ---
 
     // Function to calculate a summary based on the fetched data
     fun getInsightSummary(data: LeakageOut): String {
-        // FIX: Renamed properties from snake_case to camelCase 
         val reclaimable = data.totalReclaimableSalary
         val newSalary = data.ifLeakFixedNewSalary
         
-        // FIX: The original error was 'Unresolved reference: insightSummary' (Line 51/54)
-        // I've defined this method to provide the insight summary. 
-        // If this function previously had a different name or was a property, 
-        // you may need to adjust the UI code that calls it.
         return "You can potentially save $reclaimable, which would increase your effective salary to $newSalary."
     }
 
