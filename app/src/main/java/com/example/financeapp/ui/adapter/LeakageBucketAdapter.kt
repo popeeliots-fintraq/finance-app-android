@@ -1,64 +1,42 @@
 package com.example.financeapp.ui.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.financeapp.databinding.ItemLeakBucketBinding
-import com.example.financeapp.ui.viewmodel.LeakBucketUiModel
-import java.text.NumberFormat
-import java.util.Locale
+import com.example.financeapp.R // Assume R is imported for resource IDs
+import com.example.financeapp.data.model.LeakageBucketNetwork
 
-class LeakageBucketAdapter(
-    private val onClick: (LeakBucketUiModel) -> Unit
-) : ListAdapter<LeakBucketUiModel, LeakageBucketAdapter.LeakageBucketViewHolder>(
-    LeakageBucketDiffCallback()
-) {
+/**
+ * Adapter for displaying a list of LeakageBucketNetwork items in a RecyclerView.
+ */
+class LeakageBucketAdapter(private val buckets: List<LeakageBucketNetwork>) :
+    RecyclerView.Adapter<LeakageBucketAdapter.LeakageBucketViewHolder>() {
 
-    class LeakageBucketViewHolder(
-        private val binding: ItemLeakBucketBinding
-    ) : RecyclerView.ViewHolder(binding.root) {
+    class LeakageBucketViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        // FIX: Update references to match likely XML IDs (snake_case)
+        val tvInsight: TextView = view.findViewById(R.id.tv_insight)
+        val tvLeakAmount: TextView = view.findViewById(R.id.tv_leak_amount)
 
-        fun bind(
-            bucket: LeakBucketUiModel,
-            onClick: (LeakBucketUiModel) -> Unit
-        ) {
-            binding.tvBucketName.text = bucket.bucketName
-            binding.tvInsight.text = bucket.insightSummary
-
-            val formatter = NumberFormat.getCurrencyInstance(Locale("en", "IN"))
-            binding.tvLeakAmount.text = formatter.format(bucket.leakageAmount)
-
-            binding.root.setOnClickListener {
-                onClick(bucket)
-            }
-        }
-
-        companion object {
-            fun from(parent: ViewGroup): LeakageBucketViewHolder {
-                val layoutInflater = LayoutInflater.from(parent.context)
-                val binding = ItemLeakBucketBinding.inflate(layoutInflater, parent, false)
-                return LeakageBucketViewHolder(binding)
-            }
+        fun bind(bucket: LeakageBucketNetwork) {
+            // Display the bucket name/insight description
+            tvInsight.text = bucket.name 
+            
+            // Display the total leakage amount, formatted for currency
+            tvLeakAmount.text = String.format("%,.2f", bucket.totalLeakageAmount)
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LeakageBucketViewHolder {
-        return LeakageBucketViewHolder.from(parent)
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.list_item_leakage_bucket, parent, false)
+        return LeakageBucketViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: LeakageBucketViewHolder, position: Int) {
-        holder.bind(getItem(position), onClick)
+        holder.bind(buckets[position])
     }
 
-    private class LeakageBucketDiffCallback : DiffUtil.ItemCallback<LeakBucketUiModel>() {
-        override fun areItemsTheSame(oldItem: LeakBucketUiModel, newItem: LeakBucketUiModel): Boolean {
-            return oldItem.bucketName == newItem.bucketName
-        }
-
-        override fun areContentsTheSame(oldItem: LeakBucketUiModel, newItem: LeakBucketUiModel): Boolean {
-            return oldItem == newItem
-        }
-    }
+    override fun getItemCount() = buckets.size
 }
