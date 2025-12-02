@@ -6,27 +6,31 @@ import java.text.NumberFormat
 import java.util.Locale
 
 /**
- * Collection of custom Binding Adapters used across the application to handle data formatting.
+ * Utility class containing custom Binding Adapters for data formatting.
+ * Using a companion object ensures the functions are compiled as static methods,
+ * which is required by the Data Binding library.
  */
-object BindingAdapters {
+class BindingAdapters {
+    companion object {
+        /**
+         * Binding Adapter for formatting a Double value as US Dollar currency text.
+         * This function is automatically called by Data Binding when a Double is bound
+         * to the 'android:text' attribute of a TextView.
+         *
+         * Usage in XML: android:text="@{bucket.leakageAmount}"
+         */
+        @JvmStatic
+        @BindingAdapter("android:text")
+        fun bindTextToCurrency(textView: TextView, value: Double?) {
+            if (value == null) {
+                textView.text = ""
+                return
+            }
 
-    /**
-     * Binding Adapter for formatting a Double value as US Dollar currency text.
-     * This function is automatically called by Data Binding when a Double is bound
-     * to the 'android:text' attribute of a TextView.
-     *
-     * Usage in XML: android:text="@{bucket.leakageAmount}"
-     */
-    @JvmStatic
-    @BindingAdapter("android:text")
-    fun bindTextToCurrency(textView: TextView, value: Double?) {
-        if (value == null) {
-            textView.text = ""
-            return
+            // Use NumberFormat to correctly format the Double into a currency string
+            // Uses US locale for standard currency representation ($X.XX)
+            val currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US)
+            textView.text = currencyFormatter.format(value)
         }
-
-        // Use NumberFormat to correctly format the Double into a currency string
-        val currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US)
-        textView.text = currencyFormatter.format(value)
     }
 }
