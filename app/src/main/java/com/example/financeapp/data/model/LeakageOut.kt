@@ -1,7 +1,8 @@
 package com.example.financeapp.data.model
 
-import kotlinx.serialization.Serializable
-// Ensure LeakageBucketNetwork is imported/used, but not defined here.
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
+// Removed: import kotlinx.serialization.Serializable
 
 /**
  * Data Transfer Object (DTO) representing the full response from the V2 Leakage View API.
