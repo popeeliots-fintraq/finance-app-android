@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
     <data>
         <variable
             name="bucket"
@@ -9,6 +11,9 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
         android:orientation="vertical"
         android:padding="16dp">
 
@@ -18,21 +23,26 @@
             android:layout_height="wrap_content"
             android:text="@{bucket.bucketName}"
             android:textSize="16sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            tools:text="Subscriptions &amp; Services" /> <!-- Added tools:text -->
 
         <TextView
             android:id="@+id/tvBucketAmount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text='@{String.valueOf(bucket.leakageAmount)}'
-            android:textSize="14sp" />
+            android:text="@{bucket.leakageAmount}"
+            android:textSize="14sp"
+            android:textColor="@android:color/holo_red_dark"
+            tools:text="$125.40" /> <!-- Simplified binding and added tools:text -->
 
         <TextView
             android:id="@+id/tvInsightSummary"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
             android:text="@{bucket.insightSummary}"
             android:textSize="12sp"
-            android:textColor="#888888" />
+            android:textColor="#888888"
+            tools:text="You can save 10% by canceling unused streaming services." /> <!-- Added tools:text -->
     </LinearLayout>
 </layout>
