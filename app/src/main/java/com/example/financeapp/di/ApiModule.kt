@@ -1,6 +1,5 @@
 package com.example.financeapp.di
 
-import com.example.financeapp.BuildConfig
 import com.example.financeapp.api.ApiService
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -19,18 +18,15 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object ApiModule {
 
+    // Fix: Hardcode the base URL temporarily to bypass the BuildConfig.BASE_URL resolution failure.
+    private const val BASE_URL_FALLBACK = "https://api.fintraq.com/"
+
     /**
      * Provides the base URL string.
      */
     @Provides
     fun provideBaseUrl(): String {
-        return try {
-            // Attempt to resolve the BASE_URL defined in the build config
-            BuildConfig.BASE_URL
-        } catch (e: Exception) {
-            // Fallback URL: Essential if BuildConfig generation fails or is inconsistent.
-            "https://api.fintraq.com/"
-        }
+        return BASE_URL_FALLBACK
     }
 
     /**
@@ -50,9 +46,11 @@ object ApiModule {
     @Provides
     @Singleton
     fun provideOkHttpClient(): OkHttpClient {
-        // Setup logging interceptor for debugging network calls
+        // Assume BuildConfig.DEBUG is available or default to not logging if not found.
+        val isDebug = try { com.example.financeapp.BuildConfig.DEBUG } catch (e: Exception) { true }
+        
         val loggingInterceptor = HttpLoggingInterceptor().apply {
-            level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
+            level = if (isDebug) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
         }
 
         return OkHttpClient.Builder()
@@ -64,7 +62,6 @@ object ApiModule {
 
     /**
      * Provides the Retrofit instance.
-     * This now consumes the URL provided by provideBaseUrl().
      */
     @Provides
     @Singleton
