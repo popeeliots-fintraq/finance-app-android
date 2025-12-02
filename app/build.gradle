@@ -70,7 +70,6 @@ dependencies {
 
     // --- WORK MANAGER (FIX for HiltWorker error) ---
     implementation 'androidx.work:work-runtime-ktx:2.9.0' // Core WorkManager dependency
-    // Note: Hilt-Work dependency is already present in HILT section
 
     // --- SECURE SQLCIPHER (Critical) ---
     implementation("net.zetetic:android-database-sqlcipher:4.5.4")
