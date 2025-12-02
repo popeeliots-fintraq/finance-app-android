@@ -7,7 +7,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.financeapp.api.ApiService
 import com.example.financeapp.data.dao.RawTransactionDao
-import com.example.financeapp.data.model.RawTransactionEntity
+import com.example.financeapp.data.local.entity.RawTransactionEntity
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
