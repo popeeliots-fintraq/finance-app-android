@@ -1,7 +1,8 @@
 package com.example.financeapp.data.model
 
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerialName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
+// Removed: import kotlinx.serialization.Serializable
 
 /**
  * DTO for the synchronous response from the IngestionService.
