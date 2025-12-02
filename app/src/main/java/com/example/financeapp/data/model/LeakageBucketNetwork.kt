@@ -1,18 +1,22 @@
-// LeakageBucketNetwork.kt
-package com.example.financeapp.data.model 
+package com.example.financeapp.data.model
 
-import kotlinx.serialization.Serializable
-// NOTE: java.math.BigDecimal is no longer needed
-// NOTE: kotlinx.serialization.Contextual is no longer needed
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
+// Removed: import kotlinx.serialization.Serializable
 
-@Serializable
+@JsonClass(generateAdapter = true)
 data class LeakageBucketNetwork(
-    val category: String,
-    // CRITICAL FIX: Change BigDecimal to String
-    val actual_spend: String, 
-    // CRITICAL FIX: Change BigDecimal to String
-    val baseline_threshold: String, 
-    // CRITICAL FIX: Change BigDecimal to String
-    val leak_amount: String, 
-    val insight_card_text: String 
+    // Replaced @SerialName with @Json
+    @Json(name = "bucket_id")
+    val bucketId: Int,
+
+    @Json(name = "name")
+    val name: String,
+
+    @Json(name = "total_leakage_amount")
+    val totalLeakageAmount: Double,
+
+    @Json(name = "last_updated")
+    val lastUpdated: String // Consider changing to a proper date/time object
 )
+// Removed the old 'implements Serializable' if it was present
