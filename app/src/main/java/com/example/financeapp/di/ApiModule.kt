@@ -19,7 +19,21 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object ApiModule {
 
-    private const val BASE_URL = BuildConfig.BASE_URL // Assuming you define this in your build.gradle
+    /**
+     * Provides the base URL string.
+     * We wrap this in a function to avoid KSP issues with direct use of BuildConfig in const val.
+     * NOTE: Ensure you have 'BASE_URL' defined in your build.gradle's defaultConfig/buildTypes.
+     * Using a safe fallback value for compilation if it's missing.
+     */
+    @Provides
+    fun provideBaseUrl(): String {
+        return try {
+            BuildConfig.BASE_URL
+        } catch (e: Exception) {
+            // Placeholder/Fallback URL - replace with your actual development/production API URL
+            "https://api.fintraq.com/"
+        }
+    }
 
     /**
      * Provides a configured Moshi instance for JSON serialization/deserialization.
@@ -52,13 +66,14 @@ object ApiModule {
 
     /**
      * Provides the Retrofit instance.
+     * This now consumes the URL provided by provideBaseUrl().
      */
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient, moshi: Moshi): Retrofit {
+    fun provideRetrofit(okHttpClient: OkHttpClient, moshi: Moshi, baseUrl: String): Retrofit {
         return Retrofit.Builder()
             .client(okHttpClient)
-            .baseUrl(BASE_URL)
+            .baseUrl(baseUrl)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
     }
