@@ -21,16 +21,14 @@ object ApiModule {
 
     /**
      * Provides the base URL string.
-     * We wrap this in a function to avoid KSP issues with direct use of BuildConfig in const val.
-     * NOTE: Ensure you have 'BASE_URL' defined in your build.gradle's defaultConfig/buildTypes.
-     * Using a safe fallback value for compilation if it's missing.
      */
     @Provides
     fun provideBaseUrl(): String {
         return try {
+            // Attempt to resolve the BASE_URL defined in the build config
             BuildConfig.BASE_URL
         } catch (e: Exception) {
-            // Placeholder/Fallback URL - replace with your actual development/production API URL
+            // Fallback URL: Essential if BuildConfig generation fails or is inconsistent.
             "https://api.fintraq.com/"
         }
     }
