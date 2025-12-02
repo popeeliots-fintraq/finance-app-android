@@ -3,11 +3,9 @@ package com.example.financeapp.data.local
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.example.financeapp.data.dao.*
-import com.example.financeapp.data.model.*
+import com.example.financeapp.data.local.entity.*
 
-/**
- * Central encrypted Room database for Fin-Traq.
- */
+// Central encrypted Room database for Fin-Traq.
 @Database(
     entities = [
         LeakBucket::class,
