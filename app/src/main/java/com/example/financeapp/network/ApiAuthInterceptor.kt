@@ -1,6 +1,6 @@
 package com.example.financeapp.network
 
-import com.example.financeapp.auth.TokenStore
+import com.example.financeapp.auth.SecureTokenStore
 import okhttp3.Interceptor
 import okhttp3.Response
 import javax.inject.Inject
