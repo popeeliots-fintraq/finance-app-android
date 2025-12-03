@@ -23,7 +23,7 @@ object ApiModule {
     // Provide your backend base URL here (or override via BuildConfig / flavors)
     @Provides
     @Singleton
-    fun provideBaseUrl(): String = "https://your-cloud-run-url/"
+    fun provideBaseUrl(): String = "https://fintraq-backend-801862457352.us-central1.run.app"
 
     @Provides
     @Singleton
