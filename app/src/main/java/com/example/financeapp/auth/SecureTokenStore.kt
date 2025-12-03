@@ -23,14 +23,14 @@ class SecureTokenStore @Inject constructor(
                 .build()
 
             EncryptedSharedPreferences.create(
-                PREF_NAME, // File name first
+                context,
+                PREF_NAME,
                 masterKey,
-                context,   // Context comes after MasterKey
                 EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
                 EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
             )
         } catch (e: Exception) {
-            // Fallback to normal SharedPreferences
+            // Fallback
             context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         }
     }
