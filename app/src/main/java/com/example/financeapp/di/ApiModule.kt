@@ -1,7 +1,7 @@
 package com.example.financeapp.di
 
 import com.example.financeapp.api.ApiService
-import com.example.financeapp.auth.TokenStore
+import com.example.financeapp.network.ApiAuthInterceptor
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
@@ -10,7 +10,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
-import okhttp3.Request
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -21,19 +20,11 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object ApiModule {
 
-    // -------------------------------
-    // Base URL
-    // -------------------------------
+    // Provide your backend base URL here (or override via BuildConfig / flavors)
     @Provides
     @Singleton
-    fun provideBaseUrl(): String {
-        // TODO: Replace with your Cloud Run backend URL
-        return "https://your-cloud-run-url/"
-    }
+    fun provideBaseUrl(): String = "https://your-cloud-run-url/"
 
-    // -------------------------------
-    // Moshi JSON
-    // -------------------------------
     @Provides
     @Singleton
     fun provideMoshi(): Moshi =
@@ -41,70 +32,39 @@ object ApiModule {
             .add(KotlinJsonAdapterFactory())
             .build()
 
-    // -------------------------------
-    // Logging Interceptor
-    // -------------------------------
     @Provides
     @Singleton
     fun provideLoggingInterceptor(): HttpLoggingInterceptor {
-        val log = HttpLoggingInterceptor()
-        log.level = HttpLoggingInterceptor.Level.BODY
-        return log
+        val logging = HttpLoggingInterceptor()
+        // Log body only in debug builds; adjust with BuildConfig.DEBUG if available
+        logging.level =
+            if (isDebug()) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
+        return logging
     }
 
-    // -------------------------------
-    // Token Interceptor
-    // Injects token into every request
-    // -------------------------------
     @Provides
     @Singleton
-    fun provideTokenInterceptor(tokenStore: TokenStore): Interceptor {
-        return Interceptor { chain ->
+    fun provideAuthInterceptor(apiAuthInterceptor: ApiAuthInterceptor): Interceptor = apiAuthInterceptor
 
-            val token = tokenStore.getToken() // returns "Bearer abc" or ""
-
-            val original: Request = chain.request()
-            val newRequest = if (token.isNotBlank()) {
-                original.newBuilder()
-                    .header("Authorization", token)
-                    .build()
-            } else {
-                original
-            }
-
-            chain.proceed(newRequest)
-        }
-    }
-
-    // -------------------------------
-    // OkHttpClient with timeouts
-    // -------------------------------
     @Provides
     @Singleton
     fun provideOkHttpClient(
         logging: HttpLoggingInterceptor,
-        tokenInterceptor: Interceptor
+        authInterceptor: Interceptor
     ): OkHttpClient {
         return OkHttpClient.Builder()
             .connectTimeout(20, TimeUnit.SECONDS)
             .readTimeout(20, TimeUnit.SECONDS)
             .writeTimeout(20, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
-            .addInterceptor(tokenInterceptor)  // Add auth first
-            .addInterceptor(logging)           // Logging last
+            .addInterceptor(authInterceptor)   // auth first
+            .addInterceptor(logging)           // then logging
             .build()
     }
 
-    // -------------------------------
-    // Retrofit instance
-    // -------------------------------
     @Provides
     @Singleton
-    fun provideRetrofit(
-        baseUrl: String,
-        moshi: Moshi,
-        client: OkHttpClient
-    ): Retrofit {
+    fun provideRetrofit(baseUrl: String, moshi: Moshi, client: OkHttpClient): Retrofit {
         return Retrofit.Builder()
             .baseUrl(baseUrl)
             .client(client)
@@ -112,11 +72,19 @@ object ApiModule {
             .build()
     }
 
-    // -------------------------------
-    // ApiService
-    // -------------------------------
     @Provides
     @Singleton
     fun provideApiService(retrofit: Retrofit): ApiService =
         retrofit.create(ApiService::class.java)
+
+    // small helper: detect debug (fallback if BuildConfig not available)
+    private fun isDebug(): Boolean {
+        return try {
+            val clz = Class.forName("com.example.financeapp.BuildConfig")
+            val field = clz.getField("DEBUG")
+            field.getBoolean(null)
+        } catch (e: Exception) {
+            false
+        }
+    }
 }
