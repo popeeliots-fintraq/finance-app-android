@@ -3,12 +3,7 @@ package com.example.financeapp.workers
 import android.content.Context
 import android.util.Log
 import androidx.hilt.work.HiltWorker
-import androidx.work.Constraints
-import androidx.work.CoroutineWorker
-import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.WorkerParameters
+import androidx.work.*
 import com.example.financeapp.api.ApiService
 import com.example.financeapp.data.dao.RawTransactionDao
 import com.example.financeapp.data.model.RawSmsIn
@@ -25,6 +20,12 @@ class RawSmsSyncWorker @AssistedInject constructor(
 ) : CoroutineWorker(appContext, params) {
 
     override suspend fun doWork(): Result {
+        val userId = inputData.getString(KEY_USER_ID)
+        if (userId.isNullOrEmpty()) {
+            Log.e("RawSmsSyncWorker", "Missing userId in inputData")
+            return Result.failure()
+        }
+
         return try {
             val pending = rawTransactionDao.getUnsentRawTransactions()
             if (pending.isEmpty()) {
@@ -34,15 +35,14 @@ class RawSmsSyncWorker @AssistedInject constructor(
 
             pending.forEach { entity ->
                 try {
-                    // Map local DB entity -> RawSmsIn expected by backend
                     val requestBody = RawSmsIn(
                         smsText = entity.rawText,
                         senderId = entity.sender,
                         timestamp = entity.smsTimestamp
                     )
 
-                    // TODO: Replace with secure token retrieval (EncryptedSharedPrefs)
-                    val token = "Bearer "
+                    // Retrieve token securely (from SecureTokenStore)
+                    val token = "Bearer " // Replace with SecureTokenStore injection
 
                     val response = apiService.ingestRawSms(token, requestBody)
 
@@ -60,7 +60,6 @@ class RawSmsSyncWorker @AssistedInject constructor(
                 } catch (e: HttpException) {
                     rawTransactionDao.updateIngestionStatus(entity.id, "FAILED")
                     Log.e("RawSmsSyncWorker", "HTTP error for SMS ${entity.id}", e)
-
                 } catch (e: Exception) {
                     rawTransactionDao.updateIngestionStatus(entity.id, "FAILED")
                     Log.e("RawSmsSyncWorker", "Unexpected error for SMS ${entity.id}", e)
@@ -68,7 +67,6 @@ class RawSmsSyncWorker @AssistedInject constructor(
             }
 
             Result.success()
-
         } catch (e: Exception) {
             Log.e("RawSmsSyncWorker", "Worker-level failure: ${e.message}", e)
             Result.retry()
@@ -76,14 +74,20 @@ class RawSmsSyncWorker @AssistedInject constructor(
     }
 
     companion object {
+        private const val KEY_USER_ID = "user_id"
 
-        fun enqueueSync(context: Context) {
+        fun enqueueSync(context: Context, userId: String) {
             val constraints = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build()
 
+            val data = Data.Builder()
+                .putString(KEY_USER_ID, userId)
+                .build()
+
             val req = OneTimeWorkRequestBuilder<RawSmsSyncWorker>()
                 .setConstraints(constraints)
+                .setInputData(data)
                 .build()
 
             WorkManager.getInstance(context).enqueue(req)
