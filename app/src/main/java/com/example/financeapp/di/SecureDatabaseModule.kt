@@ -56,9 +56,9 @@ object SecureDatabaseModule {
                 .build()
 
             val prefs = EncryptedSharedPreferences.create(
-                context,
-                SECURE_PREF_NAME,
+                SECURE_PREF_NAME, // File name first
                 masterKey,
+                context,          // Context comes after MasterKey
                 EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
                 EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
             )
@@ -77,9 +77,9 @@ object SecureDatabaseModule {
                 .build()
 
             val prefs = EncryptedSharedPreferences.create(
-                context,
-                SECURE_PREF_NAME,
+                SECURE_PREF_NAME, // File name first
                 masterKey,
+                context,
                 EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
                 EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
             )
@@ -98,8 +98,7 @@ object SecureDatabaseModule {
         java.security.SecureRandom().nextBytes(pass)
 
         val ks = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
-        val privateEntry =
-            ks.getEntry(KEYSTORE_ALIAS, null) as KeyStore.PrivateKeyEntry
+        val privateEntry = ks.getEntry(KEYSTORE_ALIAS, null) as KeyStore.PrivateKeyEntry
         val publicKey = privateEntry.certificate.publicKey
 
         val cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-1AndMGF1Padding")
@@ -121,8 +120,7 @@ object SecureDatabaseModule {
         val wrapped = Base64.decode(wrappedB64, Base64.NO_WRAP)
 
         val ks = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
-        val privateEntry =
-            ks.getEntry(KEYSTORE_ALIAS, null) as KeyStore.PrivateKeyEntry
+        val privateEntry = ks.getEntry(KEYSTORE_ALIAS, null) as KeyStore.PrivateKeyEntry
         val privateKey = privateEntry.privateKey
 
         val cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-1AndMGF1Padding")
@@ -145,6 +143,7 @@ object SecureDatabaseModule {
     ): AppDatabase {
         return Room.databaseBuilder(context, AppDatabase::class.java, "fintraq_database")
             .openHelperFactory(supportFactory)
+            .fallbackToDestructiveMigration()
             .build()
     }
 }
