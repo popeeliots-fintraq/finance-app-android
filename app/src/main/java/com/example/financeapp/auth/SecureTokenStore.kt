@@ -7,10 +7,18 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
+// Interface to allow JVM-friendly testing
+interface ITokenStore {
+    fun saveToken(token: String)
+    fun getToken(): String
+    fun clearToken()
+}
+
 @Singleton
 class SecureTokenStore @Inject constructor(
     @ApplicationContext private val context: Context
-) {
+) : ITokenStore {
+
     companion object {
         private const val PREF_NAME = "fintraq_secure_token_prefs"
         private const val KEY_ACCESS_TOKEN = "access_token"
@@ -30,21 +38,23 @@ class SecureTokenStore @Inject constructor(
                 EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
             )
         } catch (e: Exception) {
-            // Fallback
+            // Fallback for rare failures
             context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         }
     }
 
-    fun saveToken(token: String) {
+    /** Saves raw token (e.g. "abcd1234") */
+    override fun saveToken(token: String) {
         prefs.edit().putString(KEY_ACCESS_TOKEN, token).apply()
     }
 
-    fun getToken(): String {
+    /** Returns Bearer token: "Bearer abcd1234" or "" if missing */
+    override fun getToken(): String {
         val raw = prefs.getString(KEY_ACCESS_TOKEN, null) ?: return ""
         return if (raw.startsWith("Bearer")) raw else "Bearer $raw"
     }
 
-    fun clearToken() {
+    override fun clearToken() {
         prefs.edit().remove(KEY_ACCESS_TOKEN).apply()
     }
 }
