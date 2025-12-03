@@ -23,24 +23,22 @@ class SecureTokenStore @Inject constructor(
                 .build()
 
             EncryptedSharedPreferences.create(
-                context,
-                PREF_NAME,
+                PREF_NAME, // File name first
                 masterKey,
+                context,   // Context comes after MasterKey
                 EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
                 EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
             )
         } catch (e: Exception) {
-            // Fallback to normal SharedPreferences (still encrypted by Base64 from caller)
+            // Fallback to normal SharedPreferences
             context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         }
     }
 
-    /** Saves raw token (only the token body, e.g. "abcd1234") */
     fun saveToken(token: String) {
         prefs.edit().putString(KEY_ACCESS_TOKEN, token).apply()
     }
 
-    /** Returns Bearer token: "Bearer abcd1234" or "" if missing */
     fun getToken(): String {
         val raw = prefs.getString(KEY_ACCESS_TOKEN, null) ?: return ""
         return if (raw.startsWith("Bearer")) raw else "Bearer $raw"
