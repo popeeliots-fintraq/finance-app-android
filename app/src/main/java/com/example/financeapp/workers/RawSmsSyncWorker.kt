@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.*
 import com.example.financeapp.api.ApiService
+import com.example.financeapp.auth.SecureTokenStore
 import com.example.financeapp.data.dao.RawTransactionDao
 import com.example.financeapp.data.model.RawSmsIn
 import dagger.assisted.Assisted
@@ -16,7 +17,8 @@ class RawSmsSyncWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted params: WorkerParameters,
     private val apiService: ApiService,
-    private val rawTransactionDao: RawTransactionDao
+    private val rawTransactionDao: RawTransactionDao,
+    private val tokenStore: SecureTokenStore   // Injected token store
 ) : CoroutineWorker(appContext, params) {
 
     override suspend fun doWork(): Result {
@@ -41,8 +43,8 @@ class RawSmsSyncWorker @AssistedInject constructor(
                         timestamp = entity.smsTimestamp
                     )
 
-                    // Retrieve token securely (from SecureTokenStore)
-                    val token = "Bearer " // Replace with SecureTokenStore injection
+                    // Retrieve token securely from SecureTokenStore
+                    val token = tokenStore.getToken()  // returns "Bearer <token>" or ""
 
                     val response = apiService.ingestRawSms(token, requestBody)
 
