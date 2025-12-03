@@ -17,5 +17,5 @@ object AuthModule {
     @Singleton
     fun provideTokenStore(
         @ApplicationContext context: Context
-    ): TokenStore = TokenStore(context)
+    ): SecureTokenStore = SecureTokenStore(context)
 }
