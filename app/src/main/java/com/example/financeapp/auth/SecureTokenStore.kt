@@ -8,7 +8,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class TokenStore @Inject constructor(
+class SecureTokenStore @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     companion object {
