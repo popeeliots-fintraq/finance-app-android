@@ -1,69 +1,83 @@
 package com.example.financeapp.workers
 
+import android.content.Context
 import android.util.Log
 import androidx.hilt.work.HiltWorker
-import androidx.work.CoroutineWorker
-import androidx.work.WorkerParameters
-import androidx.work.NetworkType
 import androidx.work.Constraints
+import androidx.work.CoroutineWorker
+import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import androidx.work.WorkerParameters
 import com.example.financeapp.api.ApiService
 import com.example.financeapp.data.dao.RawTransactionDao
+import com.example.financeapp.data.model.RawSmsIn
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import retrofit2.HttpException
-import javax.inject.Inject
 
 @HiltWorker
 class RawSmsSyncWorker @AssistedInject constructor(
-    @Assisted appContext: android.content.Context,
+    @Assisted appContext: Context,
     @Assisted params: WorkerParameters,
     private val apiService: ApiService,
     private val rawTransactionDao: RawTransactionDao
-): CoroutineWorker(appContext, params) {
+) : CoroutineWorker(appContext, params) {
 
     override suspend fun doWork(): Result {
-        try {
+        return try {
             val pending = rawTransactionDao.getUnsentRawTransactions()
-            if (pending.isEmpty()) return Result.success()
+            if (pending.isEmpty()) {
+                Log.d("RawSmsSyncWorker", "No pending raw SMS to sync.")
+                return Result.success()
+            }
 
             pending.forEach { entity ->
                 try {
-                    // map entity -> RawSmsIn model expected by backend
-                    val rawSmsIn = com.example.financeapp.data.model.RawSmsIn(
-                        userId = entity.userId,
-                        sender = entity.sender,
-                        body = entity.rawText,
-                        smsTimestamp = entity.smsTimestamp,
-                        uniqueSmsId = entity.uniqueSmsId
+                    // Map local DB entity -> RawSmsIn expected by backend
+                    val requestBody = RawSmsIn(
+                        smsText = entity.rawText,
+                        senderId = entity.sender,
+                        timestamp = entity.smsTimestamp
                     )
 
-                    // NOTE: provide a secure token via some AuthStore
-                    val token = "Bearer ${/* get token securely */ ""}"
+                    // TODO: Replace with secure token retrieval (EncryptedSharedPrefs)
+                    val token = "Bearer "
 
-                    val resp = apiService.ingestRawSms(token, rawSmsIn)
-                    if (resp.isSuccessful) {
-                        // mark as SENT (or backend id)
+                    val response = apiService.ingestRawSms(token, requestBody)
+
+                    if (response.isSuccessful) {
                         rawTransactionDao.updateIngestionStatus(entity.id, "SENT")
+                        Log.d("RawSmsSyncWorker", "Synced SMS ${entity.id} successfully.")
                     } else {
                         rawTransactionDao.updateIngestionStatus(entity.id, "FAILED")
+                        Log.e(
+                            "RawSmsSyncWorker",
+                            "Backend error for SMS ${entity.id}: ${response.code()}"
+                        )
                     }
+
                 } catch (e: HttpException) {
                     rawTransactionDao.updateIngestionStatus(entity.id, "FAILED")
+                    Log.e("RawSmsSyncWorker", "HTTP error for SMS ${entity.id}", e)
+
                 } catch (e: Exception) {
                     rawTransactionDao.updateIngestionStatus(entity.id, "FAILED")
+                    Log.e("RawSmsSyncWorker", "Unexpected error for SMS ${entity.id}", e)
                 }
             }
-            return Result.success()
+
+            Result.success()
+
         } catch (e: Exception) {
-            Log.e("RawSmsSyncWorker", "Sync failed: ${e.message}", e)
-            return Result.retry()
+            Log.e("RawSmsSyncWorker", "Worker-level failure: ${e.message}", e)
+            Result.retry()
         }
     }
 
     companion object {
-        fun enqueueSync(context: android.content.Context) {
+
+        fun enqueueSync(context: Context) {
             val constraints = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build()
