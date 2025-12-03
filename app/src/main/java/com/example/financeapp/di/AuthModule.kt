@@ -1,6 +1,6 @@
 package com.example.financeapp.di
 
-import com.example.financeapp.auth.TokenStore
+import com.example.financeapp.auth.SecureTokenStore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
