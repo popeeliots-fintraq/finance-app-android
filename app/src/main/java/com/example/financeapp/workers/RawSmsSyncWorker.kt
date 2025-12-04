@@ -26,7 +26,7 @@ class RawSmsSyncWorker @AssistedInject constructor(
             val pending = rawTransactionDao.getUnsentRawTransactions()
             if (pending.isEmpty()) return Result.success()
 
-            val token = tokenStore.getToken().trim()
+            val token = tokenStore.getToken()?.trim().orEmpty()
             if (token.isEmpty()) {
                 Log.e("RawSmsSyncWorker", "No token found, aborting sync")
                 return Result.retry()
@@ -34,23 +34,22 @@ class RawSmsSyncWorker @AssistedInject constructor(
 
             pending.forEach { entity ->
                 try {
-                    val requestBody = RawSmsIn(
+                    val request = RawSmsIn(
                         smsText = entity.rawText,
                         senderId = entity.sender,
                         timestamp = entity.smsTimestamp
                     )
 
-                    // FIXED: API expects only (token, RawSmsIn)
-                    val response = apiService.ingestRawSms(token, requestBody)
+                    val response = apiService.ingestRawSms(token, request)
 
                     if (response.isSuccessful) {
                         rawTransactionDao.updateIngestionStatus(entity.id, "SENT")
-                        Log.d("RawSmsSyncWorker", "Synced SMS ${entity.id} successfully.")
+                        Log.d("RawSmsSyncWorker", "Synced SMS ${entity.id} successfully")
                     } else {
                         rawTransactionDao.updateIngestionStatus(entity.id, "FAILED")
                         Log.e(
                             "RawSmsSyncWorker",
-                            "Backend error for SMS ${entity.id}: ${response.code()}"
+                            "Backend rejected SMS ${entity.id}: ${response.code()}"
                         )
                     }
 
@@ -67,8 +66,8 @@ class RawSmsSyncWorker @AssistedInject constructor(
             Result.success()
 
         } catch (e: Exception) {
-            Log.e("RawSmsSyncWorker", "Worker-level failure: ${e.message}", e)
-            Result.retry()
+            Log.e("RawSmsSyncWorker", "Worker failure: ${e.message}", e)
+            return Result.retry()
         }
     }
 
@@ -78,11 +77,11 @@ class RawSmsSyncWorker @AssistedInject constructor(
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build()
 
-            val req = OneTimeWorkRequestBuilder<RawSmsSyncWorker>()
+            val request = OneTimeWorkRequestBuilder<RawSmsSyncWorker>()
                 .setConstraints(constraints)
                 .build()
 
-            WorkManager.getInstance(context).enqueue(req)
+            WorkManager.getInstance(context).enqueue(request)
         }
     }
 }
