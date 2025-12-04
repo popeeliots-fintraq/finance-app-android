@@ -7,13 +7,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
-// Interface to allow JVM-friendly testing
-interface ITokenStore {
-    fun saveToken(token: String)
-    fun getToken(): String
-    fun clearToken()
-}
-
 @Singleton
 class SecureTokenStore @Inject constructor(
     @ApplicationContext private val context: Context
