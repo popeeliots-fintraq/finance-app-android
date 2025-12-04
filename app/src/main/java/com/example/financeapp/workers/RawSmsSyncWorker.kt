@@ -11,6 +11,7 @@ import com.example.financeapp.data.model.RawSmsIn
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import retrofit2.HttpException
+import java.time.Instant
 
 @HiltWorker
 class RawSmsSyncWorker @AssistedInject constructor(
@@ -26,43 +27,37 @@ class RawSmsSyncWorker @AssistedInject constructor(
             val pending = rawTransactionDao.getUnsentRawTransactions()
             if (pending.isEmpty()) return Result.success()
 
-            val token = tokenStore.getToken()?.trim().orEmpty()
+            val token = tokenStore.getToken().trim()
             if (token.isEmpty()) {
                 Log.e("RawSmsSyncWorker", "No token found, aborting sync")
                 return Result.retry()
             }
 
-            val authHeader = "Bearer $token"
-
             pending.forEach { entity ->
                 try {
-                    val request = RawSmsIn(
+                    // Convert Long -> ISO String for API
+                    val timestampStr = Instant.ofEpochMilli(entity.smsTimestamp).toString()
+
+                    val requestBody = RawSmsIn(
                         smsText = entity.rawText,
                         senderId = entity.sender,
-                        timestamp = entity.smsTimestamp.toString(), // Convert Long -> String
-                        userId = getUserId() // <-- provide userId here
+                        timestamp = timestampStr,
+                        userId = entity.userId
                     )
 
-                    val response = apiService.ingestRawSms(
-                        token = authHeader,
-                        rawSmsData = request
-                    )
+                    val response = apiService.ingestRawSms(token, requestBody)
 
                     if (response.isSuccessful) {
                         rawTransactionDao.updateIngestionStatus(entity.id, "SENT")
                         Log.d("RawSmsSyncWorker", "Synced SMS ${entity.id} successfully")
                     } else {
                         rawTransactionDao.updateIngestionStatus(entity.id, "FAILED")
-                        Log.e(
-                            "RawSmsSyncWorker",
-                            "Backend rejected SMS ${entity.id}: ${response.code()}"
-                        )
+                        Log.e("RawSmsSyncWorker", "Backend rejected SMS ${entity.id}: ${response.code()}")
                     }
 
                 } catch (e: HttpException) {
                     rawTransactionDao.updateIngestionStatus(entity.id, "FAILED")
                     Log.e("RawSmsSyncWorker", "HTTP error for SMS ${entity.id}", e)
-
                 } catch (e: Exception) {
                     rawTransactionDao.updateIngestionStatus(entity.id, "FAILED")
                     Log.e("RawSmsSyncWorker", "Unexpected error for SMS ${entity.id}", e)
@@ -70,16 +65,10 @@ class RawSmsSyncWorker @AssistedInject constructor(
             }
 
             Result.success()
-
         } catch (e: Exception) {
             Log.e("RawSmsSyncWorker", "Worker failure: ${e.message}", e)
-            return Result.retry()
+            Result.retry()
         }
-    }
-
-    // TODO: Replace with actual logic to get current userId
-    private fun getUserId(): String {
-        return "current_user_id" // or fetch from preferences/token
     }
 
     companion object {
