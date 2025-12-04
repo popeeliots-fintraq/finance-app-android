@@ -5,7 +5,7 @@ import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.*
 import com.example.financeapp.api.ApiService
-import com.example.financeapp.auth.SecureTokenStore
+import com.example.financeapp.auth.ITokenStore
 import com.example.financeapp.data.dao.RawTransactionDao
 import com.example.financeapp.data.model.RawSmsIn
 import dagger.assisted.Assisted
@@ -18,13 +18,19 @@ class RawSmsSyncWorker @AssistedInject constructor(
     @Assisted params: WorkerParameters,
     private val apiService: ApiService,
     private val rawTransactionDao: RawTransactionDao,
-    private val tokenStore: SecureTokenStore
+    private val tokenStore: ITokenStore
 ) : CoroutineWorker(appContext, params) {
 
     override suspend fun doWork(): Result {
         return try {
             val pending = rawTransactionDao.getUnsentRawTransactions()
             if (pending.isEmpty()) return Result.success()
+
+            val token = tokenStore.getToken().trim()
+            if (token.isEmpty()) {
+                Log.e("RawSmsSyncWorker", "No token found, aborting sync")
+                return Result.retry()
+            }
 
             pending.forEach { entity ->
                 try {
@@ -34,17 +40,18 @@ class RawSmsSyncWorker @AssistedInject constructor(
                         timestamp = entity.smsTimestamp
                     )
 
-                    val token = tokenStore.getToken().trim()
-                    val userId = entity.userId.toString() // fix Long -> String
-
-                    val response = apiService.ingestRawSms(token, userId, requestBody)
+                    // FIXED: API expects only (token, RawSmsIn)
+                    val response = apiService.ingestRawSms(token, requestBody)
 
                     if (response.isSuccessful) {
                         rawTransactionDao.updateIngestionStatus(entity.id, "SENT")
                         Log.d("RawSmsSyncWorker", "Synced SMS ${entity.id} successfully.")
                     } else {
                         rawTransactionDao.updateIngestionStatus(entity.id, "FAILED")
-                        Log.e("RawSmsSyncWorker", "Backend error for SMS ${entity.id}: ${response.code()}")
+                        Log.e(
+                            "RawSmsSyncWorker",
+                            "Backend error for SMS ${entity.id}: ${response.code()}"
+                        )
                     }
 
                 } catch (e: HttpException) {
@@ -56,6 +63,7 @@ class RawSmsSyncWorker @AssistedInject constructor(
                     Log.e("RawSmsSyncWorker", "Unexpected error for SMS ${entity.id}", e)
                 }
             }
+
             Result.success()
 
         } catch (e: Exception) {
