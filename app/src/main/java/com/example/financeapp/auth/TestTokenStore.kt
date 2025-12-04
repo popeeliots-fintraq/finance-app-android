@@ -1,7 +1,11 @@
-// TestTokenStore.kt
 package com.example.financeapp.auth
 
+/**
+ * Simple in-memory implementation of ITokenStore
+ * used only for unit tests.
+ */
 class TestTokenStore : ITokenStore {
+
     private var token: String = ""
 
     override fun saveToken(token: String) {
@@ -9,7 +13,8 @@ class TestTokenStore : ITokenStore {
     }
 
     override fun getToken(): String {
-        return if (token.startsWith("Bearer")) token else "Bearer $token"
+        if (token.isBlank()) return ""
+        return if (token.startsWith("Bearer ")) token else "Bearer $token"
     }
 
     override fun clearToken() {
