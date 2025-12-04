@@ -6,6 +6,7 @@ import androidx.room.Room
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.example.financeapp.data.local.AppDatabase
+import com.example.financeapp.data.dao.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -51,7 +52,6 @@ object SecureDatabaseModule {
             val masterKey = MasterKey.Builder(context)
                 .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
                 .build()
-
             val prefs = EncryptedSharedPreferences.create(
                 context,
                 SECURE_PREF_NAME,
@@ -71,7 +71,6 @@ object SecureDatabaseModule {
             val masterKey = MasterKey.Builder(context)
                 .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
                 .build()
-
             val prefs = EncryptedSharedPreferences.create(
                 context,
                 SECURE_PREF_NAME,
@@ -90,7 +89,6 @@ object SecureDatabaseModule {
         ensureKeyPair()
         val pass = ByteArray(32)
         java.security.SecureRandom().nextBytes(pass)
-
         val ks = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
         val privateEntry = ks.getEntry(KEYSTORE_ALIAS, null) as KeyStore.PrivateKeyEntry
         val publicKey = privateEntry.certificate.publicKey
@@ -107,7 +105,6 @@ object SecureDatabaseModule {
     private fun unwrapPass(context: Context): ByteArray {
         val wrappedB64 = getWrapped(context)
         if (wrappedB64.isNullOrEmpty()) return createAndWrapPass(context)
-
         val wrapped = Base64.decode(wrappedB64, Base64.NO_WRAP)
         val ks = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
         val privateEntry = ks.getEntry(KEYSTORE_ALIAS, null) as KeyStore.PrivateKeyEntry
@@ -121,18 +118,20 @@ object SecureDatabaseModule {
 
     @Provides
     @Singleton
-    fun provideSupportFactory(@ApplicationContext context: Context): SupportFactory {
-        return SupportFactory(unwrapPass(context))
-    }
+    fun provideSupportFactory(@ApplicationContext context: Context): SupportFactory =
+        SupportFactory(unwrapPass(context))
 
     @Provides
     @Singleton
-    fun provideDatabase(
-        @ApplicationContext context: Context,
-        supportFactory: SupportFactory
-    ): AppDatabase {
-        return Room.databaseBuilder(context, AppDatabase::class.java, "fintraq_database")
+    fun provideDatabase(@ApplicationContext context: Context, supportFactory: SupportFactory): AppDatabase =
+        Room.databaseBuilder(context, AppDatabase::class.java, "fintraq_database")
             .openHelperFactory(supportFactory)
             .build()
-    }
+
+    // Provide all DAOs here
+    @Provides fun provideSmsDao(db: AppDatabase): SmsDao = db.smsDao()
+    @Provides fun provideTransactionDao(db: AppDatabase): TransactionDao = db.transactionDao()
+    @Provides fun provideSalaryBucketDao(db: AppDatabase): SalaryBucketDao = db.salaryBucketDao()
+    @Provides fun provideLeakBucketDao(db: AppDatabase): LeakBucketDao = db.leakBucketDao()
+    @Provides fun provideRawTransactionDao(db: AppDatabase): RawTransactionDao = db.rawTransactionDao()
 }
