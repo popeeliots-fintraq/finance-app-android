@@ -40,7 +40,7 @@ class RawSmsSyncWorker @AssistedInject constructor(
                         timestamp = entity.smsTimestamp
                     )
 
-                    val response = apiService.ingestRawSms(token, request)
+                    val response = apiService.ingestRawSms(token = token, rawSmsData = requestBody)
 
                     if (response.isSuccessful) {
                         rawTransactionDao.updateIngestionStatus(entity.id, "SENT")
