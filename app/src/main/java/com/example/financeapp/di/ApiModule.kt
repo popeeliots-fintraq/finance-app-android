@@ -20,10 +20,8 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object ApiModule {
 
-    // Provide your backend base URL here (or override via BuildConfig / flavors)
-    @Provides
-    @Singleton
-    fun provideBaseUrl(): String = "https://fintraq-backend-801862457352.us-central1.run.app"
+    // Backend base URL (replace with your actual Cloud Run URL)
+    private const val BASE_URL = "https://fintraq-backend-801862457352.us-central1.run.app/"
 
     @Provides
     @Singleton
@@ -36,9 +34,7 @@ object ApiModule {
     @Singleton
     fun provideLoggingInterceptor(): HttpLoggingInterceptor {
         val logging = HttpLoggingInterceptor()
-        // Log body only in debug builds; adjust with BuildConfig.DEBUG if available
-        logging.level =
-            if (isDebug()) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
+        logging.level = if (isDebug()) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
         return logging
     }
 
@@ -57,16 +53,16 @@ object ApiModule {
             .readTimeout(20, TimeUnit.SECONDS)
             .writeTimeout(20, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
-            .addInterceptor(authInterceptor)   // auth first
-            .addInterceptor(logging)           // then logging
+            .addInterceptor(authInterceptor)   // Auth first
+            .addInterceptor(logging)           // Logging second
             .build()
     }
 
     @Provides
     @Singleton
-    fun provideRetrofit(baseUrl: String, moshi: Moshi, client: OkHttpClient): Retrofit {
+    fun provideRetrofit(moshi: Moshi, client: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(baseUrl)
+            .baseUrl(BASE_URL)
             .client(client)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
@@ -77,7 +73,6 @@ object ApiModule {
     fun provideApiService(retrofit: Retrofit): ApiService =
         retrofit.create(ApiService::class.java)
 
-    // small helper: detect debug (fallback if BuildConfig not available)
     private fun isDebug(): Boolean {
         return try {
             val clz = Class.forName("com.example.financeapp.BuildConfig")
