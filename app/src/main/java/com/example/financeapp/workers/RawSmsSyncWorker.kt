@@ -23,7 +23,6 @@ class RawSmsSyncWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         return try {
-
             val pending = rawTransactionDao.getUnsentRawTransactions()
             if (pending.isEmpty()) return Result.success()
 
@@ -37,11 +36,11 @@ class RawSmsSyncWorker @AssistedInject constructor(
 
             pending.forEach { entity ->
                 try {
-
                     val request = RawSmsIn(
                         smsText = entity.rawText,
                         senderId = entity.sender,
-                        timestamp = entity.smsTimestamp
+                        timestamp = entity.smsTimestamp.toString(), // Convert Long -> String
+                        userId = getUserId() // <-- provide userId here
                     )
 
                     val response = apiService.ingestRawSms(
@@ -74,8 +73,13 @@ class RawSmsSyncWorker @AssistedInject constructor(
 
         } catch (e: Exception) {
             Log.e("RawSmsSyncWorker", "Worker failure: ${e.message}", e)
-            Result.retry()
+            return Result.retry()
         }
+    }
+
+    // TODO: Replace with actual logic to get current userId
+    private fun getUserId(): String {
+        return "current_user_id" // or fetch from preferences/token
     }
 
     companion object {
